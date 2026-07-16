@@ -7,6 +7,8 @@ export interface FieldDef {
   options?: { value: string; label: string }[]
   half?: boolean
   placeholder?: string
+  min?: number
+  max?: number
 }
 
 export type FormValues = Record<string, FieldValue>
@@ -107,6 +109,8 @@ function FieldInput({
         type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
         value={v}
         placeholder={field.placeholder}
+        min={field.min}
+        max={field.max}
         onChange={(e) => onChange(field.key, field.type === 'number' ? Number(e.target.value) : e.target.value)}
       />
     </div>
