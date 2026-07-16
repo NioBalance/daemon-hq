@@ -23,9 +23,9 @@ Prima di provare il login, nel progetto Supabase (`clsyjggifbfwnrdbzprk`):
 
 ## Setup Supabase — login a codice invece del link (obbligatorio)
 
-Il login ora funziona a **codice a 6 cifre digitato nella stessa finestra**, non più a link cliccabile (il link apriva il browser invece della PWA installata). Il codice arriva comunque via `signInWithOtp()` — stessa chiamata di prima — ma va confermato con `verifyOtp()`.
+Il login ora funziona a **codice a 8 cifre digitato nella stessa finestra**, non più a link cliccabile (il link apriva il browser invece della PWA installata). Il codice arriva comunque via `signInWithOtp()` — stessa chiamata di prima — ma va confermato con `verifyOtp()`. Nota: Supabase invia un codice OTP a 8 cifre (non 6), il campo in login è dimensionato di conseguenza.
 
-⚠️ **Passo obbligatorio**: il template email di default di Supabase mostra solo il link, non il codice — senza modificarlo il codice non è nemmeno visibile nell'email. In **Authentication → Email Templates → Magic Link**, sostituisci il contenuto con qualcosa che mostri `{{ .Token }}` (il codice a 6 cifre), ad esempio:
+⚠️ **Passo obbligatorio**: il template email di default di Supabase mostra solo il link, non il codice — senza modificarlo il codice non è nemmeno visibile nell'email. In **Authentication → Email Templates → Magic Link**, sostituisci il contenuto con qualcosa che mostri `{{ .Token }}` (il codice a 8 cifre), ad esempio:
 
 ```html
 <h2>DÆMON Production HQ</h2>

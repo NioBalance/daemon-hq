@@ -3,7 +3,7 @@ import { useAuth } from './useAuth'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const COOLDOWN_S = 60
-const CODE_LEN = 6
+const CODE_LEN = 8 // Supabase invia un codice OTP a 8 cifre via email
 
 const cooldownKey = (email: string) => `daemon:otp-cooldown:${email.trim().toLowerCase()}`
 const sanitizeCode = (raw: string) => raw.replace(/\D/g, '').slice(0, CODE_LEN)
@@ -137,7 +137,7 @@ export default function Login() {
           </p>
           <form onSubmit={handleCodeSubmit}>
             <div className="field">
-              <label>Codice a 6 cifre</label>
+              <label>Codice a 8 cifre</label>
               <input
                 ref={codeInputRef}
                 className="otp-input"
@@ -145,7 +145,7 @@ export default function Login() {
                 onChange={(e) => handleCodeChange(e.target.value)}
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                placeholder="······"
+                placeholder="········"
                 maxLength={CODE_LEN}
                 disabled={verifying}
               />
