@@ -3,30 +3,37 @@ import { useAuth } from './useAuth'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const COOLDOWN_S = 60
+const CODE_LEN = 6
 
 const cooldownKey = (email: string) => `daemon:otp-cooldown:${email.trim().toLowerCase()}`
+const sanitizeCode = (raw: string) => raw.replace(/\D/g, '').slice(0, CODE_LEN)
 
-// Il magic link scaduto/già usato torna qui con #error=... nell'URL.
+// Se l'utente clicca comunque il link nell'email invece di digitare il codice,
+// un link scaduto/già usato torna qui con #error=... nell'URL.
 function readHashError(): string | null {
   if (!window.location.hash.includes('error')) return null
   const params = new URLSearchParams(window.location.hash.slice(1))
   const code = params.get('error_code')
   const desc = params.get('error_description')
   return code === 'otp_expired'
-    ? 'Il link non è più valido: è scaduto o è già stato usato. Richiedine uno nuovo qui sotto.'
+    ? 'Il link non è più valido: è scaduto o è già stato usato. Richiedi un nuovo codice qui sotto.'
     : desc
       ? decodeURIComponent(desc.replace(/\+/g, ' '))
       : 'Accesso non riuscito. Riprova.'
 }
 
 export default function Login() {
-  const { signInWithOtp } = useAuth()
+  const { signInWithOtp, verifyOtp } = useAuth()
+  const [view, setView] = useState<'form' | 'code'>('form')
   const [email, setEmail] = useState('')
-  const [sentTo, setSentTo] = useState<string | null>(null)
+  const [remember, setRememberChecked] = useState(true)
+  const [code, setCode] = useState('')
   const [sending, setSending] = useState(false)
+  const [verifying, setVerifying] = useState(false)
   const [error, setError] = useState<string | null>(readHashError)
   const [cooldown, setCooldown] = useState(0)
   const timerRef = useRef<number | null>(null)
+  const codeInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     if (window.location.hash.includes('error')) {
@@ -39,6 +46,10 @@ export default function Login() {
       if (timerRef.current) window.clearInterval(timerRef.current)
     }
   }, [])
+
+  useEffect(() => {
+    if (view === 'code') codeInputRef.current?.focus()
+  }, [view])
 
   function tickCooldown(until: number) {
     if (timerRef.current) window.clearInterval(timerRef.current)
@@ -54,7 +65,7 @@ export default function Login() {
     timerRef.current = window.setInterval(update, 1000)
   }
 
-  async function requestLink(targetEmail: string, forceResend = false) {
+  async function sendCode(targetEmail: string, forceResend = false) {
     setError(null)
     if (!EMAIL_RE.test(targetEmail)) {
       setError('Indirizzo email non valido.')
@@ -63,13 +74,13 @@ export default function Login() {
 
     const storedUntil = Number(sessionStorage.getItem(cooldownKey(targetEmail)) || 0)
     if (!forceResend && storedUntil > Date.now()) {
-      setSentTo(targetEmail)
+      setView('code')
       tickCooldown(storedUntil)
       return
     }
 
     setSending(true)
-    const { error: sendError } = await signInWithOtp(targetEmail)
+    const { error: sendError } = await signInWithOtp(targetEmail, remember)
     setSending(false)
     if (sendError) {
       setError(sendError)
@@ -77,16 +88,42 @@ export default function Login() {
     }
     const until = Date.now() + COOLDOWN_S * 1000
     sessionStorage.setItem(cooldownKey(targetEmail), String(until))
-    setSentTo(targetEmail)
+    setCode('')
+    setView('code')
     tickCooldown(until)
   }
 
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    requestLink(email.trim())
+  async function handleVerify(codeOverride?: string) {
+    const value = codeOverride ?? code
+    if (value.length !== CODE_LEN || verifying) return
+    setError(null)
+    setVerifying(true)
+    const { error: verifyError } = await verifyOtp(email.trim(), value)
+    setVerifying(false)
+    if (verifyError) {
+      setError(verifyError)
+      setCode('')
+      codeInputRef.current?.focus()
+    }
   }
 
-  if (sentTo) {
+  function handleCodeChange(raw: string) {
+    const next = sanitizeCode(raw)
+    setCode(next)
+    if (next.length === CODE_LEN) void handleVerify(next)
+  }
+
+  function handleFormSubmit(e: FormEvent) {
+    e.preventDefault()
+    sendCode(email.trim())
+  }
+
+  function handleCodeSubmit(e: FormEvent) {
+    e.preventDefault()
+    void handleVerify()
+  }
+
+  if (view === 'code') {
     return (
       <div className="auth-screen">
         <div className="auth-box">
@@ -95,28 +132,52 @@ export default function Login() {
           </div>
           <span className="hdr-sub">Production HQ · Design → Sample → Drop</span>
           <p className="auth-msg ok">
-            Ti abbiamo inviato un link di accesso a <strong>{sentTo}</strong>. Aprilo dalla stessa email per
-            entrare — questa pagina si aggiorna da sola.
+            Codice inviato a <strong>{email.trim()}</strong>. Copialo dall'email e incollalo (o digitalo) qui
+            sotto.
           </p>
-          {error && <p className="auth-msg err">{error}</p>}
+          <form onSubmit={handleCodeSubmit}>
+            <div className="field">
+              <label>Codice a 6 cifre</label>
+              <input
+                ref={codeInputRef}
+                className="otp-input"
+                value={code}
+                onChange={(e) => handleCodeChange(e.target.value)}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="······"
+                maxLength={CODE_LEN}
+                disabled={verifying}
+              />
+            </div>
+            {error && <p className="auth-msg err">{error}</p>}
+            <button
+              className="btn"
+              type="submit"
+              disabled={verifying || code.length !== CODE_LEN}
+              style={{ width: '100%' }}
+            >
+              {verifying ? 'Verifica…' : 'Entra'}
+            </button>
+          </form>
           <div className="row" style={{ justifyContent: 'center', marginTop: 16 }}>
             <button
               className="btn ghost"
               type="button"
               onClick={() => {
-                setSentTo(null)
+                setView('form')
                 setError(null)
               }}
             >
               Email sbagliata? Cambiala
             </button>
             <button
-              className="btn"
+              className="btn ghost"
               type="button"
               disabled={cooldown > 0 || sending}
-              onClick={() => requestLink(sentTo, true)}
+              onClick={() => sendCode(email.trim(), true)}
             >
-              {cooldown > 0 ? `Rinvia tra ${cooldown}s` : sending ? 'Invio…' : 'Rinvia link'}
+              {cooldown > 0 ? `Rinvia tra ${cooldown}s` : sending ? 'Invio…' : 'Rinvia codice'}
             </button>
           </div>
         </div>
@@ -131,7 +192,7 @@ export default function Login() {
           D<span className="ae">Æ</span>MON
         </div>
         <span className="hdr-sub">Production HQ · Design → Sample → Drop</span>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleFormSubmit}>
           <div className="field">
             <label>La tua email</label>
             <input
@@ -142,8 +203,17 @@ export default function Login() {
               autoFocus
             />
           </div>
+          <label className="row" style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 14, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRememberChecked(e.target.checked)}
+              style={{ accentColor: 'var(--ember)', width: 15, height: 15, cursor: 'pointer' }}
+            />
+            Resta connesso su questo dispositivo
+          </label>
           <button className="btn" type="submit" disabled={sending || cooldown > 0} style={{ width: '100%' }}>
-            {sending ? 'Invio…' : cooldown > 0 ? `Riprova tra ${cooldown}s` : 'Invia link di accesso'}
+            {sending ? 'Invio…' : cooldown > 0 ? `Riprova tra ${cooldown}s` : 'Invia codice di accesso'}
           </button>
         </form>
         {error && <p className="auth-msg err">{error}</p>}

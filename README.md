@@ -21,6 +21,23 @@ Prima di provare il login, nel progetto Supabase (`clsyjggifbfwnrdbzprk`):
 2. **Authentication → URL Configuration** → *Site URL* = `http://localhost:5173` e aggiungi `http://localhost:5173/**` alle *Redirect URLs* (poi, al deploy, aggiungi anche l'URL Netlify).
 3. **Email in produzione**: il servizio email integrato di Supabase ha un rate limit molto basso (pochi invii/ora), pensato solo per test. Per uso reale, in **Project Settings → Auth → SMTP Settings** collega un provider esterno (es. Zoho) inserendo host/porta/credenziali SMTP. È **solo configurazione lato Supabase** — il codice usa `supabase.auth.signInWithOtp()`, che non sa né gli importa quale server SMTP c'è dietro, quindi passare a Zoho (o altro) in futuro non richiede nessuna modifica all'app.
 
+## Setup Supabase — login a codice invece del link (obbligatorio)
+
+Il login ora funziona a **codice a 6 cifre digitato nella stessa finestra**, non più a link cliccabile (il link apriva il browser invece della PWA installata). Il codice arriva comunque via `signInWithOtp()` — stessa chiamata di prima — ma va confermato con `verifyOtp()`.
+
+⚠️ **Passo obbligatorio**: il template email di default di Supabase mostra solo il link, non il codice — senza modificarlo il codice non è nemmeno visibile nell'email. In **Authentication → Email Templates → Magic Link**, sostituisci il contenuto con qualcosa che mostri `{{ .Token }}` (il codice a 6 cifre), ad esempio:
+
+```html
+<h2>DÆMON Production HQ</h2>
+<p>Il tuo codice di accesso:</p>
+<h1 style="letter-spacing:6px;font-size:32px">{{ .Token }}</h1>
+<p>Scade tra un'ora. Se non l'hai richiesto tu, ignora questa email.</p>
+```
+
+Puoi rimuovere del tutto il link `{{ .ConfirmationURL }}` dal template — l'app non lo usa più per accedere, quindi non serve tenerlo (evita anche che qualcuno lo clicchi per abitudine finendo nel browser invece che nella PWA).
+
+**"Resta connesso"**: la sessione persiste in `localStorage` (sopravvive a riavvii del browser/PWA) se la checkbox è spuntata in login (di default sì), altrimenti solo in `sessionStorage` per quella finestra. Tutto lato client, nessuna configurazione Supabase necessaria. Se in futuro vuoi limitare comunque la durata massima delle sessioni per tutto il progetto, è in **Authentication → Sessions**.
+
 ## Setup Supabase — tabelle di dominio + storage (Step 3)
 
 Un solo passo manuale, tutto il resto (incluso il bucket) è nello script SQL:

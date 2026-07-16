@@ -231,3 +231,5 @@ main{max-width:1240px;margin:0 auto;padding:24px 20px 90px}
 .auth-msg{font-size:13px;color:var(--muted);margin-top:14px}
 .auth-msg.ok{color:var(--ok)}
 .auth-msg.err{color:var(--ember)}
+.otp-input{font-family:var(--font-m);font-size:28px;letter-spacing:.5em;text-align:center;text-indent:.5em}
+.otp-input:disabled{opacity:.6}

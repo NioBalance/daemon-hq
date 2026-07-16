@@ -1,14 +1,17 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
+import { setRemember } from '../lib/authStorage'
 import type { Owner } from '../lib/tabs'
 import { AuthContext, type AuthStatus, type Profile } from './auth-context'
 
 function mapAuthError(message: string): string {
   const m = message.toLowerCase()
-  if (m.includes('rate limit')) return 'Hai richiesto troppi link di accesso per questa email. Aspetta qualche minuto e riprova.'
-  if (m.includes('only request this after')) return 'Hai già richiesto un link da poco. Aspetta ancora qualche secondo e riprova.'
+  if (m.includes('rate limit')) return 'Hai richiesto troppi codici per questa email. Aspetta qualche minuto e riprova.'
+  if (m.includes('only request this after')) return 'Hai già richiesto un codice da poco. Aspetta ancora qualche secondo e riprova.'
   if (m.includes('invalid') && m.includes('email')) return 'Indirizzo email non valido.'
+  if (m.includes('token has expired') || m.includes('invalid token') || m.includes('otp_expired'))
+    return 'Codice errato o scaduto. Controlla le cifre o richiedine uno nuovo.'
   return message
 }
 
@@ -51,11 +54,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  async function signInWithOtp(email: string) {
+  async function signInWithOtp(email: string, remember: boolean) {
+    setRemember(remember)
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: window.location.origin },
     })
+    return { error: error ? mapAuthError(error.message) : null }
+  }
+
+  async function verifyOtp(email: string, token: string) {
+    const { error } = await supabase.auth.verifyOtp({ email, token, type: 'email' })
     return { error: error ? mapAuthError(error.message) : null }
   }
 
@@ -84,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         : 'ready'
 
   return (
-    <AuthContext.Provider value={{ status, session, profile, signInWithOtp, signOut, saveProfile }}>
+    <AuthContext.Provider value={{ status, session, profile, signInWithOtp, verifyOtp, signOut, saveProfile }}>
       {children}
     </AuthContext.Provider>
   )

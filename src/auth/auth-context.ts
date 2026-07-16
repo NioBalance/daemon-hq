@@ -15,7 +15,8 @@ export interface AuthContextValue {
   status: AuthStatus
   session: Session | null
   profile: Profile | null
-  signInWithOtp: (email: string) => Promise<{ error: string | null }>
+  signInWithOtp: (email: string, remember: boolean) => Promise<{ error: string | null }>
+  verifyOtp: (email: string, token: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
   saveProfile: (nome: string, ruolo: Owner) => Promise<{ error: string | null }>
 }
