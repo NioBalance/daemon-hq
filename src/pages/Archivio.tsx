@@ -1,15 +1,267 @@
+import { useState, type FormEvent } from 'react'
 import PanelHead from '../components/PanelHead'
+import Modal from '../components/Modal'
+import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
+import { Loading, ErrorState } from '../components/QueryState'
+import FolderCard from '../components/FolderCard'
+import LinkCard from '../components/LinkCard'
+import { useGadgets, useCreateGadget, useUpdateGadget, useDeleteGadget, type Gadget } from '../features/gadgets/queries'
+import { useInspo, useCreateInspo, useUpdateInspo, useDeleteInspo, type Inspo } from '../features/inspo/queries'
+import { useLinks, useCreateLink, useUpdateLink, useDeleteLink, type BrandLink } from '../features/links/queries'
+
+type ArchTab = 'gadgets' | 'inspo' | 'links'
 
 export default function Archivio() {
+  const [archTab, setArchTab] = useState<ArchTab>('gadgets')
+
+  const gadgets = useGadgets()
+  const createGadget = useCreateGadget()
+  const updateGadget = useUpdateGadget()
+  const deleteGadget = useDeleteGadget()
+
+  const inspo = useInspo()
+  const createInspo = useCreateInspo()
+  const updateInspo = useUpdateInspo()
+  const deleteInspo = useDeleteInspo()
+
+  const links = useLinks()
+  const createLink = useCreateLink()
+  const updateLink = useUpdateLink()
+  const deleteLink = useDeleteLink()
+
+  const [titleModal, setTitleModal] = useState<{ mode: 'gadget' | 'inspo'; id: string | null } | null>(null)
+  const [titleValue, setTitleValue] = useState('')
+  const [titleError, setTitleError] = useState<string | null>(null)
+
+  const [linkModal, setLinkModal] = useState<'none' | 'create' | 'edit'>('none')
+  const [editingLink, setEditingLink] = useState<BrandLink | null>(null)
+  const [linkValues, setLinkValues] = useState<FormValues>({ label: '', url: '' })
+  const [linkError, setLinkError] = useState<string | null>(null)
+
+  const TITLE_FIELDS: FieldDef[] = [{ key: 'value', label: archTab === 'inspo' ? 'Titolo / idea prodotto' : 'Nome gadget' }]
+  const LINK_FIELDS: FieldDef[] = [
+    { key: 'label', label: 'Nome (es. Google Drive — DÆMON)' },
+    { key: 'url', label: 'URL completo (https://…)' },
+  ]
+
+  function openAddGadget() {
+    setTitleValue('')
+    setTitleError(null)
+    setTitleModal({ mode: 'gadget', id: null })
+  }
+  function openEditGadget(g: Gadget) {
+    setTitleValue(g.nome)
+    setTitleError(null)
+    setTitleModal({ mode: 'gadget', id: g.id })
+  }
+  function openAddInspo() {
+    setTitleValue('')
+    setTitleError(null)
+    setTitleModal({ mode: 'inspo', id: null })
+  }
+  function openEditInspo(i: Inspo) {
+    setTitleValue(i.titolo)
+    setTitleError(null)
+    setTitleModal({ mode: 'inspo', id: i.id })
+  }
+
+  async function handleTitleSubmit(e: FormEvent) {
+    e.preventDefault()
+    const trimmed = titleValue.trim()
+    if (!trimmed || !titleModal) {
+      setTitleError('Inserisci un titolo.')
+      return
+    }
+    try {
+      if (titleModal.mode === 'gadget') {
+        if (titleModal.id) await updateGadget.mutateAsync({ id: titleModal.id, patch: { nome: trimmed } })
+        else await createGadget.mutateAsync({ nome: trimmed, ordine: (gadgets.data?.length ?? 0) })
+      } else {
+        if (titleModal.id) await updateInspo.mutateAsync({ id: titleModal.id, patch: { titolo: trimmed } })
+        else await createInspo.mutateAsync({ titolo: trimmed, ordine: (inspo.data?.length ?? 0) })
+      }
+      setTitleModal(null)
+    } catch (err) {
+      setTitleError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
+    }
+  }
+
+  function openCreateLink() {
+    setLinkValues({ label: '', url: '' })
+    setLinkError(null)
+    setEditingLink(null)
+    setLinkModal('create')
+  }
+  function openEditLink(l: BrandLink) {
+    setLinkValues({ label: l.label, url: l.url ?? '' })
+    setLinkError(null)
+    setEditingLink(l)
+    setLinkModal('edit')
+  }
+
+  async function handleLinkSubmit(e: FormEvent) {
+    e.preventDefault()
+    const label = String(linkValues.label ?? '').trim()
+    if (!label) {
+      setLinkError('Inserisci un nome.')
+      return
+    }
+    const patch = { label, url: String(linkValues.url ?? '').trim() || null }
+    try {
+      if (linkModal === 'edit' && editingLink) {
+        await updateLink.mutateAsync({ id: editingLink.id, patch })
+      } else {
+        await createLink.mutateAsync({ ...patch, ordine: links.data?.length ?? 0 })
+      }
+      setLinkModal('none')
+    } catch (err) {
+      setLinkError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
+    }
+  }
+
+  async function handleDeleteGadget(g: Gadget) {
+    if (!window.confirm('Eliminare?')) return
+    await deleteGadget.mutateAsync(g.id)
+  }
+  async function handleDeleteInspo(i: Inspo) {
+    if (!window.confirm('Eliminare?')) return
+    await deleteInspo.mutateAsync(i.id)
+  }
+  async function handleDeleteLink(l: BrandLink) {
+    if (!window.confirm('Eliminare?')) return
+    await deleteLink.mutateAsync(l.id)
+  }
+
+  const activeQuery = archTab === 'gadgets' ? gadgets : archTab === 'inspo' ? inspo : links
+
   return (
     <>
-      <PanelHead title="Archivio" actions={<button className="btn">+ Gadget</button>} />
+      <PanelHead
+        title="Archivio"
+        actions={
+          <button
+            className="btn"
+            onClick={archTab === 'gadgets' ? openAddGadget : archTab === 'inspo' ? openAddInspo : openCreateLink}
+          >
+            + {archTab === 'gadgets' ? 'Gadget' : archTab === 'inspo' ? 'Inspirazione' : 'Link'}
+          </button>
+        }
+      />
       <div className="subtabs">
-        <button className="chip active">Gadget (0)</button>
-        <button className="chip">Inspirazione (0)</button>
-        <button className="chip">Link (0)</button>
+        <button className={`chip${archTab === 'gadgets' ? ' active' : ''}`} onClick={() => setArchTab('gadgets')}>
+          Gadget ({gadgets.data?.length ?? 0})
+        </button>
+        <button className={`chip${archTab === 'inspo' ? ' active' : ''}`} onClick={() => setArchTab('inspo')}>
+          Inspirazione ({inspo.data?.length ?? 0})
+        </button>
+        <button className={`chip${archTab === 'links' ? ' active' : ''}`} onClick={() => setArchTab('links')}>
+          Link ({links.data?.length ?? 0})
+        </button>
       </div>
-      <div className="empty">Dati in arrivo — collegamento a Supabase nei prossimi step.</div>
+
+      {activeQuery.isLoading && <Loading label="Caricamento…" />}
+      {activeQuery.isError && (
+        <ErrorState message={(activeQuery.error as Error).message} onRetry={() => activeQuery.refetch()} />
+      )}
+
+      {!activeQuery.isLoading && !activeQuery.isError && archTab === 'gadgets' && (
+        <>
+          <div className="panel-desc" style={{ marginBottom: 14 }}>
+            Accessori e omaggi del brand: foto + annotazioni firmate del team.
+          </div>
+          <div className="folder-grid">
+            {(gadgets.data ?? []).map((g) => (
+              <FolderCard
+                key={g.id}
+                id={g.id}
+                title={g.nome}
+                imgPath={g.img_path}
+                entityType="gadgets"
+                onEditTitle={() => openEditGadget(g)}
+                onDelete={() => handleDeleteGadget(g)}
+                onImageUploaded={(path) => updateGadget.mutate({ id: g.id, patch: { img_path: path } })}
+              />
+            ))}
+          </div>
+          {(gadgets.data ?? []).length === 0 && <div className="empty">Nessun gadget. Aggiungi il primo.</div>}
+        </>
+      )}
+
+      {!activeQuery.isLoading && !activeQuery.isError && archTab === 'inspo' && (
+        <>
+          <div className="panel-desc" style={{ marginBottom: 14 }}>
+            Screenshot e idee prodotto da tenere d'occhio. Carica lo screen, annota chi l'ha proposto e perché.
+          </div>
+          <div className="folder-grid">
+            {(inspo.data ?? []).map((i) => (
+              <FolderCard
+                key={i.id}
+                id={i.id}
+                title={i.titolo}
+                imgPath={i.img_path}
+                entityType="inspo"
+                onEditTitle={() => openEditInspo(i)}
+                onDelete={() => handleDeleteInspo(i)}
+                onImageUploaded={(path) => updateInspo.mutate({ id: i.id, patch: { img_path: path } })}
+              />
+            ))}
+          </div>
+          {(inspo.data ?? []).length === 0 && <div className="empty">Nessuna inspirazione salvata.</div>}
+        </>
+      )}
+
+      {!activeQuery.isLoading && !activeQuery.isError && archTab === 'links' && (
+        <>
+          <div className="panel-desc" style={{ marginBottom: 14 }}>
+            Collegamenti rapidi del brand. Modifica gli URL una volta e restano per tutto il team.
+          </div>
+          {(links.data ?? []).map((l) => (
+            <LinkCard key={l.id} label={l.label} url={l.url} onEdit={() => openEditLink(l)} onDelete={() => handleDeleteLink(l)} />
+          ))}
+        </>
+      )}
+
+      {titleModal && (
+        <Modal title={titleModal.id ? 'Modifica' : titleModal.mode === 'inspo' ? 'Nuova inspirazione' : 'Nuovo gadget'} onClose={() => setTitleModal(null)}>
+          <form onSubmit={handleTitleSubmit}>
+            <FormFields
+              fields={TITLE_FIELDS}
+              values={{ value: titleValue }}
+              onChange={(_k, v) => setTitleValue(String(v))}
+            />
+            {titleError && <p className="auth-msg err">{titleError}</p>}
+            <div className="modal-actions">
+              <button className="btn ghost" type="button" onClick={() => setTitleModal(null)}>
+                Annulla
+              </button>
+              <button className="btn" type="submit">
+                Salva
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {linkModal !== 'none' && (
+        <Modal title={linkModal === 'edit' ? 'Modifica link' : 'Nuovo link'} onClose={() => setLinkModal('none')}>
+          <form onSubmit={handleLinkSubmit}>
+            <FormFields
+              fields={LINK_FIELDS}
+              values={linkValues}
+              onChange={(k, v) => setLinkValues((s) => ({ ...s, [k]: v }))}
+            />
+            {linkError && <p className="auth-msg err">{linkError}</p>}
+            <div className="modal-actions">
+              <button className="btn ghost" type="button" onClick={() => setLinkModal('none')}>
+                Annulla
+              </button>
+              <button className="btn" type="submit">
+                Salva
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </>
   )
 }
