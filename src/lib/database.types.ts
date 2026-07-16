@@ -1,5 +1,16 @@
 import type { Owner } from './tabs'
 
+export type FornitoreRuolo = 'core' | 'capsule' | 'backup'
+export type FornitoreStato = 'da-contattare' | 'vetting' | 'attivo' | 'scartato'
+export type DesignFase = 'idea' | 'sketch' | 'techpack' | 'campione' | 'approvato'
+export type TechpackStato = 'bozza' | 'inviato' | 'confermato' | 'in-produzione'
+export type SampleVerdetto = 'in-review' | 'approvato' | 'revisione' | 'scartato'
+export type ChatCanale = 'wa' | 'ig' | 'email'
+export type ChatStato = 'aperta' | 'in-attesa' | 'chiusa'
+export type MediaTipo = 'foto' | 'video' | 'logo'
+export type EventTipo = 'meeting' | 'deadline' | 'lancio'
+export type NoteEntityType = 'articoli' | 'gadgets' | 'inspo' | 'media' | 'chats'
+
 export interface Database {
   public: {
     Tables: {
@@ -23,6 +34,377 @@ export interface Database {
           ruolo?: Owner | null
           email?: string | null
         }
+        Relationships: []
+      }
+
+      fornitori: {
+        Row: {
+          id: string
+          nome: string
+          luogo: string | null
+          ruolo: FornitoreRuolo | null
+          contatto: string | null
+          lead_time: string | null
+          materiali: string | null
+          stato: FornitoreStato
+          note: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          luogo?: string | null
+          ruolo?: FornitoreRuolo | null
+          contatto?: string | null
+          lead_time?: string | null
+          materiali?: string | null
+          stato?: FornitoreStato
+          note?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['fornitori']['Insert']>
+        Relationships: []
+      }
+
+      drops: {
+        Row: {
+          id: string
+          nome: string
+          data_lancio: string | null
+          owner: Owner | null
+          note: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          data_lancio?: string | null
+          owner?: Owner | null
+          note?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['drops']['Insert']>
+        Relationships: []
+      }
+
+      drop_fasi: {
+        Row: {
+          id: string
+          drop_id: string
+          nome: string
+          data: string | null
+          done: boolean
+          ordine: number
+        }
+        Insert: {
+          id?: string
+          drop_id: string
+          nome: string
+          data?: string | null
+          done?: boolean
+          ordine?: number
+        }
+        Update: Partial<Database['public']['Tables']['drop_fasi']['Insert']>
+        Relationships: []
+      }
+
+      articoli: {
+        Row: {
+          id: string
+          nome: string
+          categoria: string | null
+          colori: string | null
+          drop_id: string | null
+          img_path: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          categoria?: string | null
+          colori?: string | null
+          drop_id?: string | null
+          img_path?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['articoli']['Insert']>
+        Relationships: []
+      }
+
+      articolo_tasks: {
+        Row: {
+          id: string
+          articolo_id: string
+          testo: string
+          done: boolean
+          ordine: number
+        }
+        Insert: {
+          id?: string
+          articolo_id: string
+          testo: string
+          done?: boolean
+          ordine?: number
+        }
+        Update: Partial<Database['public']['Tables']['articolo_tasks']['Insert']>
+        Relationships: []
+      }
+
+      designs: {
+        Row: {
+          id: string
+          nome: string
+          categoria: string | null
+          fase: DesignFase
+          owner: Owner | null
+          note: string | null
+          ordine: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          categoria?: string | null
+          fase?: DesignFase
+          owner?: Owner | null
+          note?: string | null
+          ordine?: number
+        }
+        Update: Partial<Database['public']['Tables']['designs']['Insert']>
+        Relationships: []
+      }
+
+      techpacks: {
+        Row: {
+          id: string
+          nome: string
+          categoria: string | null
+          colorway: string | null
+          materiali: string | null
+          taglie: string | null
+          fornitore_id: string | null
+          stato: TechpackStato
+          owner: Owner | null
+          note: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          categoria?: string | null
+          colorway?: string | null
+          materiali?: string | null
+          taglie?: string | null
+          fornitore_id?: string | null
+          stato?: TechpackStato
+          owner?: Owner | null
+          note?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['techpacks']['Insert']>
+        Relationships: []
+      }
+
+      samples: {
+        Row: {
+          id: string
+          nome: string
+          fornitore_id: string | null
+          data_arrivo: string | null
+          fit: number | null
+          tessuto: number | null
+          cuciture: number | null
+          colore: number | null
+          verdetto: SampleVerdetto
+          owner: Owner | null
+          note: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          fornitore_id?: string | null
+          data_arrivo?: string | null
+          fit?: number | null
+          tessuto?: number | null
+          cuciture?: number | null
+          colore?: number | null
+          verdetto?: SampleVerdetto
+          owner?: Owner | null
+          note?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['samples']['Insert']>
+        Relationships: []
+      }
+
+      gadgets: {
+        Row: {
+          id: string
+          nome: string
+          img_path: string | null
+          ordine: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          img_path?: string | null
+          ordine?: number
+        }
+        Update: Partial<Database['public']['Tables']['gadgets']['Insert']>
+        Relationships: []
+      }
+
+      inspo: {
+        Row: {
+          id: string
+          titolo: string
+          img_path: string | null
+          ordine: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          titolo: string
+          img_path?: string | null
+          ordine?: number
+        }
+        Update: Partial<Database['public']['Tables']['inspo']['Insert']>
+        Relationships: []
+      }
+
+      links: {
+        Row: {
+          id: string
+          label: string
+          url: string | null
+          ordine: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          label: string
+          url?: string | null
+          ordine?: number
+        }
+        Update: Partial<Database['public']['Tables']['links']['Insert']>
+        Relationships: []
+      }
+
+      ai_links: {
+        Row: {
+          id: string
+          label: string
+          url: string | null
+        }
+        Insert: {
+          id?: string
+          label: string
+          url?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['ai_links']['Insert']>
+        Relationships: []
+      }
+
+      chat_channels: {
+        Row: {
+          id: string
+          label: string
+          url: string | null
+        }
+        Insert: {
+          id?: string
+          label: string
+          url?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['chat_channels']['Insert']>
+        Relationships: []
+      }
+
+      chats: {
+        Row: {
+          id: string
+          cliente: string
+          canale: ChatCanale
+          stato: ChatStato
+          owner: Owner | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          cliente: string
+          canale?: ChatCanale
+          stato?: ChatStato
+          owner?: Owner | null
+        }
+        Update: Partial<Database['public']['Tables']['chats']['Insert']>
+        Relationships: []
+      }
+
+      media: {
+        Row: {
+          id: string
+          titolo: string
+          tipo: MediaTipo
+          url: string | null
+          img_path: string | null
+          ordine: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          titolo: string
+          tipo?: MediaTipo
+          url?: string | null
+          img_path?: string | null
+          ordine?: number
+        }
+        Update: Partial<Database['public']['Tables']['media']['Insert']>
+        Relationships: []
+      }
+
+      events: {
+        Row: {
+          id: string
+          titolo: string
+          data: string
+          tipo: EventTipo
+          note: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          titolo: string
+          data: string
+          tipo?: EventTipo
+          note?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['events']['Insert']>
+        Relationships: []
+      }
+
+      notes: {
+        Row: {
+          id: string
+          entity_type: NoteEntityType
+          entity_id: string
+          author_id: string | null
+          author_name: string
+          testo: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          entity_type: NoteEntityType
+          entity_id: string
+          author_id?: string | null
+          author_name: string
+          testo: string
+        }
+        Update: Partial<Database['public']['Tables']['notes']['Insert']>
         Relationships: []
       }
     }
