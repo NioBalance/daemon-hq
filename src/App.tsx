@@ -1,4 +1,8 @@
 import { useState, type ComponentType } from 'react'
+import { AuthProvider } from './auth/AuthContext'
+import { useAuth } from './auth/useAuth'
+import Login from './auth/Login'
+import ProfileForm from './auth/ProfileForm'
 import Header from './components/Header'
 import type { TabKey } from './lib/tabs'
 import Overview from './pages/Overview'
@@ -31,9 +35,25 @@ const PAGES: Record<TabKey, ComponentType> = {
   cal: Calendario,
 }
 
-function App() {
+function AppShell() {
+  const { status, profile } = useAuth()
   const [activeTab, setActiveTab] = useState<TabKey>('overview')
-  const [meName, setMeName] = useState('Utente')
+  const [editingProfile, setEditingProfile] = useState(false)
+
+  if (status === 'loading') {
+    return (
+      <div className="auth-screen">
+        <div className="auth-box">
+          <div className="logo">
+            D<span className="ae">Æ</span>MON
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (status === 'signedOut') return <Login />
+  if (status === 'onboarding') return <ProfileForm mode="onboarding" />
 
   const Page = PAGES[activeTab]
 
@@ -42,18 +62,24 @@ function App() {
       <Header
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        meName={meName}
-        onMeClick={() => {
-          const name = window.prompt('Il tuo nome (firma delle note):', meName)
-          if (name && name.trim()) setMeName(name.trim())
-        }}
+        meName={profile?.nome ?? ''}
+        onMeClick={() => setEditingProfile(true)}
       />
       <main>
         <section className="panel active">
           <Page />
         </section>
       </main>
+      {editingProfile && <ProfileForm mode="edit" onDone={() => setEditingProfile(false)} />}
     </>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppShell />
+    </AuthProvider>
   )
 }
 
