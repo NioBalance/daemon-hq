@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { deleteMediaFile, getMediaUrl, uploadMediaFile } from '../lib/upload'
 
 export default function ImageUpload({
@@ -8,6 +8,7 @@ export default function ImageUpload({
   className,
   fallback = 'Æ',
   title = 'Tocca per caricare/cambiare foto',
+  children,
 }: {
   path: string | null | undefined
   entityType: string
@@ -15,6 +16,7 @@ export default function ImageUpload({
   className: string
   fallback?: string
   title?: string
+  children?: ReactNode
 }) {
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -38,6 +40,7 @@ export default function ImageUpload({
       title={title}
     >
       {!url && (uploading ? '…' : fallback)}
+      {children}
       <input
         ref={inputRef}
         type="file"
