@@ -33,6 +33,13 @@ Note sul modello:
 - `designs`, `media`, `gadgets`, `inspo`, `links` hanno una colonna `ordine` per riordinare le card manualmente invece di affidarsi all'ordine di inserimento.
 - Il bucket `media` accetta solo `image/jpeg`, `image/png`, `image/webp`, `audio/mpeg`, `video/mp4`, `video/quicktime`, max 5 MB per file — il limite è imposto dal bucket stesso (non solo dal client). Le foto vengono compresse automaticamente lato client prima dell'upload; per i video, la UI consiglierà di incollare un link (Drive/Dropbox) invece di caricarli, per evitare upload accidentali enormi.
 
+## Setup Supabase — dati seed (Step 4)
+
+1. **SQL Editor** → incolla ed esegui [supabase/migrations/0003_seed_data.sql](supabase/migrations/0003_seed_data.sql) (dopo 0001 e 0002). Popola fornitori, il primo drop con la pipeline a 7 fasi, i suoi articoli con task, un design, un tech pack, un campione, il gadget "Logbook palestra" con la sua nota, i link rapidi del brand e i collegamenti AI/canali chat — sono gli stessi dati di esempio del prototipo HTML originale.
+2. Verifica in **Table Editor** che le righe siano comparse (es. `fornitori` con 6 righe, `drop_fasi` con 7 righe legate a "Drop V — Autunno").
+
+Lo script è idempotente (id fissi + `on conflict do nothing`): rieseguirlo non duplica righe né sovrascrive modifiche fatte a mano dopo il seed.
+
 ## Build
 
 ```bash
