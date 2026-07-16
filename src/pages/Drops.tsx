@@ -6,38 +6,10 @@ import { Loading, ErrorState } from '../components/QueryState'
 import ArticoloCard from '../components/ArticoloCard'
 import ArticoloDetail from '../components/ArticoloDetail'
 import { useDrops, useCreateDrop, useUpdateDrop, useDeleteDrop, type Drop } from '../features/drops/queries'
+import { dropFields, DROP_EMPTY_VALUES } from '../features/drops/formFields'
 import { useArticoli, useCreateArticolo } from '../features/articoli/queries'
-import { OWNER_OPTS } from '../lib/tabs'
 import { fmtDate } from '../lib/format'
 import { useNav } from '../lib/navigation'
-
-const DROP_FIELDS = (forEdit: boolean): FieldDef[] => [
-  { key: 'nome', label: 'Nome drop (es. Drop VI — Inverno)' },
-  { key: 'data_lancio', label: 'Data lancio', type: 'date', half: true },
-  {
-    key: 'owner',
-    label: 'Owner',
-    type: 'select',
-    half: true,
-    options: OWNER_OPTS.map((o) => ({ value: o.v, label: o.l })),
-  },
-  ...(forEdit
-    ? []
-    : ([
-        {
-          key: 'template',
-          label: 'Fasi iniziali',
-          type: 'select',
-          options: [
-            { value: 'si', label: 'Pipeline 30 giorni (7 fasi + payout 30/70)' },
-            { value: 'no', label: 'Vuoto — le aggiungo io' },
-          ],
-        },
-      ] as FieldDef[])),
-  { key: 'note', label: 'Note strategiche', type: 'textarea' },
-]
-
-const DROP_EMPTY_VALUES: FormValues = { nome: '', data_lancio: '', owner: 'logistica', template: 'si', note: '' }
 
 const articoloFields = (drops: Drop[]): FieldDef[] => [
   { key: 'nome', label: 'Nome articolo' },
@@ -235,7 +207,7 @@ export default function Drops() {
         <Modal title={dropModal === 'edit' ? 'Modifica drop' : 'Nuovo drop'} onClose={() => setDropModal('none')}>
           <form onSubmit={handleDropSubmit}>
             <FormFields
-              fields={DROP_FIELDS(dropModal === 'edit')}
+              fields={dropFields(dropModal === 'edit')}
               values={dropValues}
               onChange={(k, v) => setDropValues((s) => ({ ...s, [k]: v }))}
             />
