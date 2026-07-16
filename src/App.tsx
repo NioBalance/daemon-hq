@@ -4,6 +4,7 @@ import { useAuth } from './auth/useAuth'
 import Login from './auth/Login'
 import ProfileForm from './auth/ProfileForm'
 import Header from './components/Header'
+import { NavContext } from './lib/navigation'
 import type { TabKey } from './lib/tabs'
 import Overview from './pages/Overview'
 import Drops from './pages/Drops'
@@ -39,6 +40,7 @@ function AppShell() {
   const { status, profile } = useAuth()
   const [activeTab, setActiveTab] = useState<TabKey>('overview')
   const [editingProfile, setEditingProfile] = useState(false)
+  const [catFilter, setCatFilter] = useState('__all__')
 
   if (status === 'loading') {
     return (
@@ -58,7 +60,17 @@ function AppShell() {
   const Page = PAGES[activeTab]
 
   return (
-    <>
+    <NavContext.Provider
+      value={{
+        goTab: setActiveTab,
+        goCategoria: (categoria) => {
+          setCatFilter(categoria)
+          setActiveTab('catalogo')
+        },
+        catFilter,
+        setCatFilter,
+      }}
+    >
       <Header
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -71,7 +83,7 @@ function AppShell() {
         </section>
       </main>
       {editingProfile && <ProfileForm mode="edit" onDone={() => setEditingProfile(false)} />}
-    </>
+    </NavContext.Provider>
   )
 }
 
