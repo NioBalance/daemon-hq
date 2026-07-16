@@ -17,7 +17,7 @@ import {
   type DropFase,
 } from '../features/drops/queries'
 import { dropFields, DROP_EMPTY_VALUES, faseFields } from '../features/drops/formFields'
-import { fmtDate, todayIso } from '../lib/format'
+import { fmtDate, daysUntil } from '../lib/format'
 
 export default function Timeline() {
   const { data: drops, isLoading, isError, error, refetch } = useDrops()
@@ -124,7 +124,6 @@ export default function Timeline() {
   }
 
   const sortedDrops = [...(drops ?? [])].sort((a, b) => (a.data_lancio ?? '9999').localeCompare(b.data_lancio ?? '9999'))
-  const today = todayIso()
 
   return (
     <>
@@ -147,9 +146,7 @@ export default function Timeline() {
             const dropFasi = (fasi ?? []).filter((f) => f.drop_id === d.id)
             const done = dropFasi.filter((f) => f.done).length
             const tot = dropFasi.length
-            const days = d.data_lancio
-              ? Math.ceil((new Date(d.data_lancio).getTime() - new Date(today).getTime()) / 86400000)
-              : null
+            const days = d.data_lancio ? daysUntil(d.data_lancio) : null
             return (
               <div className="drop-card" key={d.id}>
                 <div className="row" style={{ justifyContent: 'space-between' }}>
