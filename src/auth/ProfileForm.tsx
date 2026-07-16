@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import Modal from '../components/Modal'
 import { OWNER_OPTS, type Owner } from '../lib/tabs'
 import { useAuth } from './useAuth'
 
@@ -77,29 +78,21 @@ export default function ProfileForm({
   }
 
   return (
-    <div
-      className="modal-bg open"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onDone?.()
-      }}
-    >
-      <div className="modal">
-        <h3>Il tuo profilo</h3>
-        <form onSubmit={handleSubmit}>
-          {fields}
-          <div className="modal-actions">
-            <button className="btn danger" type="button" onClick={() => signOut()}>
-              Esci
-            </button>
-            <button className="btn ghost" type="button" onClick={onDone}>
-              Annulla
-            </button>
-            <button className="btn" type="submit" disabled={saving}>
-              {saving ? 'Salvataggio…' : 'Salva'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal title="Il tuo profilo" onClose={() => onDone?.()}>
+      <form onSubmit={handleSubmit}>
+        {fields}
+        <div className="modal-actions">
+          <button className="btn danger" type="button" onClick={() => signOut()}>
+            Esci
+          </button>
+          <button className="btn ghost" type="button" onClick={onDone}>
+            Annulla
+          </button>
+          <button className="btn" type="submit" disabled={saving}>
+            {saving ? 'Salvataggio…' : 'Salva'}
+          </button>
+        </div>
+      </form>
+    </Modal>
   )
 }
