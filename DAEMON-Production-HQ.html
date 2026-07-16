@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0B0B0D">
+<title>DÆMON — Production HQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter+Tight:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#0B0B0D; --surface:#141418; --surface2:#1B1B21; --line:#27272F;
+  --bone:#EAE6DE; --muted:#8B8B96; --ember:#E2382A; --ember-dim:#7A241C;
+  --amber:#E0A03C; --ok:#57B36C; --steel:#3A3A44;
+  --font-d:'Anton',sans-serif; --font-b:'Inter Tight',sans-serif; --font-m:'IBM Plex Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--void);color:var(--bone);font-family:var(--font-b);font-size:15px;line-height:1.5;min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+::selection{background:var(--ember);color:var(--bone)}
+
+header{position:relative;padding:calc(20px + env(safe-area-inset-top)) 20px 0;border-bottom:1px solid var(--line);overflow:hidden}
+.hdr-inner{max-width:1240px;margin:0 auto;position:relative;z-index:2}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.logo{font-family:var(--font-d);font-size:clamp(28px,5vw,42px);letter-spacing:.04em;text-transform:uppercase;line-height:1}
+.logo .ae{color:var(--ember)}
+.hdr-sub{font-family:var(--font-m);font-size:10px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
+.watermark{position:absolute;right:-30px;top:-60px;font-family:var(--font-d);font-size:260px;color:var(--surface2);z-index:1;user-select:none;pointer-events:none;line-height:1}
+.mechip{background:var(--surface2);border:1px solid var(--line);color:var(--bone);font-family:var(--font-m);font-size:11px;letter-spacing:.06em;padding:7px 12px;cursor:pointer}
+.mechip:hover{border-color:var(--muted)}
+.mechip .dot{color:var(--ember)}
+nav{display:flex;gap:2px;margin-top:16px;overflow-x:auto;scrollbar-width:none;position:relative;z-index:2;max-width:1240px;margin-left:auto;margin-right:auto;-webkit-overflow-scrolling:touch}
+nav::-webkit-scrollbar{display:none}
+.tab{background:none;border:none;color:var(--muted);font-family:var(--font-m);font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:12px 14px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:color .2s}
+.tab:hover{color:var(--bone)}
+.tab.active{color:var(--bone);border-bottom-color:var(--ember)}
+.tab:focus-visible{outline:2px solid var(--ember);outline-offset:-2px}
+
+main{max-width:1240px;margin:0 auto;padding:24px 20px 90px}
+.panel{display:none}
+.panel.active{display:block;animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.panel.active{animation:none}}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.panel-title{font-family:var(--font-d);font-size:24px;letter-spacing:.05em;text-transform:uppercase}
+.panel-desc{color:var(--muted);font-size:13px;margin-top:4px;max-width:640px}
+
+.btn{background:var(--ember);color:var(--bone);border:none;font-family:var(--font-m);font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:10px 18px;cursor:pointer;transition:background .15s}
+.btn:hover{background:#C22F23}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.btn.ghost:hover{border-color:var(--muted);color:var(--bone)}
+.btn.sm{padding:5px 10px;font-size:10px}
+.btn.danger{background:transparent;border:1px solid var(--ember-dim);color:var(--ember)}
+.btn.danger:hover{background:var(--ember-dim)}
+.card{background:var(--surface);border:1px solid var(--line);padding:18px;position:relative}
+.grid{display:grid;gap:12px}
+.grid.c3{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.code{font-family:var(--font-m);font-size:11px;letter-spacing:.08em;color:var(--muted)}
+.badge{display:inline-block;font-family:var(--font-m);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--line);color:var(--muted);background:none;cursor:default}
+.badge.ember{border-color:var(--ember);color:var(--ember)}
+.badge.amber{border-color:var(--amber);color:var(--amber)}
+.badge.ok{border-color:var(--ok);color:var(--ok)}
+.badge.steel{border-color:var(--steel);color:var(--muted);background:var(--surface2)}
+.badge.click{cursor:pointer}
+.badge.click:hover{border-color:var(--bone);color:var(--bone)}
+.owner{font-family:var(--font-m);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--void);padding:3px 8px}
+.owner.design{background:#C9B8E8}
+.owner.logistica{background:#A9C9E2}
+.owner.fornitori{background:#E2C9A9}
+.card-title{font-weight:700;font-size:16px;margin:6px 0 2px}
+.card-meta{color:var(--muted);font-size:13px}
+.card-actions{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.note{font-size:13px;color:var(--muted);margin-top:8px;border-left:2px solid var(--steel);padding-left:10px;white-space:pre-wrap}
+.empty{border:1px dashed var(--line);padding:36px;text-align:center;color:var(--muted);font-size:14px}
+.divider{border:none;border-top:1px solid var(--line);margin:24px 0}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:var(--surface);border:1px solid var(--line);padding:16px}
+.stat .num{font-family:var(--font-d);font-size:34px;line-height:1;margin:6px 0 2px}
+.stat .lbl{font-family:var(--font-m);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.stat.hot .num{color:var(--ember)}
+.alert-item{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--amber);margin-bottom:8px;font-size:14px}
+.alert-item.red{border-left-color:var(--ember)}
+.alert-item .code{flex-shrink:0;margin-top:2px}
+
+/* DROPS + ARTICOLI */
+.drop-row{background:var(--surface);border:1px solid var(--line);padding:16px;margin-bottom:16px}
+.drop-row-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.drop-row-title{font-family:var(--font-d);font-size:20px;letter-spacing:.05em;text-transform:uppercase}
+.art-scroll{display:grid;grid-auto-flow:column;grid-auto-columns:190px;gap:10px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+.art-card{background:var(--surface2);border:1px solid var(--line);cursor:pointer;transition:border-color .15s}
+.art-card:hover{border-color:var(--muted)}
+.art-img{height:130px;background:var(--void) center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:var(--steel);font-family:var(--font-d);font-size:40px}
+.art-body{padding:10px}
+.art-body .nm{font-weight:600;font-size:14px;line-height:1.25}
+.art-body .cl{font-size:12px;color:var(--muted);margin-top:2px}
+.art-body .tk{font-family:var(--font-m);font-size:10px;color:var(--muted);margin-top:6px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.chip{background:var(--surface);border:1px solid var(--line);color:var(--muted);font-family:var(--font-m);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:7px 14px;cursor:pointer}
+.chip:hover{color:var(--bone)}
+.chip.active{border-color:var(--ember);color:var(--ember)}
+.cat-group{margin-bottom:22px}
+.cat-group h4{font-family:var(--font-m);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.art-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+
+/* KANBAN */
+.kanban{display:grid;grid-template-columns:repeat(5,minmax(210px,1fr));gap:10px;overflow-x:auto;padding-bottom:8px}
+@media(max-width:900px){.kanban{display:flex;overflow-x:auto}.kcol{min-width:230px}}
+.kcol{background:var(--surface);border:1px solid var(--line);padding:10px;min-height:200px}
+.kcol-head{font-family:var(--font-m);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:4px 4px 10px;display:flex;justify-content:space-between}
+.kcard{background:var(--surface2);border:1px solid var(--line);padding:10px;margin-bottom:8px}
+.kcard .nm{font-weight:600;font-size:14px}
+.kcard .ct{font-size:12px;color:var(--muted)}
+.kmove{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+.kmove button{background:var(--surface);border:1px solid var(--line);color:var(--muted);font-family:var(--font-m);font-size:11px;padding:3px 8px;cursor:pointer}
+.kmove button:hover{color:var(--bone);border-color:var(--muted)}
+
+/* SCORES */
+.scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:8px;margin-top:10px}
+.score{background:var(--surface2);border:1px solid var(--line);padding:8px;text-align:center}
+.score .v{font-family:var(--font-d);font-size:22px}
+.score .v.good{color:var(--ok)} .score .v.mid{color:var(--amber)} .score .v.bad{color:var(--ember)}
+.score .l{font-family:var(--font-m);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* TIMELINE */
+.drop-card{background:var(--surface);border:1px solid var(--line);padding:20px;margin-bottom:14px}
+.phases{margin-top:14px}
+.phase{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.phase:last-child{border-bottom:none}
+.phase input[type=checkbox]{accent-color:var(--ember);width:16px;height:16px;cursor:pointer;flex-shrink:0}
+.phase .pn{flex:1;font-size:14px}
+.phase.done .pn{color:var(--muted);text-decoration:line-through}
+.phase .pd{font-family:var(--font-m);font-size:11px;color:var(--muted)}
+.progressbar{height:4px;background:var(--surface2);margin-top:14px;position:relative}
+.progressbar .fill{height:100%;background:var(--ember);transition:width .3s}
+.countdown{font-family:var(--font-m);font-size:11px;letter-spacing:.08em;color:var(--amber)}
+
+/* ARCHIVIO */
+.subtabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.folder-card{background:var(--surface);border:1px solid var(--line)}
+.folder-img{height:160px;background:var(--void) center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:var(--steel);font-family:var(--font-d);font-size:34px;cursor:pointer}
+.folder-body{padding:12px}
+.link-card{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid var(--line);padding:14px 16px;margin-bottom:8px}
+.link-card a{color:var(--bone);font-weight:600;text-decoration:none;font-size:15px}
+.link-card a:hover{color:var(--ember)}
+.link-card .url{font-family:var(--font-m);font-size:11px;color:var(--muted);word-break:break-all}
+
+/* NOTES */
+.notes{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.noteline{display:flex;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px;flex-wrap:wrap}
+.noteline .na{font-family:var(--font-m);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ember);flex-shrink:0}
+.noteline .nd{font-family:var(--font-m);font-size:10px;color:var(--steel);flex-shrink:0}
+.noteline p{flex:1 1 100%;color:var(--bone);margin-top:2px;white-space:pre-wrap}
+.noteline .nx{background:none;border:none;color:var(--steel);cursor:pointer;font-size:12px}
+.noteline .nx:hover{color:var(--ember)}
+.noteadd{display:flex;gap:6px;margin-top:8px}
+.noteadd input{flex:1;background:var(--void);border:1px solid var(--line);color:var(--bone);font-family:var(--font-b);font-size:13px;padding:8px 10px}
+.noteadd input:focus{outline:none;border-color:var(--ember)}
+
+/* TASKS */
+.tasklist{margin-top:10px}
+.task{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:14px}
+.task input[type=checkbox]{accent-color:var(--ember);width:15px;height:15px;cursor:pointer}
+.task.done span{color:var(--muted);text-decoration:line-through}
+.task .tx{margin-left:auto;background:none;border:none;color:var(--steel);cursor:pointer}
+.task .tx:hover{color:var(--ember)}
+
+
+/* HEADER ICONS */
+.hicons{display:flex;gap:6px;align-items:center}
+.hicon{width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--line);color:var(--muted);cursor:pointer;padding:0}
+.hicon:hover{color:var(--bone);border-color:var(--muted)}
+.hicon.active{border-color:var(--ember);color:var(--ember)}
+.hicon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* CALENDARIO */
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+.cal-month{font-family:var(--font-d);font-size:20px;text-transform:uppercase;letter-spacing:.05em}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow{font-family:var(--font-m);font-size:10px;color:var(--muted);text-align:center;padding:6px 0;text-transform:uppercase}
+.cal-day{background:var(--surface);border:1px solid var(--line);min-height:88px;padding:6px;cursor:pointer;position:relative}
+.cal-day:hover{border-color:var(--muted)}
+.cal-day.other{opacity:.35}
+.cal-day.today{border-color:var(--ember)}
+.cal-day .dn{font-family:var(--font-m);font-size:11px;color:var(--muted)}
+.cal-ev{font-size:10px;padding:2px 4px;margin-top:3px;border-left:2px solid;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.cal-ev.meeting{border-color:#A9C9E2;background:rgba(169,201,226,.08)}
+.cal-ev.deadline{border-color:var(--amber);background:rgba(224,160,60,.08)}
+.cal-ev.lancio{border-color:var(--ember);background:rgba(226,56,42,.12)}
+.cal-day .cnt{display:none}
+@media(max-width:700px){.cal-day{min-height:52px;padding:4px}.cal-ev{display:none}.cal-day .cnt{display:block;position:absolute;bottom:4px;right:6px;font-family:var(--font-m);font-size:10px;color:var(--ember)}}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 18px}
+.legend span{font-family:var(--font-m);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;display:inline-block}
+
+/* MEDIA */
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.media-card{background:var(--surface);border:1px solid var(--line)}
+.media-img{height:150px;background:var(--void) center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:var(--steel);font-family:var(--font-d);font-size:34px;cursor:pointer;position:relative}
+.media-img .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--bone);text-shadow:0 0 12px rgba(0,0,0,.8)}
+.media-body{padding:10px}
+
+/* CHATS */
+.chan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:20px}
+.chan-card{background:var(--surface);border:1px solid var(--line);padding:14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chan-card a{color:var(--bone);font-weight:600;text-decoration:none}
+.chan-card a:hover{color:var(--ember)}
+.conv{border-left:3px solid var(--amber)}
+.conv.chiusa{border-left-color:var(--ok)}
+.conv.aperta{border-left-color:var(--ember)}
+
+/* MODAL + DETAIL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(11,11,13,.88);z-index:50;align-items:flex-start;justify-content:center;overflow-y:auto;padding:36px 14px}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--ember);width:100%;max-width:560px;padding:22px}
+.modal.wide{max-width:680px}
+.modal h3{font-family:var(--font-d);font-size:18px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:16px}
+.field{margin-bottom:14px}
+.field label{display:block;font-family:var(--font-m);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;background:var(--void);border:1px solid var(--line);color:var(--bone);font-family:var(--font-b);font-size:14px;padding:9px 11px}
+.field textarea{min-height:80px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--ember)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.fieldrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.fieldrow{grid-template-columns:1fr}}
+.detail-img{height:240px;background:var(--void) center/cover no-repeat;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--steel);font-family:var(--font-d);font-size:50px;margin-bottom:14px}
+.savebar{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));right:16px;background:var(--surface2);border:1px solid var(--line);font-family:var(--font-m);font-size:11px;color:var(--muted);padding:8px 14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:60}
+.savebar.show{opacity:1}
+.errbar{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:16px;right:auto;background:var(--ember-dim);border:1px solid var(--ember);font-family:var(--font-m);font-size:11px;color:var(--bone);padding:10px 14px;display:none;z-index:60;align-items:center;gap:10px}
+.errbar.show{display:flex}
+.errbar button{background:var(--ember);border:none;color:var(--bone);font-family:var(--font-m);font-size:10px;padding:5px 10px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="watermark">Æ</div>
+  <div class="hdr-inner">
+    <div class="hdr-top">
+      <div>
+        <div class="logo">D<span class="ae">Æ</span>MON</div>
+        <div class="hdr-sub">Production HQ · Design → Sample → Drop</div>
+      </div>
+      <div class="row">
+        <div class="hicons">
+          <button class="hicon" data-hicon="ai" onclick="goTab('ai')" title="AI — strumenti e link"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></svg></button>
+          <button class="hicon" data-hicon="media" onclick="goTab('media')" title="Media — foto, video, loghi"><svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg></button>
+          <button class="hicon" data-hicon="chats" onclick="goTab('chats')" title="Chats — customer care"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z"/><line x1="9" y1="11" x2="15" y2="11"/></svg></button>
+        </div>
+        <button class="mechip" id="mechip" onclick="askMe()" title="Cambia utente"><span class="dot">●</span> <span id="mename">…</span></button>
+        <span class="code" id="hdr-date"></span>
+        <button class="hicon" data-hicon="cal" onclick="goTab('cal')" title="Calendario — planner team"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="1"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <nav id="nav">
+    <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="dropx">Drops</button>
+    <button class="tab" data-tab="catalogo">Catalogo</button>
+    <button class="tab" data-tab="design">Design</button>
+    <button class="tab" data-tab="techpack">Tech Pack</button>
+    <button class="tab" data-tab="samples">Campioni</button>
+    <button class="tab" data-tab="drops">Timeline</button>
+    <button class="tab" data-tab="fornitori">Fornitori</button>
+    <button class="tab" data-tab="archivio">Archivio</button>
+  </nav>
+</header>
+
+<main>
+  <section class="panel active" id="p-overview"></section>
+  <section class="panel" id="p-dropx"></section>
+  <section class="panel" id="p-catalogo"></section>
+  <section class="panel" id="p-design"></section>
+  <section class="panel" id="p-techpack"></section>
+  <section class="panel" id="p-samples"></section>
+  <section class="panel" id="p-drops"></section>
+  <section class="panel" id="p-fornitori"></section>
+  <section class="panel" id="p-archivio"></section>
+  <section class="panel" id="p-ai"></section>
+  <section class="panel" id="p-media"></section>
+  <section class="panel" id="p-chats"></section>
+  <section class="panel" id="p-cal"></section>
+</main>
+
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h3 id="modal-title"></h3>
+    <div id="modal-fields"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal()">Annulla</button>
+      <button class="btn" id="modal-save">Salva</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="detail-bg">
+  <div class="modal wide" id="detail-box"></div>
+</div>
+
+<div class="savebar" id="savebar">Salvato ✓</div>
+<div class="errbar" id="errbar"><span>Salvataggio non riuscito — riprovo…</span><button onclick="retrySave()">Riprova ora</button></div>
+
+<script>
+/* =================== STORAGE LAYER v2 =================== */
+/* Fix bug "Storage set failed": (1) le immagini vivono in chiavi separate e compresse,
+   mai dentro lo stato principale; (2) retry automatico con backoff; (3) barra errore con retry manuale. */
+const MAIN='dhq:main', MEKEY='dhq:me', IMGP='dhq:img:', OLDKEY='daemon-hq-v1';
+let S=null, ME_NAME='Utente';
+const imgCache={};
+let pendingSave=false;
+
+async function persist(key,val,shared=true){
+  for(let i=0;i<3;i++){
+    try{ await window.storage.set(key,val,shared); return true; }
+    catch(e){ console.error('storage set retry',i,e); await new Promise(r=>setTimeout(r,500*(i+1))); }
+  }
+  return false;
+}
+let saveT=null;
+async function save(toast=true){
+  const ok=await persist(MAIN,JSON.stringify(S),true);
+  const eb=document.getElementById('errbar');
+  if(ok){ pendingSave=false; eb.classList.remove('show'); if(toast) showSaved(); }
+  else { pendingSave=true; eb.classList.add('show'); }
+}
+async function retrySave(){ if(pendingSave) await save(); }
+function showSaved(){ const b=document.getElementById('savebar'); b.classList.add('show'); clearTimeout(saveT); saveT=setTimeout(()=>b.classList.remove('show'),1400); }
+
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate=d=>{ if(!d) return '—'; const p=d.split('-'); return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d; };
+const today=()=>new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit'});
+const fornNome=id=>{ const f=S.fornitori.find(x=>x.id===id); return f?f.nome:'—'; };
+const dropNome=id=>{ const d=S.drops.find(x=>x.id===id); return d?d.nome:'—'; };
+const ownerBadge=o=>o?`<span class="owner ${o}">${o==='design'?'Design':o==='logistica'?'Logistica':'Fornitori'}</span>`:'';
+
+/* ---- Immagini: compressione + chiave dedicata ---- */
+function compressFile(file){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      const M=900; let w=img.width,h=img.height;
+      const s=Math.min(1,M/Math.max(w,h)); w=Math.round(w*s); h=Math.round(h*s);
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      let d=c.toDataURL('image/jpeg',.72);
+      if(d.length>900000) d=c.toDataURL('image/jpeg',.5);
+      URL.revokeObjectURL(img.src); res(d);
+    };
+    img.src=URL.createObjectURL(file);
+  });
+}
+function pickImage(cb){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=async()=>{
+    const f=inp.files[0]; if(!f) return;
+    const data=await compressFile(f); const id=uid();
+    const ok=await persist(IMGP+id,data,true);
+    if(ok){ imgCache[id]=data; cb(id); } else document.getElementById('errbar').classList.add('show');
+  };
+  inp.click();
+}
+async function hydrateImgs(root){
+  const els=(root||document).querySelectorAll('[data-img]');
+  for(const el of els){
+    const id=el.dataset.img; if(!id) continue;
+    if(imgCache[id]===undefined){
+      try{ const r=await window.storage.get(IMGP+id,true); imgCache[id]=r?r.value:''; }
+      catch(e){ imgCache[id]=''; }
+    }
+    if(imgCache[id]){ el.style.backgroundImage=`url(${imgCache[id]})`; el.textContent=''; }
+  }
+}
+
+/* ---- Seed ---- */
+const PIPELINE_TEMPLATE=[
+  {nome:'Supplier & Sample — sample ricevuti e approvati, prezzi e condizioni chiusi',data:'',done:false},
+  {nome:'Production Ready — primo payout 30% + avvio produzione, tempi confermati',data:'',done:false},
+  {nome:'Content Production — shooting con sample, video verticali, asset finali',data:'',done:false},
+  {nome:'Store Setup — prodotti caricati, checkout testato, shipping/policy pronti',data:'',done:false},
+  {nome:'Pre-Launch — teaser, waitlist, countdown, annuncio data drop',data:'',done:false},
+  {nome:'LAUNCH — drop live, ads on, email blast, customer care attivo',data:'',done:false},
+  {nome:'Post-Launch — analisi best seller, saldo fornitore 70%, bulk/riordino',data:'',done:false}
+];
+const SEED={
+  fornitori:[
+    {id:'f1',nome:'Giessegi',luogo:'Vallà (Treviso)',ruolo:'core',contatto:'',leadTime:'',materiali:'',stato:'vetting',note:'Priorità alta per la core line (volumi 1.000+/mese). Da chiedere: capacità mensile per categoria, lead time a regime, ramp-up, politica tessuti (stock o da ordinare + minimi filato), QC su lotti ripetuti.'},
+    {id:'f2',nome:'Crea-Si',luogo:'Carpi (Modena)',ruolo:'core',contatto:'',leadTime:'',materiali:'',stato:'vetting',note:'Seconda priorità core line. Stesse domande di vetting di Giessegi.'},
+    {id:'f3',nome:'REAM Confezioni',luogo:'Carpi (Modena)',ruolo:'capsule',contatto:'',leadTime:'',materiali:'',stato:'da-contattare',note:'Adatto a campionatura e capsule/drop limitati.'},
+    {id:'f4',nome:'Profumi Sport',luogo:'Prato',ruolo:'capsule',contatto:'',leadTime:'',materiali:'',stato:'da-contattare',note:'Vicino a Lucca: utile per prototipi rapidi.'},
+    {id:'f5',nome:'Sportswear of Tomorrow',luogo:'Portogallo (Porto)',ruolo:'backup',contatto:'',leadTime:'',materiali:'Jersey tecnici, sublimazione, sostenibilità',stato:'da-contattare',note:'Strada B. A 1.000+/mese competitivo: qualità EU costante.'},
+    {id:'f6',nome:'Athleisure Basics',luogo:'Portogallo',ruolo:'backup',contatto:'',leadTime:'',materiali:'Rete di fabbriche, tessuti premium',stato:'da-contattare',note:'Modello agenzia: sviluppo + sourcing + produzione.'}
+  ],
+  designs:[
+    {id:'d1',nome:'Leggings Core V2',categoria:'Leggings',fase:'techpack',owner:'design',note:'Evoluzione del best seller del drop preordine.'},
+    {id:'d2',nome:'Oversized Hoodie Æ',categoria:'Felpe',fase:'sketch',owner:'design',note:'Ricamo Æ tono su tono, fit oversize.'}
+  ],
+  techpacks:[
+    {id:'t1',nome:'Leggings Core V2',categoria:'Leggings',colorway:'Void Black / Ember',materiali:'78% poliammide, 22% elastan — squat-proof, compressione media',taglie:'XS–XL',fornitoreId:'f1',stato:'bozza',owner:'design',note:'Da definire: grammatura tessuto e altezza vita rispetto alla V1.'}
+  ],
+  samples:[
+    {id:'s1',nome:'Leggings Core V1 (rif. drop preordine)',fornitoreId:'',dataArrivo:'',fit:4,tessuto:4,cuciture:3,colore:5,verdetto:'revisione',owner:'design',note:'Esempio di scheda review. Cuciture laterali da rinforzare.'}
+  ],
+  drops:[
+    {id:'dr1',nome:'Drop V — Autunno',dataLancio:'2026-10-15',owner:'logistica',note:'Lezione dal drop preordine: buffer produzione +15gg, date comunicate solo a merce in mano. Payout: 30% avvio, 70% dopo prima settimana vendite.',fasi:JSON.parse(JSON.stringify(PIPELINE_TEMPLATE))}
+  ],
+  articoli:[
+    {id:'a1',nome:'Leggings Core V2',categoria:'Leggings',colori:'Void Black · Ember',dropId:'dr1',imgId:'',tasks:[{t:'Tech pack definitivo',done:false},{t:'Sample approvato',done:false},{t:'Shooting',done:false},{t:'Caricato su Shopify',done:false}],note:[]},
+    {id:'a2',nome:'Oversized Hoodie Æ',categoria:'Felpe',colori:'Void Black',dropId:'dr1',imgId:'',tasks:[{t:'Sketch finale',done:false},{t:'Tech pack',done:false}],note:[]}
+  ],
+  gadgets:[
+    {id:'g1',nome:'Logbook palestra',imgId:'',note:[{a:'Andrea',d:'',txt:'Bonus del drop preordine — molto apprezzato, candidato a diventare gadget fisso.'}]}
+  ],
+  inspo:[],
+  links:[
+    {id:'l1',label:'Google Drive — DÆMON',url:''},
+    {id:'l2',label:'Instagram',url:''},
+    {id:'l3',label:'TikTok',url:''},
+    {id:'l4',label:'Documenti / Docs',url:''},
+    {id:'l5',label:'Shopify Admin',url:''},
+    {id:'l6',label:'eLogy',url:''}
+  ],
+  media:[],
+  chats:[],
+  events:[],
+  aiLinks:[
+    {id:'ai1',label:'Claude',url:'https://claude.ai'},
+    {id:'ai2',label:'ChatGPT',url:'https://chat.openai.com'},
+    {id:'ai3',label:'Midjourney',url:''},
+    {id:'ai4',label:'n8n (automazioni)',url:''}
+  ],
+  chatChannels:[
+    {id:'c1',label:'ManyChat',url:''},
+    {id:'c2',label:'WhatsApp Business',url:'https://web.whatsapp.com'},
+    {id:'c3',label:'Instagram Direct',url:'https://www.instagram.com/direct/inbox/'}
+  ]
+};
+
+function normalize(){
+  ['fornitori','designs','techpacks','samples','drops','articoli','gadgets','inspo','links','media','chats','events','aiLinks','chatChannels'].forEach(k=>{ if(!Array.isArray(S[k])) S[k]=SEED[k]?JSON.parse(JSON.stringify(SEED[k])):[]; });
+  S.articoli.forEach(a=>{ a.tasks=a.tasks||[]; a.note=a.note||[]; });
+  S.gadgets.forEach(g=>{ g.note=g.note||[]; });
+  S.inspo.forEach(i=>{ i.note=i.note||[]; });
+  S.media.forEach(m=>{ m.note=m.note||[]; });
+  S.chats.forEach(c=>{ c.note=c.note||[]; });
+}
+
+async function load(){
+  try{ const r=await window.storage.get(MAIN,true); S=JSON.parse(r.value); }
+  catch(e){
+    /* migrazione dalla v1 (chiave personale) se esiste */
+    try{ const old=await window.storage.get(OLDKEY,false); S=JSON.parse(old.value); }
+    catch(e2){ S=JSON.parse(JSON.stringify(SEED)); }
+    normalize(); await save(false);
+  }
+  normalize();
+  try{ const m=await window.storage.get(MEKEY,false); ME_NAME=m.value||'Utente'; }
+  catch(e){ ME_NAME=''; }
+  document.getElementById('mename').textContent=ME_NAME||'Chi sei?';
+  renderAll();
+  if(!ME_NAME) askMe();
+}
+
+/* ---- Identità autore note ---- */
+function askMe(){
+  openModal('Chi sta usando la dashboard?',[{k:'nome',l:'Il tuo nome (firma delle note)'}],{nome:ME_NAME==='Utente'?'':ME_NAME},async v=>{
+    ME_NAME=(v.nome||'Utente').trim()||'Utente';
+    document.getElementById('mename').textContent=ME_NAME;
+    await persist(MEKEY,ME_NAME,false);
+    renderAll();
+  });
+}
+
+/* =================== NAV =================== */
+function goTab(name){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===name));
+  document.querySelectorAll('.hicon').forEach(x=>x.classList.toggle('active',x.dataset.hicon===name));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  document.getElementById('p-'+name).classList.add('active');
+}
+document.getElementById('nav').addEventListener('click',e=>{ const t=e.target.closest('.tab'); if(t) goTab(t.dataset.tab); });
+document.getElementById('hdr-date').textContent=new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'short'}).toUpperCase();
+
+/* =================== MODAL GENERICO =================== */
+let modalCb=null;
+function openModal(title,fields,values,cb){
+  document.getElementById('modal-title').textContent=title;
+  const wrap=document.getElementById('modal-fields'); wrap.innerHTML='';
+  let rowBuf=[];
+  const flush=()=>{ if(rowBuf.length){ wrap.insertAdjacentHTML('beforeend',rowBuf.length===2?`<div class="fieldrow">${rowBuf.join('')}</div>`:rowBuf.join('')); rowBuf=[]; } };
+  fields.forEach(f=>{
+    const v=values&&values[f.k]!==undefined?values[f.k]:(f.def!==undefined?f.def:'');
+    let inp='';
+    if(f.type==='select') inp=`<select id="mf-${f.k}">${f.opts.map(o=>`<option value="${o.v}" ${o.v==v?'selected':''}>${o.l}</option>`).join('')}</select>`;
+    else if(f.type==='textarea') inp=`<textarea id="mf-${f.k}">${esc(v)}</textarea>`;
+    else inp=`<input type="${f.type||'text'}" id="mf-${f.k}" value="${esc(String(v))}" ${f.min!==undefined?`min="${f.min}" max="${f.max}"`:''}>`;
+    const html=`<div class="field"><label>${f.l}</label>${inp}</div>`;
+    if(f.half){ rowBuf.push(html); if(rowBuf.length===2) flush(); }
+    else { flush(); wrap.insertAdjacentHTML('beforeend',html); }
+  });
+  flush();
+  modalCb=()=>{ const out={}; fields.forEach(f=>{ let val=document.getElementById('mf-'+f.k).value; if(f.type==='number') val=Number(val)||0; out[f.k]=val; }); cb(out); };
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal-bg').classList.remove('open'); modalCb=null; }
+document.getElementById('modal-save').onclick=()=>{ if(modalCb){ modalCb(); closeModal(); } };
+document.getElementById('modal-bg').addEventListener('click',e=>{ if(e.target.id==='modal-bg') closeModal(); });
+document.getElementById('detail-bg').addEventListener('click',e=>{ if(e.target.id==='detail-bg') closeDetail(); });
+function closeDetail(){ document.getElementById('detail-bg').classList.remove('open'); }
+
+const OWNER_OPTS=[{v:'design',l:'Design'},{v:'logistica',l:'Logistica'},{v:'fornitori',l:'Fornitori'}];
+
+/* =================== NOTE CON AUTORE =================== */
+function notesHtml(coll,id){
+  const item=S[coll].find(x=>x.id===id); const notes=item.note||[];
+  return `<div class="notes">
+    <span class="code">NOTE (${notes.length})</span>
+    ${notes.map((n,i)=>`<div class="noteline"><span class="na">${esc(n.a)}</span><span class="nd">${esc(n.d)}</span><button class="nx" onclick="delNote('${coll}','${id}',${i})">✕</button><p>${esc(n.txt)}</p></div>`).join('')}
+    <div class="noteadd"><input id="ni-${coll}-${id}" placeholder="Nota come ${esc(ME_NAME)}…" onkeydown="if(event.key==='Enter')addNote('${coll}','${id}')"><button class="btn sm" onclick="addNote('${coll}','${id}')">+</button></div>
+  </div>`;
+}
+function addNote(coll,id){
+  const inp=document.getElementById(`ni-${coll}-${id}`); const txt=(inp.value||'').trim(); if(!txt) return;
+  const item=S[coll].find(x=>x.id===id); item.note=item.note||[];
+  item.note.push({a:ME_NAME,d:today(),txt});
+  save(); renderAll(); refreshDetail();
+}
+function delNote(coll,id,i){ const item=S[coll].find(x=>x.id===id); item.note.splice(i,1); save(); renderAll(); refreshDetail(); }
+let detailRefresh=null;
+function refreshDetail(){ if(detailRefresh&&document.getElementById('detail-bg').classList.contains('open')) detailRefresh(); }
+
+/* =================== OVERVIEW =================== */
+function renderOverview(){
+  const p=document.getElementById('p-overview');
+  const tpConf=S.techpacks.filter(t=>t.stato==='confermato'||t.stato==='in-produzione').length;
+  const smpRev=S.samples.filter(s=>s.verdetto==='in-review'||s.verdetto==='revisione').length;
+  const nextDrop=S.drops.filter(d=>d.dataLancio).sort((a,b)=>a.dataLancio.localeCompare(b.dataLancio)).find(d=>new Date(d.dataLancio)>=new Date(new Date().toDateString()));
+  let days='—', dropName='Nessun drop pianificato';
+  if(nextDrop){ days=Math.ceil((new Date(nextDrop.dataLancio)-new Date())/86400000); dropName=nextDrop.nome; }
+  const openTasks=S.articoli.reduce((n,a)=>n+a.tasks.filter(t=>!t.done).length,0);
+  const alerts=[];
+  const soon=new Date(); soon.setDate(soon.getDate()+7);
+  S.drops.forEach(d=>d.fasi.forEach(f=>{
+    if(!f.done&&f.data){ const fd=new Date(f.data);
+      if(fd<new Date(new Date().toDateString())) alerts.push({red:true,code:'SCADUTA',txt:`${d.nome} → «${f.nome}» era prevista per il ${fmtDate(f.data)}`});
+      else if(fd<=soon) alerts.push({red:false,code:'7 GIORNI',txt:`${d.nome} → «${f.nome}» in scadenza il ${fmtDate(f.data)}`});
+    }
+  }));
+  S.techpacks.filter(t=>t.stato==='inviato').forEach(t=>alerts.push({red:false,code:'ATTESA',txt:`Tech pack «${t.nome}» inviato a ${fornNome(t.fornitoreId)} — in attesa di conferma`}));
+  S.samples.filter(s=>s.verdetto==='in-review').forEach(s=>alerts.push({red:false,code:'REVIEW',txt:`Campione «${s.nome}» da valutare`}));
+
+  p.innerHTML=`
+  <div class="stats">
+    <div class="stat hot"><div class="lbl">Prossimo drop</div><div class="num">${days}</div><div class="lbl">${esc(dropName)}${typeof days==='number'?' · giorni':''}</div></div>
+    <div class="stat"><div class="lbl">Articoli</div><div class="num">${S.articoli.length}</div><div class="lbl">${openTasks} task aperte</div></div>
+    <div class="stat"><div class="lbl">Design in pipeline</div><div class="num">${S.designs.length}</div><div class="lbl">${S.designs.filter(d=>d.fase==='approvato').length} approvati</div></div>
+    <div class="stat"><div class="lbl">Tech pack</div><div class="num">${S.techpacks.length}</div><div class="lbl">${tpConf} confermati</div></div>
+    <div class="stat"><div class="lbl">Campioni aperti</div><div class="num">${smpRev}</div><div class="lbl">su ${S.samples.length} totali</div></div>
+    <div class="stat"><div class="lbl">Fornitori attivi</div><div class="num">${S.fornitori.filter(f=>f.stato==='attivo').length}</div><div class="lbl">su ${S.fornitori.length} in scheda</div></div>
+  </div>
+  <div class="panel-head"><div><div class="panel-title">Da fare adesso</div><div class="panel-desc">Alert automatici: fasi in scadenza, tech pack in attesa, campioni da valutare.</div></div></div>
+  ${alerts.length?alerts.map(a=>`<div class="alert-item ${a.red?'red':''}"><span class="code">${a.code}</span><span>${esc(a.txt)}</span></div>`).join(''):'<div class="empty">Nessun alert. Tutto sotto controllo.</div>'}`;
+}
+
+/* =================== DROPS (DROP X) =================== */
+const artCard=a=>{
+  const done=a.tasks.filter(t=>t.done).length;
+  return `<div class="art-card" onclick="openArticolo('${a.id}')">
+    <div class="art-img" data-img="${a.imgId||''}">${a.imgId?'':'Æ'}</div>
+    <div class="art-body">
+      <div class="nm">${esc(a.nome)}</div>
+      <div class="cl">${esc(a.colori)||'—'}</div>
+      <div class="row" style="margin-top:6px"><span class="badge click" onclick="event.stopPropagation();goCategoria('${esc(a.categoria)}')">${esc(a.categoria)||'—'}</span></div>
+      <div class="tk">${done}/${a.tasks.length} task · ${a.note.length} note</div>
+    </div>
+  </div>`;
+};
+function renderDropX(){
+  const p=document.getElementById('p-dropx');
+  const sorted=[...S.drops].sort((a,b)=>(a.dataLancio||'9999').localeCompare(b.dataLancio||'9999'));
+  p.innerHTML=`<div class="panel-head"><div><div class="panel-title">Drops</div><div class="panel-desc">Una riga per lancio, dentro tutti gli articoli con foto, colori e avanzamento task. Tocca la categoria per vedere tutti i capi di quel tipo nel tempo.</div></div><div class="row"><button class="btn ghost" onclick="addDrop()">+ Drop</button><button class="btn" onclick="addArticolo()">+ Articolo</button></div></div>
+  ${sorted.map(d=>{
+    const arts=S.articoli.filter(a=>a.dropId===d.id);
+    return `<div class="drop-row">
+      <div class="drop-row-head">
+        <div><span class="drop-row-title">${esc(d.nome)}</span> <span class="code" style="margin-left:8px">${fmtDate(d.dataLancio)}</span></div>
+        <div class="row"><button class="btn sm ghost" onclick="addArticolo('${d.id}')">+ Articolo qui</button><button class="btn sm ghost" onclick="goTab('drops')">Timeline →</button></div>
+      </div>
+      ${arts.length?`<div class="art-scroll">${arts.map(artCard).join('')}</div>`:'<div class="empty" style="padding:20px">Nessun articolo in questo drop.</div>'}
+    </div>`;
+  }).join('')||'<div class="empty">Nessun drop. Creane uno.</div>'}
+  ${(()=>{ const orphan=S.articoli.filter(a=>!S.drops.some(d=>d.id===a.dropId)); return orphan.length?`<div class="drop-row"><div class="drop-row-head"><span class="drop-row-title" style="color:var(--muted)">Senza drop</span></div><div class="art-scroll">${orphan.map(artCard).join('')}</div></div>`:''; })()}`;
+  hydrateImgs(p);
+}
+function artFields(){ return [
+  {k:'nome',l:'Nome articolo'},
+  {k:'categoria',l:'Categoria (es. Felpe, Leggings, Top…)',half:true},
+  {k:'colori',l:'Colori',half:true},
+  {k:'dropId',l:'Drop',type:'select',opts:[{v:'',l:'— nessuno —'},...S.drops.map(d=>({v:d.id,l:d.nome}))]}
+];}
+function addArticolo(dropId){
+  const def=dropId?{dropId}:null;
+  openModal('Nuovo articolo',artFields(),def,v=>{ const a={id:uid(),imgId:'',tasks:[],note:[],...v}; S.articoli.push(a); save(); renderAll(); openArticolo(a.id); });
+}
+function openArticolo(id){
+  const render=()=>{
+    const a=S.articoli.find(x=>x.id===id); if(!a){ closeDetail(); return; }
+    const box=document.getElementById('detail-box');
+    box.innerHTML=`
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <h3 style="margin:0">${esc(a.nome)}</h3>
+        <button class="btn sm ghost" onclick="closeDetail()">Chiudi ✕</button>
+      </div>
+      <div class="detail-img" data-img="${a.imgId||''}" onclick="setArtImg('${a.id}')" title="Tocca per caricare/cambiare foto">${a.imgId?'':'Æ'}</div>
+      <div class="row">
+        <span class="badge click" onclick="closeDetail();goCategoria('${esc(a.categoria)}')">${esc(a.categoria)||'—'}</span>
+        <span class="badge">${esc(a.colori)||'—'}</span>
+        <span class="badge steel">${esc(dropNome(a.dropId))}</span>
+      </div>
+      <div class="card-actions">
+        <button class="btn sm ghost" onclick="setArtImg('${a.id}')">📷 Foto</button>
+        <button class="btn sm ghost" onclick="editArticolo('${a.id}')">Modifica dati</button>
+        <button class="btn sm danger" onclick="if(confirm('Eliminare articolo?')){S.articoli=S.articoli.filter(x=>x.id!=='${a.id}');save();renderAll();closeDetail();}">Elimina</button>
+      </div>
+      <hr class="divider" style="margin:16px 0">
+      <span class="code">TASK (${a.tasks.filter(t=>t.done).length}/${a.tasks.length})</span>
+      <div class="tasklist">${a.tasks.map((t,i)=>`<div class="task ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${a.id}',${i})"><span>${esc(t.t)}</span><button class="tx" onclick="delTask('${a.id}',${i})">✕</button></div>`).join('')}</div>
+      <div class="noteadd"><input id="task-new-${a.id}" placeholder="Nuova task…" onkeydown="if(event.key==='Enter')addTask('${a.id}')"><button class="btn sm" onclick="addTask('${a.id}')">+</button></div>
+      ${notesHtml('articoli',a.id)}`;
+    hydrateImgs(box);
+  };
+  detailRefresh=render; render();
+  document.getElementById('detail-bg').classList.add('open');
+}
+function editArticolo(id){ const a=S.articoli.find(x=>x.id===id); openModal('Modifica articolo',artFields(),a,v=>{ Object.assign(a,v); save(); renderAll(); refreshDetail(); }); }
+function setArtImg(id){ pickImage(imgId=>{ const a=S.articoli.find(x=>x.id===id); a.imgId=imgId; save(); renderAll(); refreshDetail(); }); }
+function addTask(id){ const inp=document.getElementById('task-new-'+id); const t=(inp.value||'').trim(); if(!t) return; const a=S.articoli.find(x=>x.id===id); a.tasks.push({t,done:false}); save(); renderAll(); refreshDetail(); }
+function toggleTask(id,i){ const a=S.articoli.find(x=>x.id===id); a.tasks[i].done=!a.tasks[i].done; save(); renderAll(); refreshDetail(); }
+function delTask(id,i){ const a=S.articoli.find(x=>x.id===id); a.tasks.splice(i,1); save(); renderAll(); refreshDetail(); }
+
+/* =================== CATALOGO PER CATEGORIA =================== */
+let catFilter='__all__';
+function goCategoria(cat){ catFilter=cat||'__all__'; renderCatalogo(); goTab('catalogo'); }
+function renderCatalogo(){
+  const p=document.getElementById('p-catalogo');
+  const cats=[...new Set(S.articoli.map(a=>a.categoria).filter(Boolean))].sort();
+  const list=catFilter==='__all__'?S.articoli:S.articoli.filter(a=>a.categoria===catFilter);
+  const byDrop={};
+  list.forEach(a=>{ const k=dropNome(a.dropId); (byDrop[k]=byDrop[k]||[]).push(a); });
+  const dropOrder=Object.keys(byDrop).sort((x,y)=>{
+    const dx=S.drops.find(d=>d.nome===x), dy=S.drops.find(d=>d.nome===y);
+    return ((dy&&dy.dataLancio)||'0').localeCompare((dx&&dx.dataLancio)||'0');
+  });
+  p.innerHTML=`<div class="panel-head"><div><div class="panel-title">Catalogo</div><div class="panel-desc">Tutti i capi del brand nel tempo, per categoria e per lancio. La memoria storica del prodotto.</div></div><button class="btn" onclick="addArticolo()">+ Articolo</button></div>
+  <div class="chips">
+    <button class="chip ${catFilter==='__all__'?'active':''}" onclick="goCategoria('__all__')">Tutte (${S.articoli.length})</button>
+    ${cats.map(c=>`<button class="chip ${catFilter===c?'active':''}" onclick="goCategoria('${esc(c)}')">${esc(c)} (${S.articoli.filter(a=>a.categoria===c).length})</button>`).join('')}
+  </div>
+  ${dropOrder.length?dropOrder.map(k=>`<div class="cat-group"><h4>${esc(k)}</h4><div class="art-grid">${byDrop[k].map(artCard).join('')}</div></div>`).join(''):'<div class="empty">Nessun articolo in questa categoria.</div>'}`;
+  hydrateImgs(p);
+}
+
+/* =================== DESIGN (KANBAN) =================== */
+const FASI=[{k:'idea',l:'Idea'},{k:'sketch',l:'Sketch'},{k:'techpack',l:'Tech Pack'},{k:'campione',l:'Campione'},{k:'approvato',l:'Approvato'}];
+const designFields=[
+  {k:'nome',l:'Nome capo'},
+  {k:'categoria',l:'Categoria',half:true},
+  {k:'owner',l:'Owner',type:'select',opts:OWNER_OPTS,half:true,def:'design'},
+  {k:'fase',l:'Fase',type:'select',opts:FASI.map(f=>({v:f.k,l:f.l})),def:'idea'},
+  {k:'note',l:'Note',type:'textarea'}
+];
+function renderDesign(){
+  const p=document.getElementById('p-design');
+  p.innerHTML=`<div class="panel-head"><div><div class="panel-title">Pipeline Design</div><div class="panel-desc">Ogni capo attraversa 5 fasi. Quando arriva a «Tech Pack», crea la scheda nella tab dedicata.</div></div><button class="btn" onclick="addDesign()">+ Nuovo design</button></div>
+  <div class="kanban">${FASI.map(f=>{
+    const items=S.designs.filter(d=>d.fase===f.k);
+    return `<div class="kcol"><div class="kcol-head"><span>${f.l}</span><span>${items.length}</span></div>${items.map(d=>{
+      const i=FASI.findIndex(x=>x.k===d.fase);
+      return `<div class="kcard"><div class="row" style="justify-content:space-between"><span class="nm">${esc(d.nome)}</span>${ownerBadge(d.owner)}</div><div class="ct">${esc(d.categoria)}</div>${d.note?`<div class="ct" style="margin-top:4px">${esc(d.note)}</div>`:''}<div class="kmove">${i>0?`<button onclick="moveDesign('${d.id}',-1)">←</button>`:''}${i<4?`<button onclick="moveDesign('${d.id}',1)">→</button>`:''}<button onclick="editDesign('${d.id}')">Modifica</button><button onclick="delItem('designs','${d.id}')">✕</button></div></div>`;
+    }).join('')}</div>`;
+  }).join('')}</div>`;
+}
+function addDesign(){ openModal('Nuovo design',designFields,null,v=>{ S.designs.push({id:uid(),...v}); save(); renderAll(); }); }
+function editDesign(id){ const d=S.designs.find(x=>x.id===id); openModal('Modifica design',designFields,d,v=>{ Object.assign(d,v); save(); renderAll(); }); }
+function moveDesign(id,dir){ const d=S.designs.find(x=>x.id===id); const i=FASI.findIndex(f=>f.k===d.fase); d.fase=FASI[Math.max(0,Math.min(4,i+dir))].k; save(); renderAll(); }
+function delItem(coll,id){ if(!confirm('Eliminare definitivamente?')) return; S[coll]=S[coll].filter(x=>x.id!==id); save(); renderAll(); }
+
+/* =================== TECH PACK =================== */
+const TP_STATI=[{v:'bozza',l:'Bozza'},{v:'inviato',l:'Inviato al fornitore'},{v:'confermato',l:'Confermato'},{v:'in-produzione',l:'In produzione'}];
+const tpBadge=s=>({bozza:'steel',inviato:'amber',confermato:'ok','in-produzione':'ember'}[s]||'steel');
+function tpFields(){ return [
+  {k:'nome',l:'Nome capo'},
+  {k:'categoria',l:'Categoria',half:true},
+  {k:'colorway',l:'Colorway',half:true},
+  {k:'materiali',l:'Materiali / composizione',type:'textarea'},
+  {k:'taglie',l:'Range taglie',half:true},
+  {k:'stato',l:'Stato',type:'select',opts:TP_STATI,half:true,def:'bozza'},
+  {k:'fornitoreId',l:'Fornitore',type:'select',opts:[{v:'',l:'—'},...S.fornitori.map(f=>({v:f.id,l:f.nome}))],half:true},
+  {k:'owner',l:'Owner',type:'select',opts:OWNER_OPTS,half:true,def:'design'},
+  {k:'note',l:'Note (misure chiave, dettagli costruzione, link file)',type:'textarea'}
+];}
+function renderTechpack(){
+  const p=document.getElementById('p-techpack');
+  p.innerHTML=`<div class="panel-head"><div><div class="panel-title">Tech Pack</div><div class="panel-desc">La scheda tecnica è il contratto col fornitore: materiali, colorway, taglie e stato di conferma.</div></div><button class="btn" onclick="addTp()">+ Nuovo tech pack</button></div>
+  <div class="grid c3">${S.techpacks.map((t,i)=>`<div class="card">
+    <div class="row" style="justify-content:space-between"><span class="code">TP-${String(i+1).padStart(2,'0')}</span><span class="badge ${tpBadge(t.stato)}">${TP_STATI.find(x=>x.v===t.stato)?.l||t.stato}</span></div>
+    <div class="card-title">${esc(t.nome)}</div>
+    <div class="card-meta">${esc(t.categoria)} · ${esc(t.colorway)||'—'} · ${esc(t.taglie)||'—'}</div>
+    <div class="card-meta" style="margin-top:6px">${esc(t.materiali)||''}</div>
+    <div class="row" style="margin-top:10px"><span class="badge">Fornitore: ${esc(fornNome(t.fornitoreId))}</span>${ownerBadge(t.owner)}</div>
+    ${t.note?`<div class="note">${esc(t.note)}</div>`:''}
+    <div class="card-actions"><button class="btn sm ghost" onclick="editTp('${t.id}')">Modifica</button><button class="btn sm danger" onclick="delItem('techpacks','${t.id}')">Elimina</button></div>
+  </div>`).join('')||'<div class="empty">Nessun tech pack. Creane uno dal design approvato.</div>'}</div>`;
+}
+function addTp(){ openModal('Nuovo tech pack',tpFields(),null,v=>{ S.techpacks.push({id:uid(),...v}); save(); renderAll(); }); }
+function editTp(id){ const t=S.techpacks.find(x=>x.id===id); openModal('Modifica tech pack',tpFields(),t,v=>{ Object.assign(t,v); save(); renderAll(); }); }
+
+/* =================== CAMPIONI =================== */
+const VERDETTI=[{v:'in-review',l:'In review'},{v:'approvato',l:'Approvato'},{v:'revisione',l:'Da rivedere'},{v:'scartato',l:'Scartato'}];
+const vBadge=v=>({'in-review':'amber',approvato:'ok',revisione:'amber',scartato:'ember'}[v]||'steel');
+const scoreCls=n=>n>=4?'good':n>=3?'mid':'bad';
+function smpFields(){ return [
+  {k:'nome',l:'Capo / campione'},
+  {k:'fornitoreId',l:'Fornitore',type:'select',opts:[{v:'',l:'—'},...S.fornitori.map(f=>({v:f.id,l:f.nome}))],half:true},
+  {k:'dataArrivo',l:'Data arrivo',type:'date',half:true},
+  {k:'fit',l:'Fit (1–5)',type:'number',min:1,max:5,half:true,def:3},
+  {k:'tessuto',l:'Tessuto (1–5)',type:'number',min:1,max:5,half:true,def:3},
+  {k:'cuciture',l:'Cuciture (1–5)',type:'number',min:1,max:5,half:true,def:3},
+  {k:'colore',l:'Colore / stampa (1–5)',type:'number',min:1,max:5,half:true,def:3},
+  {k:'verdetto',l:'Verdetto',type:'select',opts:VERDETTI,half:true,def:'in-review'},
+  {k:'owner',l:'Owner',type:'select',opts:OWNER_OPTS,half:true,def:'design'},
+  {k:'note',l:'Note review (cosa correggere per il fornitore)',type:'textarea'}
+];}
+function renderSamples(){
+  const p=document.getElementById('p-samples');
+  p.innerHTML=`<div class="panel-head"><div><div class="panel-title">Review Campioni</div><div class="panel-desc">Ogni sample valutato su 4 assi. Le note diventano il feedback da girare al fornitore.</div></div><button class="btn" onclick="addSmp()">+ Nuovo campione</button></div>
+  <div class="grid c3">${S.samples.map((s,i)=>{
+    const media=((s.fit+s.tessuto+s.cuciture+s.colore)/4).toFixed(1);
+    return `<div class="card">
+    <div class="row" style="justify-content:space-between"><span class="code">SMP-${String(i+1).padStart(2,'0')}</span><span class="badge ${vBadge(s.verdetto)}">${VERDETTI.find(x=>x.v===s.verdetto)?.l||s.verdetto}</span></div>
+    <div class="card-title">${esc(s.nome)}</div>
+    <div class="card-meta">${esc(fornNome(s.fornitoreId))} · arrivato ${fmtDate(s.dataArrivo)} · media <strong>${media}</strong></div>
+    <div class="scores">
+      <div class="score"><div class="v ${scoreCls(s.fit)}">${s.fit}</div><div class="l">Fit</div></div>
+      <div class="score"><div class="v ${scoreCls(s.tessuto)}">${s.tessuto}</div><div class="l">Tessuto</div></div>
+      <div class="score"><div class="v ${scoreCls(s.cuciture)}">${s.cuciture}</div><div class="l">Cuciture</div></div>
+      <div class="score"><div class="v ${scoreCls(s.colore)}">${s.colore}</div><div class="l">Colore</div></div>
+    </div>
+    <div class="row" style="margin-top:10px">${ownerBadge(s.owner)}</div>
+    ${s.note?`<div class="note">${esc(s.note)}</div>`:''}
+    <div class="card-actions"><button class="btn sm ghost" onclick="editSmp('${s.id}')">Modifica</button><button class="btn sm danger" onclick="delItem('samples','${s.id}')">Elimina</button></div>
+  </div>`;}).join('')||'<div class="empty">Nessun campione registrato.</div>'}</div>`;
+}
+function addSmp(){ openModal('Nuovo campione',smpFields(),null,v=>{ S.samples.push({id:uid(),...v}); save(); renderAll(); }); }
+function editSmp(id){ const s=S.samples.find(x=>x.id===id); openModal('Modifica campione',smpFields(),s,v=>{ Object.assign(s,v); save(); renderAll(); }); }
+
+/* =================== TIMELINE =================== */
+const dropFields=[
+  {k:'nome',l:'Nome drop (es. Drop VI — Inverno)'},
+  {k:'dataLancio',l:'Data lancio',type:'date',half:true},
+  {k:'owner',l:'Owner',type:'select',opts:OWNER_OPTS,half:true,def:'logistica'},
+  {k:'template',l:'Fasi iniziali',type:'select',opts:[{v:'si',l:'Pipeline 30 giorni (7 fasi + payout 30/70)'},{v:'no',l:'Vuoto — le aggiungo io'}],def:'si'},
+  {k:'note',l:'Note strategiche',type:'textarea'}
+];
+function renderDrops(){
+  const p=document.getElementById('p-drops');
+  const sorted=[...S.drops].sort((a,b)=>(a.dataLancio||'9999').localeCompare(b.dataLancio||'9999'));
+  p.innerHTML=`<div class="panel-head"><div><div class="panel-title">Timeline Lanci</div><div class="panel-desc">Pipeline operativa per drop: sample → payout 30% → contenuti → store → pre-launch → drop live → saldo 70% e bulk. Buffer produzione +15gg sempre.</div></div><button class="btn" onclick="addDrop()">+ Nuovo drop</button></div>
+  ${sorted.map(d=>{
+    const done=d.fasi.filter(f=>f.done).length, tot=d.fasi.length;
+    const days=d.dataLancio?Math.ceil((new Date(d.dataLancio)-new Date())/86400000):null;
+    return `<div class="drop-card">
+      <div class="row" style="justify-content:space-between">
+        <div><div class="card-title" style="font-size:19px;margin:0">${esc(d.nome)}</div>
+        <div class="card-meta">Lancio: ${fmtDate(d.dataLancio)} ${days!==null?`· <span class="countdown">${days>=0?'T−'+days+' giorni':'lanciato da '+Math.abs(days)+' giorni'}</span>`:''}</div></div>
+        <div class="row">${ownerBadge(d.owner)}<button class="btn sm ghost" onclick="editDrop('${d.id}')">Modifica</button><button class="btn sm ghost" onclick="addFase('${d.id}')">+ Fase</button><button class="btn sm danger" onclick="delItem('drops','${d.id}')">✕</button></div>
+      </div>
+      <div class="progressbar"><div class="fill" style="width:${tot?Math.round(done/tot*100):0}%"></div></div>
+      <div class="phases">${d.fasi.map((f,i)=>`<div class="phase ${f.done?'done':''}">
+        <input type="checkbox" ${f.done?'checked':''} onchange="toggleFase('${d.id}',${i})" aria-label="Completa fase">
+        <span class="pn">${esc(f.nome)}</span>
+        <span class="pd">${fmtDate(f.data)}</span>
+        <button class="btn sm ghost" onclick="editFase('${d.id}',${i})">✎</button>
+        <button class="btn sm danger" onclick="delFase('${d.id}',${i})">✕</button>
+      </div>`).join('')}</div>
+      ${d.note?`<div class="note">${esc(d.note)}</div>`:''}
+    </div>`;
+  }).join('')||'<div class="empty">Nessun drop pianificato.</div>'}`;
+}
+function addDrop(){ openModal('Nuovo drop',dropFields,null,v=>{ const fasi=v.template==='si'?JSON.parse(JSON.stringify(PIPELINE_TEMPLATE)):[]; delete v.template; S.drops.push({id:uid(),fasi,...v}); save(); renderAll(); }); }
+function editDrop(id){ const d=S.drops.find(x=>x.id===id); openModal('Modifica drop',dropFields.filter(f=>f.k!=='template'),d,v=>{ Object.assign(d,v); save(); renderAll(); }); }
+const faseFields=[{k:'nome',l:'Nome fase'},{k:'data',l:'Data target',type:'date'}];
+function addFase(id){ const d=S.drops.find(x=>x.id===id); openModal('Nuova fase',faseFields,null,v=>{ d.fasi.push({...v,done:false}); save(); renderAll(); }); }
+function editFase(id,i){ const d=S.drops.find(x=>x.id===id); openModal('Modifica fase',faseFields,d.fasi[i],v=>{ Object.assign(d.fasi[i],v); save(); renderAll(); }); }
+function delFase(id,i){ const d=S.drops.find(x=>x.id===id); d.fasi.splice(i,1); save(); renderAll(); }
+function toggleFase(id,i){ const d=S.drops.find(x=>x.id===id); d.fasi[i].done=!d.fasi[i].done; save(); renderAll(); }
+
+/* =================== FORNITORI =================== */
+const F_RUOLI=[{v:'core',l:'Core line'},{v:'capsule',l:'Capsule / campionatura'},{v:'backup',l:'Backup (Strada B)'}];
+const F_STATI=[{v:'da-contattare',l:'Da contattare'},{v:'vetting',l:'In vetting'},{v:'attivo',l:'Attivo'},{v:'scartato',l:'Scartato'}];
+const fBadge=s=>({'da-contattare':'steel',vetting:'amber',attivo:'ok',scartato:'ember'}[s]||'steel');
+const fornFields=[
+  {k:'nome',l:'Nome fornitore'},
+  {k:'luogo',l:'Località',half:true},
+  {k:'ruolo',l:'Ruolo',type:'select',opts:F_RUOLI,half:true,def:'core'},
+  {k:'stato',l:'Stato',type:'select',opts:F_STATI,half:true,def:'da-contattare'},
+  {k:'leadTime',l:'Lead time',half:true},
+  {k:'contatto',l:'Contatto (referente, email, telefono)'},
+  {k:'materiali',l:'Materiali / specializzazione',type:'textarea'},
+  {k:'note',l:'Note vetting e condizioni (30% avvio / 70% saldo, pagamento 60gg…)',type:'textarea'}
+];
+function renderFornitori(){
+  const p=document.getElementById('p-fornitori');
+  const order={core:0,capsule:1,backup:2};
+  const sorted=[...S.fornitori].sort((a,b)=>(order[a.ruolo]??9)-(order[b.ruolo]??9));
+  p.innerHTML=`<div class="panel-head"><div><div class="panel-title">Fornitori</div><div class="panel-desc">Dual-supplier: produttore strutturato per la core line (1.000+ pz/mese) + laboratorio per le capsule. Condizioni target: 30% avvio, saldo dopo, preferenza pagamento 60gg, condizioni migliori al crescere degli ordini.</div></div><button class="btn" onclick="addForn()">+ Nuovo fornitore</button></div>
+  <div class="grid c3">${sorted.map(f=>`<div class="card">
+    <div class="row" style="justify-content:space-between"><span class="badge ${f.ruolo==='core'?'ember':f.ruolo==='capsule'?'amber':'steel'}">${F_RUOLI.find(x=>x.v===f.ruolo)?.l||f.ruolo}</span><span class="badge ${fBadge(f.stato)}">${F_STATI.find(x=>x.v===f.stato)?.l||f.stato}</span></div>
+    <div class="card-title">${esc(f.nome)}</div>
+    <div class="card-meta">${esc(f.luogo)}${f.leadTime?` · Lead time: ${esc(f.leadTime)}`:''}</div>
+    ${f.contatto?`<div class="card-meta" style="margin-top:6px">☎ ${esc(f.contatto)}</div>`:''}
+    ${f.materiali?`<div class="card-meta" style="margin-top:6px">${esc(f.materiali)}</div>`:''}
+    ${f.note?`<div class="note">${esc(f.note)}</div>`:''}
+    <div class="card-actions"><button class="btn sm ghost" onclick="editForn('${f.id}')">Modifica</button><button class="btn sm danger" onclick="delItem('fornitori','${f.id}')">Elimina</button></div>
+  </div>`).join('')}</div>
+  <hr class="divider">
+  <div class="card"><span class="code">GRIGLIA DI VETTING — le domande che separano chi regge 1.000+ pz/mese</span>
+  <div class="note" style="margin-top:10px">1. Capacità mensile massima per categoria (leggings, top, felpe)?
+2. Quanti clienti ricorrenti gestite già con questo volume?
+3. Lead time a regime e tempo di ramp-up?
+4. Politica tessuti: stock o da ordinare? Minimi su filato/tessuto?
+5. Quality control su lotti ripetuti?
+6. MOQ, costi extra per aggiunte/riordini, possibilità di bulk successivo?
+7. Condizioni di pagamento: 30% upfront + saldo? Apertura a 60gg?</div></div>`;
+}
+function addForn(){ openModal('Nuovo fornitore',fornFields,null,v=>{ S.fornitori.push({id:uid(),...v}); save(); renderAll(); }); }
+function editForn(id){ const f=S.fornitori.find(x=>x.id===id); openModal('Modifica fornitore',fornFields,f,v=>{ Object.assign(f,v); save(); renderAll(); }); }
+
+/* =================== ARCHIVIO (Gadget · Inspirazione · Link) =================== */
+let archTab='gadgets';
+function goArch(t){ archTab=t; renderArchivio(); }
+function folderCard(coll,item,titleKey){
+  return `<div class="folder-card">
+    <div class="folder-img" data-img="${item.imgId||''}" onclick="setFolderImg('${coll}','${item.id}')" title="Tocca per caricare foto">${item.imgId?'':'Æ'}</div>
+    <div class="folder-body">
+      <div class="row" style="justify-content:space-between">
+        <span class="card-title" style="margin:0">${esc(item[titleKey])}</span>
+        <span class="row"><button class="btn sm ghost" onclick="editFolder('${coll}','${item.id}','${titleKey}')">✎</button><button class="btn sm danger" onclick="delItem('${coll}','${item.id}')">✕</button></span>
+      </div>
+      ${notesHtml(coll,item.id)}
+    </div>
+  </div>`;
+}
+function renderArchivio(){
+  const p=document.getElementById('p-archivio');
+  let body='';
+  if(archTab==='gadgets'){
+    body=`<div class="panel-desc" style="margin-bottom:14px">Accessori e omaggi del brand: foto + annotazioni firmate del team.</div>
+    <div class="folder-grid">${S.gadgets.map(g=>folderCard('gadgets',g,'nome')).join('')||''}</div>
+    ${S.gadgets.length?'':'<div class="empty">Nessun gadget. Aggiungi il primo.</div>'}`;
+  } else if(archTab==='inspo'){
+    body=`<div class="panel-desc" style="margin-bottom:14px">Screenshot e idee prodotto da tenere d'occhio. Carica lo screen, annota chi l'ha proposto e perché.</div>
+    <div class="folder-grid">${S.inspo.map(i=>folderCard('inspo',i,'titolo')).join('')||''}</div>
+    ${S.inspo.length?'':'<div class="empty">Nessuna inspirazione salvata.</div>'}`;
+  } else {
+    body=`<div class="panel-desc" style="margin-bottom:14px">Collegamenti rapidi del brand. Modifica gli URL una volta e restano per tutto il team.</div>
+    ${S.links.map(l=>`<div class="link-card">
+      <div>${l.url?`<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`:`<span style="font-weight:600">${esc(l.label)}</span>`}<div class="url">${esc(l.url)||'URL non impostato'}</div></div>
+      <div class="row"><button class="btn sm ghost" onclick="editLink('${l.id}')">✎</button><button class="btn sm danger" onclick="delItem('links','${l.id}')">✕</button></div>
+    </div>`).join('')}`;
+  }
+  p.innerHTML=`<div class="panel-head"><div><div class="panel-title">Archivio</div></div>
+  <button class="btn" onclick="${archTab==='gadgets'?'addGadget()':archTab==='inspo'?'addInspo()':'addLink()'}">+ ${archTab==='gadgets'?'Gadget':archTab==='inspo'?'Inspirazione':'Link'}</button></div>
+  <div class="subtabs">
+    <button class="chip ${archTab==='gadgets'?'active':''}" onclick="goArch('gadgets')">Gadget (${S.gadgets.length})</button>
+    <button class="chip ${archTab==='inspo'?'active':''}" onclick="goArch('inspo')">Inspirazione (${S.inspo.length})</button>
+    <button class="chip ${archTab==='links'?'active':''}" onclick="goArch('links')">Link (${S.links.length})</button>
+  </div>${body}`;
+  hydrateImgs(p);
+}
+function addGadget(){ openModal('Nuovo gadget',[{k:'nome',l:'Nome gadget'}],null,v=>{ S.gadgets.push({id:uid(),imgId:'',note:[],...v}); save(); renderAll(); }); }
+function addInspo(){ openModal('Nuova inspirazione',[{k:'titolo',l:'Titolo / idea prodotto'}],null,v=>{ S.inspo.push({id:uid(),imgId:'',note:[],...v}); save(); renderAll(); }); }
+function editFolder(coll,id,titleKey){ const it=S[coll].find(x=>x.id===id); openModal('Modifica',[{k:titleKey,l:'Titolo'}],it,v=>{ Object.assign(it,v); save(); renderAll(); }); }
+function setFolderImg(coll,id){ pickImage(imgId=>{ const it=S[coll].find(x=>x.id===id); it.imgId=imgId; save(); renderAll(); }); }
+const linkFields=[{k:'label',l:'Nome (es. Google Drive — DÆMON)'},{k:'url',l:'URL completo (https://…)'}];
+function addLink(){ openModal('Nuovo link',linkFields,null,v=>{ S.links.push({id:uid(),...v}); save(); renderAll(); }); }
+function editLink(id){ const l=S.links.find(x=>x.id===id); openModal('Modifica link',linkFields,l,v=>{ Object.assign(l,v); save(); renderAll(); }); }
+
+
+/* =================== AI =================== */
+const aiFields=[{k:'label',l:'Nome strumento'},{k:'url',l:'URL (https://\u2026)'}];
+function renderAI(){
+  const p=document.getElementById('p-ai');
+  p.innerHTML=`<div class="panel-head"><div><div class="panel-title">AI</div><div class="panel-desc">Collegamenti rapidi agli strumenti AI del team: chat, generazione immagini, automazioni. Modificabili da chiunque.</div></div><button class="btn" onclick="addAI()">+ Strumento</button></div>
+  ${S.aiLinks.map(l=>`<div class="link-card">
+    <div>${l.url?`<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} \u2197</a>`:`<span style="font-weight:600">${esc(l.label)}</span>`}<div class="url">${esc(l.url)||'URL non impostato'}</div></div>
+    <div class="row"><button class="btn sm ghost" onclick="editAI('${l.id}')">\u270e</button><button class="btn sm danger" onclick="delItem('aiLinks','${l.id}')">\u2715</button></div>
+  </div>`).join('')||'<div class="empty">Nessuno strumento collegato.</div>'}`;
+}
+function addAI(){ openModal('Nuovo strumento AI',aiFields,null,v=>{ S.aiLinks.push({id:uid(),...v}); save(); renderAll(); }); }
+function editAI(id){ const l=S.aiLinks.find(x=>x.id===id); openModal('Modifica strumento',aiFields,l,v=>{ Object.assign(l,v); save(); renderAll(); }); }
+
+/* =================== MEDIA =================== */
+let mediaFilter='__all__';
+const M_TIPI=[{v:'foto',l:'Foto shooting'},{v:'video',l:'Video breve'},{v:'logo',l:'Logo / brand asset'}];
+function mediaFields(){ return [
+  {k:'titolo',l:'Titolo (es. Shooting Drop V \u2014 hero leggings)'},
+  {k:'tipo',l:'Tipo',type:'select',opts:M_TIPI,half:true,def:'foto'},
+  {k:'url',l:'Link esterno (Drive/Dropbox \u2014 obbligatorio per i video)',half:true}
+];}
+function renderMedia(){
+  const p=document.getElementById('p-media');
+  const list=mediaFilter==='__all__'?S.media:S.media.filter(m=>m.tipo===mediaFilter);
+  p.innerHTML=`<div class="panel-head"><div><div class="panel-title">Media</div><div class="panel-desc">Foto degli shooting, video brevi e loghi del brand. Le foto si caricano direttamente (compresse); i video restano su Drive e qui vivono con anteprima e link.</div></div><button class="btn" onclick="addMedia()">+ Media</button></div>
+  <div class="chips">
+    <button class="chip ${mediaFilter==='__all__'?'active':''}" onclick="mediaFilter='__all__';renderMedia()">Tutti (${S.media.length})</button>
+    ${M_TIPI.map(t=>`<button class="chip ${mediaFilter===t.v?'active':''}" onclick="mediaFilter='${t.v}';renderMedia()">${t.l} (${S.media.filter(m=>m.tipo===t.v).length})</button>`).join('')}
+  </div>
+  <div class="media-grid">${list.map(m=>`<div class="media-card">
+    <div class="media-img" data-img="${m.imgId||''}" onclick="setMediaImg('${m.id}')" title="Tocca per caricare/cambiare anteprima">${m.imgId?'':'\u00c6'}${m.tipo==='video'?'<span class="play">\u25b6</span>':''}</div>
+    <div class="media-body">
+      <div class="row" style="justify-content:space-between"><span class="card-title" style="margin:0;font-size:14px">${esc(m.titolo)}</span><span class="badge steel">${M_TIPI.find(t=>t.v===m.tipo)?.l||m.tipo}</span></div>
+      ${m.url?`<a href="${esc(m.url)}" target="_blank" rel="noopener" style="color:var(--ember);font-size:12px;font-family:var(--font-m)">Apri file \u2197</a>`:''}
+      <div class="card-actions"><button class="btn sm ghost" onclick="editMedia('${m.id}')">\u270e</button><button class="btn sm danger" onclick="delItem('media','${m.id}')">\u2715</button></div>
+      ${notesHtml('media',m.id)}
+    </div>
+  </div>`).join('')||'<div class="empty">Nessun media. Carica il primo shooting.</div>'}</div>`;
+  hydrateImgs(p);
+}
+function addMedia(){ openModal('Nuovo media',mediaFields(),null,v=>{ const m={id:uid(),imgId:'',note:[],...v}; S.media.push(m); save(); renderAll(); goTab('media'); if(m.tipo!=='video') setMediaImg(m.id); }); }
+function editMedia(id){ const m=S.media.find(x=>x.id===id); openModal('Modifica media',mediaFields(),m,v=>{ Object.assign(m,v); save(); renderAll(); }); }
+function setMediaImg(id){ pickImage(imgId=>{ const m=S.media.find(x=>x.id===id); m.imgId=imgId; save(); renderAll(); }); }
+
+/* =================== CHATS / CUSTOMER CARE =================== */
+const CH_CANALI=[{v:'wa',l:'WhatsApp'},{v:'ig',l:'Instagram'},{v:'email',l:'Email'}];
+const CH_STATI=[{v:'aperta',l:'Aperta'},{v:'in-attesa',l:'In attesa cliente'},{v:'chiusa',l:'Chiusa'}];
+function chatFields(){ return [
+  {k:'cliente',l:'Cliente / conversazione'},
+  {k:'canale',l:'Canale',type:'select',opts:CH_CANALI,half:true,def:'wa'},
+  {k:'stato',l:'Stato',type:'select',opts:CH_STATI,half:true,def:'aperta'},
+  {k:'owner',l:'Chi la segue',type:'select',opts:OWNER_OPTS,def:'logistica'}
+];}
+function renderChats(){
+  const p=document.getElementById('p-chats');
+  const open=S.chats.filter(c=>c.stato!=='chiusa'), closed=S.chats.filter(c=>c.stato==='chiusa');
+  p.innerHTML=`<div class="panel-head"><div><div class="panel-title">Chats \u2014 Customer Care</div><div class="panel-desc">Accesso rapido a ManyChat, WhatsApp e Direct + il registro delle conversazioni da seguire, con note firmate. La inbox unificata in tempo reale arriva con l'app su Netlify/Supabase.</div></div><button class="btn" onclick="addChat()">+ Conversazione</button></div>
+  <div class="chan-grid">${S.chatChannels.map(c=>`<div class="chan-card">
+    <div>${c.url?`<a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.label)} \u2197</a>`:`<span style="font-weight:600">${esc(c.label)}</span>`}<div class="url" style="font-family:var(--font-m);font-size:10px;color:var(--muted)">${esc(c.url)||'URL non impostato'}</div></div>
+    <button class="btn sm ghost" onclick="editChan('${c.id}')">\u270e</button>
+  </div>`).join('')}</div>
+  <span class="code">DA SEGUIRE (${open.length})</span>
+  <div style="margin-top:10px">${open.map(c=>chatCard(c)).join('')||'<div class="empty" style="padding:18px">Nessuna conversazione aperta.</div>'}</div>
+  ${closed.length?`<hr class="divider"><span class="code">CHIUSE (${closed.length})</span><div style="margin-top:10px">${closed.map(c=>chatCard(c)).join('')}</div>`:''}`;
+}
+function chatCard(c){
+  return `<div class="card conv ${c.stato}" style="margin-bottom:10px">
+    <div class="row" style="justify-content:space-between">
+      <div class="row"><span class="card-title" style="margin:0">${esc(c.cliente)}</span><span class="badge">${CH_CANALI.find(x=>x.v===c.canale)?.l||c.canale}</span><span class="badge ${c.stato==='aperta'?'ember':c.stato==='chiusa'?'ok':'amber'}">${CH_STATI.find(x=>x.v===c.stato)?.l||c.stato}</span>${ownerBadge(c.owner)}</div>
+      <div class="row"><button class="btn sm ghost" onclick="editChat('${c.id}')">\u270e</button><button class="btn sm danger" onclick="delItem('chats','${c.id}')">\u2715</button></div>
+    </div>
+    ${notesHtml('chats',c.id)}
+  </div>`;
+}
+function addChat(){ openModal('Nuova conversazione',chatFields(),null,v=>{ S.chats.push({id:uid(),note:[],...v}); save(); renderAll(); }); }
+function editChat(id){ const c=S.chats.find(x=>x.id===id); openModal('Modifica conversazione',chatFields(),c,v=>{ Object.assign(c,v); save(); renderAll(); }); }
+function editChan(id){ const c=S.chatChannels.find(x=>x.id===id); openModal('Modifica canale',[{k:'label',l:'Nome'},{k:'url',l:'URL (es. app.manychat.com\u2026)'}],c,v=>{ Object.assign(c,v); save(); renderAll(); }); }
+
+/* =================== CALENDARIO =================== */
+let calY=new Date().getFullYear(), calM=new Date().getMonth();
+const EV_TIPI=[{v:'meeting',l:'Incontro team'},{v:'deadline',l:'Deadline'},{v:'lancio',l:'Lancio'}];
+const evFields=(defData)=>[
+  {k:'titolo',l:'Titolo'},
+  {k:'data',l:'Data',type:'date',half:true,def:defData||''},
+  {k:'tipo',l:'Tipo',type:'select',opts:EV_TIPI,half:true,def:'meeting'},
+  {k:'note',l:'Note',type:'textarea'}
+];
+function getCalEvents(){
+  const evs=S.events.map(e=>({...e,src:'ev'}));
+  S.drops.forEach(d=>{
+    if(d.dataLancio) evs.push({id:'drop-'+d.id,titolo:d.nome,data:d.dataLancio,tipo:'lancio',src:'drop'});
+    d.fasi.forEach((f,i)=>{ if(f.data&&!f.done) evs.push({id:'fase-'+d.id+'-'+i,titolo:f.nome.split('\u2014')[0].trim()+' \u00b7 '+d.nome,data:f.data,tipo:'deadline',src:'fase'}); });
+  });
+  return evs;
+}
+function renderCal(){
+  const p=document.getElementById('p-cal');
+  const evs=getCalEvents();
+  const first=new Date(calY,calM,1);
+  const startDow=(first.getDay()+6)%7; /* lun=0 */
+  const daysIn=new Date(calY,calM+1,0).getDate();
+  const prevDays=new Date(calY,calM,0).getDate();
+  const todayStr=new Date().toISOString().slice(0,10);
+  const monthName=first.toLocaleDateString('it-IT',{month:'long',year:'numeric'});
+  let cells='';
+  const tot=Math.ceil((startDow+daysIn)/7)*7;
+  for(let i=0;i<tot;i++){
+    const dayNum=i-startDow+1;
+    let y=calY,m=calM,dn=dayNum,other=false;
+    if(dayNum<1){ other=true; m=calM-1; dn=prevDays+dayNum; if(m<0){m=11;y--;} }
+    else if(dayNum>daysIn){ other=true; m=calM+1; dn=dayNum-daysIn; if(m>11){m=0;y++;} }
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(dn).padStart(2,'0')}`;
+    const dayEvs=evs.filter(e=>e.data===ds);
+    cells+=`<div class="cal-day ${other?'other':''} ${ds===todayStr?'today':''}" onclick="dayClick('${ds}')">
+      <span class="dn">${dn}</span>
+      ${dayEvs.slice(0,3).map(e=>`<div class="cal-ev ${e.tipo}">${esc(e.titolo)}</div>`).join('')}
+      ${dayEvs.length>3?`<div class="cal-ev">+${dayEvs.length-3}</div>`:''}
+      ${dayEvs.length?`<span class="cnt">${dayEvs.length}</span>`:''}
+    </div>`;
+  }
+  const upcoming=evs.filter(e=>e.data>=todayStr).sort((a,b)=>a.data.localeCompare(b.data)).slice(0,10);
+  p.innerHTML=`<div class="panel-head"><div><div class="panel-title">Calendario</div><div class="panel-desc">Planner del team: incontri, deadline e date di lancio. Le date dei drop e delle fasi non completate entrano da sole dalla Timeline.</div></div><button class="btn" onclick="addEvent()">+ Evento</button></div>
+  <div class="cal-head">
+    <button class="btn sm ghost" onclick="calNav(-1)">\u2190</button>
+    <span class="cal-month">${esc(monthName)}</span>
+    <div class="row"><button class="btn sm ghost" onclick="calToday()">Oggi</button><button class="btn sm ghost" onclick="calNav(1)">\u2192</button></div>
+  </div>
+  <div class="cal-grid">${['Lun','Mar','Mer','Gio','Ven','Sab','Dom'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}${cells}</div>
+  <div class="legend"><span><i style="background:#A9C9E2"></i> Incontro team</span><span><i style="background:var(--amber)"></i> Deadline</span><span><i style="background:var(--ember)"></i> Lancio</span></div>
+  <span class="code">PROSSIMI 10</span>
+  <div class="ev-list" style="margin-top:10px">${upcoming.map(e=>`<div class="card conv" style="border-left-color:${e.tipo==='lancio'?'var(--ember)':e.tipo==='deadline'?'var(--amber)':'#A9C9E2'}">
+    <div class="row" style="justify-content:space-between">
+      <div class="row"><span class="code" style="color:var(--bone)">${fmtDate(e.data)}</span><span>${esc(e.titolo)}</span><span class="badge steel">${EV_TIPI.find(t=>t.v===e.tipo)?.l||e.tipo}</span></div>
+      ${e.src==='ev'?`<div class="row"><button class="btn sm ghost" onclick="editEvent('${e.id}')">\u270e</button><button class="btn sm danger" onclick="delItem('events','${e.id}')">\u2715</button></div>`:`<span class="code">da Timeline</span>`}
+    </div>
+    ${e.note?`<div class="note">${esc(e.note)}</div>`:''}
+  </div>`).join('')||'<div class="empty" style="padding:18px">Nessun evento in arrivo.</div>'}</div>`;
+}
+function calNav(d){ calM+=d; if(calM<0){calM=11;calY--;} if(calM>11){calM=0;calY++;} renderCal(); }
+function calToday(){ calY=new Date().getFullYear(); calM=new Date().getMonth(); renderCal(); }
+function dayClick(ds){ addEvent(ds); }
+function addEvent(defData){ openModal('Nuovo evento',evFields(typeof defData==='string'?defData:''),null,v=>{ S.events.push({id:uid(),...v}); save(); renderAll(); goTab('cal'); }); }
+function editEvent(id){ const e=S.events.find(x=>x.id===id); openModal('Modifica evento',evFields(),e,v=>{ Object.assign(e,v); save(); renderAll(); goTab('cal'); }); }
+
+/* =================== INIT =================== */
+function renderAll(){ renderOverview(); renderDropX(); renderCatalogo(); renderDesign(); renderTechpack(); renderSamples(); renderDrops(); renderFornitori(); renderArchivio(); renderAI(); renderMedia(); renderChats(); renderCal(); }
+load();
+</script>
+</body>
+</html>
