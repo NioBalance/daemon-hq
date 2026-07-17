@@ -14,6 +14,8 @@ import {
 } from '../features/articoli/queries'
 import { useDrops } from '../features/drops/queries'
 import { useNav } from '../lib/navigation'
+import { onEnterOrSpace } from '../lib/a11y'
+import { useToast } from '../lib/useToast'
 
 export default function ArticoloDetail({ articoloId, onClose }: { articoloId: string; onClose: () => void }) {
   const { goCategoria } = useNav()
@@ -25,6 +27,7 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
   const addTask = useAddTask()
   const toggleTask = useToggleTask()
   const deleteTask = useDeleteTask()
+  const showToast = useToast()
 
   const [editing, setEditing] = useState(false)
   const [values, setValues] = useState<FormValues>({})
@@ -79,6 +82,7 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
         },
       })
       setEditing(false)
+      showToast('success', 'Articolo aggiornato.')
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
     }
@@ -86,8 +90,13 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
 
   async function handleDelete() {
     if (!window.confirm('Eliminare articolo?')) return
-    await deleteArticolo.mutateAsync(articolo!.id)
-    onClose()
+    try {
+      await deleteArticolo.mutateAsync(articolo!.id)
+      showToast('success', 'Articolo eliminato.')
+      onClose()
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
 
   async function handleAddTask() {
@@ -135,6 +144,12 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
             onClose()
             goCategoria(articolo.categoria || '__all__')
           }}
+          onKeyDown={onEnterOrSpace(() => {
+            onClose()
+            goCategoria(articolo.categoria || '__all__')
+          })}
+          role="button"
+          tabIndex={0}
         >
           {articolo.categoria || '—'}
         </span>

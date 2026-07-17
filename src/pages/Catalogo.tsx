@@ -8,6 +8,7 @@ import ArticoloDetail from '../components/ArticoloDetail'
 import { useArticoli, useCreateArticolo, type Articolo } from '../features/articoli/queries'
 import { useDrops, type Drop } from '../features/drops/queries'
 import { useNav } from '../lib/navigation'
+import { useToast } from '../lib/useToast'
 
 const articoloFields = (drops: Drop[]): FieldDef[] => [
   { key: 'nome', label: 'Nome articolo' },
@@ -26,6 +27,7 @@ export default function Catalogo() {
   const { data: articoli, isLoading, isError, error, refetch } = useArticoli()
   const { data: drops } = useDrops()
   const createArticolo = useCreateArticolo()
+  const showToast = useToast()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [values, setValues] = useState<FormValues>({})
@@ -53,6 +55,7 @@ export default function Catalogo() {
         drop_id: String(values.drop_id ?? '') || null,
       })
       setModalOpen(false)
+      showToast('success', 'Articolo creato.')
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
     }

@@ -5,6 +5,8 @@ import Login from './auth/Login'
 import ProfileForm from './auth/ProfileForm'
 import Header from './components/Header'
 import { Loading } from './components/QueryState'
+import ToastStack from './components/ToastStack'
+import { ToastProvider } from './lib/ToastProvider'
 import { NavContext } from './lib/navigation'
 import type { TabKey } from './lib/tabs'
 
@@ -82,13 +84,14 @@ function AppShell() {
         onMeClick={() => setEditingProfile(true)}
       />
       <main>
-        <section className="panel active">
+        <section className="panel active" key={activeTab}>
           <Suspense fallback={<Loading label="Caricamento sezione…" />}>
             <Page />
           </Suspense>
         </section>
       </main>
       {editingProfile && <ProfileForm mode="edit" onDone={() => setEditingProfile(false)} />}
+      <ToastStack />
     </NavContext.Provider>
   )
 }
@@ -96,7 +99,9 @@ function AppShell() {
 function App() {
   return (
     <AuthProvider>
-      <AppShell />
+      <ToastProvider>
+        <AppShell />
+      </ToastProvider>
     </AuthProvider>
   )
 }

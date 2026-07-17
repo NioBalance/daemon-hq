@@ -13,6 +13,7 @@ import {
 } from '../features/techpacks/queries'
 import { useFornitori } from '../features/fornitori/queries'
 import { OWNER_OPTS } from '../lib/tabs'
+import { useToast } from '../lib/useToast'
 import type { TechpackStato } from '../lib/database.types'
 
 const TP_STATI: { value: TechpackStato; label: string }[] = [
@@ -58,6 +59,7 @@ export default function TechPack() {
   const createTechpack = useCreateTechpack()
   const updateTechpack = useUpdateTechpack()
   const deleteTechpack = useDeleteTechpack()
+  const showToast = useToast()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -119,8 +121,10 @@ export default function TechPack() {
     try {
       if (modalMode === 'edit' && editingId) {
         await updateTechpack.mutateAsync({ id: editingId, patch })
+        showToast('success', 'Tech pack aggiornato.')
       } else {
         await createTechpack.mutateAsync(patch)
+        showToast('success', 'Tech pack creato.')
       }
       setModalMode('none')
     } catch (err) {
@@ -130,7 +134,12 @@ export default function TechPack() {
 
   async function handleDelete(t: Techpack) {
     if (!window.confirm('Eliminare definitivamente?')) return
-    await deleteTechpack.mutateAsync(t.id)
+    try {
+      await deleteTechpack.mutateAsync(t.id)
+      showToast('success', 'Tech pack eliminato.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
 
   const fornNome = (id: string | null) => fornitori?.find((f) => f.id === id)?.nome ?? '—'

@@ -18,6 +18,7 @@ import {
 } from '../features/drops/queries'
 import { dropFields, DROP_EMPTY_VALUES, faseFields } from '../features/drops/formFields'
 import { fmtDate, daysUntil } from '../lib/format'
+import { useToast } from '../lib/useToast'
 
 export default function Timeline() {
   const { data: drops, isLoading, isError, error, refetch } = useDrops()
@@ -28,6 +29,7 @@ export default function Timeline() {
   const addFase = useAddFase()
   const updateFase = useUpdateFase()
   const deleteFase = useDeleteFase()
+  const showToast = useToast()
 
   const [dropModal, setDropModal] = useState<'none' | 'create' | 'edit'>('none')
   const [editingDrop, setEditingDrop] = useState<Drop | null>(null)
@@ -68,8 +70,10 @@ export default function Timeline() {
     try {
       if (dropModal === 'edit' && editingDrop) {
         await updateDrop.mutateAsync({ id: editingDrop.id, patch })
+        showToast('success', 'Drop aggiornato.')
       } else {
         await createDrop.mutateAsync({ ...patch, withTemplate: dropValues.template !== 'no' })
+        showToast('success', 'Drop creato.')
       }
       setDropModal('none')
     } catch (err) {
@@ -79,7 +83,12 @@ export default function Timeline() {
 
   async function handleDeleteDrop(d: Drop) {
     if (!window.confirm('Eliminare definitivamente?')) return
-    await deleteDrop.mutateAsync(d.id)
+    try {
+      await deleteDrop.mutateAsync(d.id)
+      showToast('success', 'Drop eliminato.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
 
   function openAddFase(dropId: string) {

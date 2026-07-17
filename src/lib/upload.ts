@@ -72,18 +72,14 @@ function compressImage(file: File): Promise<Blob> {
   })
 }
 
-/** Controlla formato e dimensione; se non va bene mostra un alert con il motivo
- * (per i video suggerisce di usare un link invece di caricarli) e torna il messaggio. */
+/** Controlla formato e dimensione; torna il messaggio d'errore (il chiamante
+ * decide come mostrarlo, es. toast) o null se il file va bene. */
 export function validateMediaFile(file: File): string | null {
   if (!(ALLOWED_MIME_TYPES as readonly string[]).includes(file.type)) {
-    const msg = `Formato non supportato (${file.type || 'sconosciuto'}). Usa JPEG, PNG, WEBP, MP3, MP4 o MOV.`
-    window.alert(msg)
-    return msg
+    return `Formato non supportato (${file.type || 'sconosciuto'}). Usa JPEG, PNG, WEBP, MP3, MP4 o MOV.`
   }
   if (!isImage(file) && file.size > MAX_FILE_BYTES) {
-    const msg = `File troppo grande (${formatMb(file.size)} MB, massimo 5 MB). Per i video preferisci un link (Drive/Dropbox) invece di caricarli qui.`
-    window.alert(msg)
-    return msg
+    return `File troppo grande (${formatMb(file.size)} MB, massimo 5 MB). Per i video preferisci un link (Drive/Dropbox) invece di caricarli qui.`
   }
   return null
 }
@@ -106,13 +102,13 @@ export async function uploadMediaFile(
       ext = 'jpg'
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Compressione immagine non riuscita.'
-      window.alert(msg)
       return { path: null, error: msg }
     }
     if (body.size > MAX_FILE_BYTES) {
-      const msg = `Immagine troppo pesante anche dopo la compressione (${formatMb(body.size)} MB). Prova un file più leggero.`
-      window.alert(msg)
-      return { path: null, error: msg }
+      return {
+        path: null,
+        error: `Immagine troppo pesante anche dopo la compressione (${formatMb(body.size)} MB). Prova un file più leggero.`,
+      }
     }
   }
 
@@ -122,8 +118,7 @@ export async function uploadMediaFile(
     upsert: false,
   })
   if (error) {
-    window.alert(`Upload non riuscito: ${error.message}`)
-    return { path: null, error: error.message }
+    return { path: null, error: `Upload non riuscito: ${error.message}` }
   }
   return { path, error: null }
 }

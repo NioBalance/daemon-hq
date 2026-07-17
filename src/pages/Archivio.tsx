@@ -8,10 +8,12 @@ import LinkCard from '../components/LinkCard'
 import { useGadgets, useCreateGadget, useUpdateGadget, useDeleteGadget, type Gadget } from '../features/gadgets/queries'
 import { useInspo, useCreateInspo, useUpdateInspo, useDeleteInspo, type Inspo } from '../features/inspo/queries'
 import { useLinks, useCreateLink, useUpdateLink, useDeleteLink, type BrandLink } from '../features/links/queries'
+import { useToast } from '../lib/useToast'
 
 type ArchTab = 'gadgets' | 'inspo' | 'links'
 
 export default function Archivio() {
+  const showToast = useToast()
   const [archTab, setArchTab] = useState<ArchTab>('gadgets')
 
   const gadgets = useGadgets()
@@ -73,14 +75,18 @@ export default function Archivio() {
       return
     }
     try {
+      let successMsg: string
       if (titleModal.mode === 'gadget') {
         if (titleModal.id) await updateGadget.mutateAsync({ id: titleModal.id, patch: { nome: trimmed } })
         else await createGadget.mutateAsync({ nome: trimmed, ordine: (gadgets.data?.length ?? 0) })
+        successMsg = titleModal.id ? 'Gadget aggiornato.' : 'Gadget creato.'
       } else {
         if (titleModal.id) await updateInspo.mutateAsync({ id: titleModal.id, patch: { titolo: trimmed } })
         else await createInspo.mutateAsync({ titolo: trimmed, ordine: (inspo.data?.length ?? 0) })
+        successMsg = titleModal.id ? 'Inspirazione aggiornata.' : 'Inspirazione creata.'
       }
       setTitleModal(null)
+      showToast('success', successMsg)
     } catch (err) {
       setTitleError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
     }
@@ -110,8 +116,10 @@ export default function Archivio() {
     try {
       if (linkModal === 'edit' && editingLink) {
         await updateLink.mutateAsync({ id: editingLink.id, patch })
+        showToast('success', 'Link aggiornato.')
       } else {
         await createLink.mutateAsync({ ...patch, ordine: links.data?.length ?? 0 })
+        showToast('success', 'Link creato.')
       }
       setLinkModal('none')
     } catch (err) {
@@ -121,15 +129,30 @@ export default function Archivio() {
 
   async function handleDeleteGadget(g: Gadget) {
     if (!window.confirm('Eliminare?')) return
-    await deleteGadget.mutateAsync(g.id)
+    try {
+      await deleteGadget.mutateAsync(g.id)
+      showToast('success', 'Gadget eliminato.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
   async function handleDeleteInspo(i: Inspo) {
     if (!window.confirm('Eliminare?')) return
-    await deleteInspo.mutateAsync(i.id)
+    try {
+      await deleteInspo.mutateAsync(i.id)
+      showToast('success', 'Inspirazione eliminata.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
   async function handleDeleteLink(l: BrandLink) {
     if (!window.confirm('Eliminare?')) return
-    await deleteLink.mutateAsync(l.id)
+    try {
+      await deleteLink.mutateAsync(l.id)
+      showToast('success', 'Link eliminato.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
 
   const activeQuery = archTab === 'gadgets' ? gadgets : archTab === 'inspo' ? inspo : links

@@ -10,6 +10,7 @@ import { dropFields, DROP_EMPTY_VALUES } from '../features/drops/formFields'
 import { useArticoli, useCreateArticolo } from '../features/articoli/queries'
 import { fmtDate } from '../lib/format'
 import { useNav } from '../lib/navigation'
+import { useToast } from '../lib/useToast'
 
 const articoloFields = (drops: Drop[]): FieldDef[] => [
   { key: 'nome', label: 'Nome articolo' },
@@ -31,6 +32,7 @@ export default function Drops() {
   const updateDrop = useUpdateDrop()
   const deleteDrop = useDeleteDrop()
   const createArticolo = useCreateArticolo()
+  const showToast = useToast()
 
   const [dropModal, setDropModal] = useState<'none' | 'create' | 'edit'>('none')
   const [editingDrop, setEditingDrop] = useState<Drop | null>(null)
@@ -78,8 +80,10 @@ export default function Drops() {
     try {
       if (dropModal === 'edit' && editingDrop) {
         await updateDrop.mutateAsync({ id: editingDrop.id, patch })
+        showToast('success', 'Drop aggiornato.')
       } else {
         await createDrop.mutateAsync({ ...patch, withTemplate: dropValues.template !== 'no' })
+        showToast('success', 'Drop creato.')
       }
       setDropModal('none')
     } catch (err) {
@@ -89,7 +93,12 @@ export default function Drops() {
 
   async function handleDeleteDrop(d: Drop) {
     if (!window.confirm(`Eliminare "${d.nome}"? Gli articoli collegati restano ma senza drop.`)) return
-    await deleteDrop.mutateAsync(d.id)
+    try {
+      await deleteDrop.mutateAsync(d.id)
+      showToast('success', `"${d.nome}" eliminato.`)
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
 
   function openCreateArticolo(dropId?: string) {
@@ -114,6 +123,7 @@ export default function Drops() {
       })
       setArticoloModalOpen(false)
       setOpenArticoloId(created.id)
+      showToast('success', 'Articolo creato.')
     } catch (err) {
       setArticoloError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
     }

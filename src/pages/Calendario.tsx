@@ -6,6 +6,8 @@ import { Loading, ErrorState } from '../components/QueryState'
 import { useEvents, useCreateEvent, useUpdateEvent, useDeleteEvent, type EventRow } from '../features/events/queries'
 import { useDrops, useDropFasi } from '../features/drops/queries'
 import { fmtDate, todayIso } from '../lib/format'
+import { useToast } from '../lib/useToast'
+import { onEnterOrSpace } from '../lib/a11y'
 import type { EventTipo } from '../lib/database.types'
 
 const EV_TIPI: { value: EventTipo; label: string }[] = [
@@ -37,6 +39,7 @@ export default function Calendario() {
   const createEvent = useCreateEvent()
   const updateEvent = useUpdateEvent()
   const deleteEvent = useDeleteEvent()
+  const showToast = useToast()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<EventRow | null>(null)
@@ -73,8 +76,13 @@ export default function Calendario() {
     }
     const patch = { titolo, data, tipo: values.tipo as EventTipo, note: String(values.note ?? '').trim() || null }
     try {
-      if (editing) await updateEvent.mutateAsync({ id: editing.id, patch })
-      else await createEvent.mutateAsync(patch)
+      if (editing) {
+        await updateEvent.mutateAsync({ id: editing.id, patch })
+        showToast('success', 'Evento aggiornato.')
+      } else {
+        await createEvent.mutateAsync(patch)
+        showToast('success', 'Evento creato.')
+      }
       setModalOpen(false)
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
@@ -82,7 +90,12 @@ export default function Calendario() {
   }
   async function handleDelete(e: EventRow) {
     if (!window.confirm('Eliminare?')) return
-    await deleteEvent.mutateAsync(e.id)
+    try {
+      await deleteEvent.mutateAsync(e.id)
+      showToast('success', 'Evento eliminato.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
 
   const manualEvents: CalEvent[] = (events ?? []).map((e) => ({
@@ -214,6 +227,10 @@ export default function Calendario() {
                 key={c.ds}
                 className={`cal-day${c.other ? ' other' : ''}${c.isToday ? ' today' : ''}`}
                 onClick={() => openCreate(c.ds)}
+                onKeyDown={onEnterOrSpace(() => openCreate(c.ds))}
+                role="button"
+                tabIndex={0}
+                aria-label={`${c.dn}, aggiungi evento`}
               >
                 <span className="dn">{c.dn}</span>
                 {c.dayEvs.slice(0, 3).map((e) => (

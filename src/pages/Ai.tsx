@@ -5,6 +5,7 @@ import FormFields, { type FieldDef, type FormValues } from '../components/FormFi
 import { Loading, ErrorState } from '../components/QueryState'
 import LinkCard from '../components/LinkCard'
 import { useAiLinks, useCreateAiLink, useUpdateAiLink, useDeleteAiLink, type AiLink } from '../features/aiLinks/queries'
+import { useToast } from '../lib/useToast'
 
 const AI_FIELDS: FieldDef[] = [
   { key: 'label', label: 'Nome strumento' },
@@ -16,6 +17,7 @@ export default function Ai() {
   const createLink = useCreateAiLink()
   const updateLink = useUpdateAiLink()
   const deleteLink = useDeleteAiLink()
+  const showToast = useToast()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
   const [editing, setEditing] = useState<AiLink | null>(null)
@@ -47,8 +49,10 @@ export default function Ai() {
     try {
       if (modalMode === 'edit' && editing) {
         await updateLink.mutateAsync({ id: editing.id, patch })
+        showToast('success', 'Strumento aggiornato.')
       } else {
         await createLink.mutateAsync(patch)
+        showToast('success', 'Strumento creato.')
       }
       setModalMode('none')
     } catch (err) {
@@ -58,7 +62,12 @@ export default function Ai() {
 
   async function handleDelete(l: AiLink) {
     if (!window.confirm('Eliminare?')) return
-    await deleteLink.mutateAsync(l.id)
+    try {
+      await deleteLink.mutateAsync(l.id)
+      showToast('success', 'Strumento eliminato.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
 
   return (

@@ -6,6 +6,7 @@ import { Loading, ErrorState } from '../components/QueryState'
 import OwnerBadge from '../components/OwnerBadge'
 import { useDesigns, useCreateDesign, useUpdateDesign, useDeleteDesign, type Design } from '../features/designs/queries'
 import { OWNER_OPTS } from '../lib/tabs'
+import { useToast } from '../lib/useToast'
 import type { DesignFase } from '../lib/database.types'
 
 const FASI: { key: DesignFase; label: string }[] = [
@@ -52,6 +53,7 @@ export default function DesignPage() {
   const createDesign = useCreateDesign()
   const updateDesign = useUpdateDesign()
   const deleteDesign = useDeleteDesign()
+  const showToast = useToast()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -91,9 +93,11 @@ export default function DesignPage() {
     try {
       if (modalMode === 'edit' && editingId) {
         await updateDesign.mutateAsync({ id: editingId, patch })
+        showToast('success', 'Design aggiornato.')
       } else {
         const maxOrdine = Math.max(-1, ...(designs ?? []).map((d) => d.ordine))
         await createDesign.mutateAsync({ ...patch, ordine: maxOrdine + 1 })
+        showToast('success', 'Design creato.')
       }
       setModalMode('none')
     } catch (err) {
@@ -103,7 +107,12 @@ export default function DesignPage() {
 
   async function handleDelete(d: Design) {
     if (!window.confirm('Eliminare definitivamente?')) return
-    await deleteDesign.mutateAsync(d.id)
+    try {
+      await deleteDesign.mutateAsync(d.id)
+      showToast('success', 'Design eliminato.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
 
   async function move(d: Design, dir: 1 | -1) {

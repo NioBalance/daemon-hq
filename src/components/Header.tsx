@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { NAV_TABS, type TabKey } from '../lib/tabs'
+import starLogo from '../assets/star-logo.png'
 
 const todayLabel = () =>
   new Date().toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }).toUpperCase()
@@ -57,14 +58,16 @@ export default function Header({
 
   return (
     <header>
-      <div className="watermark">Æ</div>
+      <button className="star-logo-wrap" onClick={() => onTabChange('overview')} title="Overview" aria-label="Vai a Overview">
+        <img src={starLogo} alt="" />
+      </button>
       <div className="hdr-inner">
         <div className="hdr-top">
           <div>
             <div className="logo">
               D<span className="ae">Æ</span>MON
             </div>
-            <div className="hdr-sub">Production HQ · Design → Sample → Drop</div>
+            <div className="hdr-sub">GYMWEAR — HQ</div>
           </div>
           <div className="row">
             <div className="hicons">

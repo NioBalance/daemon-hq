@@ -6,6 +6,7 @@ import { Loading, ErrorState } from '../components/QueryState'
 import ImageUpload from '../components/ImageUpload'
 import NotesList from '../components/NotesList'
 import { useMediaItems, useCreateMedia, useUpdateMedia, useDeleteMedia, type MediaItem } from '../features/media/queries'
+import { useToast } from '../lib/useToast'
 import type { MediaTipo } from '../lib/database.types'
 
 const M_TIPI: { value: MediaTipo; label: string }[] = [
@@ -27,6 +28,7 @@ export default function Media() {
   const createMedia = useCreateMedia()
   const updateMedia = useUpdateMedia()
   const deleteMedia = useDeleteMedia()
+  const showToast = useToast()
 
   const [filter, setFilter] = useState<'__all__' | MediaTipo>('__all__')
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
@@ -63,8 +65,10 @@ export default function Media() {
     try {
       if (modalMode === 'edit' && editing) {
         await updateMedia.mutateAsync({ id: editing.id, patch })
+        showToast('success', 'Media aggiornato.')
       } else {
         await createMedia.mutateAsync({ ...patch, ordine: media?.length ?? 0 })
+        showToast('success', 'Media creato.')
       }
       setModalMode('none')
     } catch (err) {
@@ -74,7 +78,12 @@ export default function Media() {
 
   async function handleDelete(m: MediaItem) {
     if (!window.confirm('Eliminare?')) return
-    await deleteMedia.mutateAsync(m.id)
+    try {
+      await deleteMedia.mutateAsync(m.id)
+      showToast('success', 'Media eliminato.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
 
   const all = media ?? []

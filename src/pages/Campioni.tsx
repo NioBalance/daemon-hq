@@ -8,6 +8,7 @@ import { useSamples, useCreateSample, useUpdateSample, useDeleteSample, type Sam
 import { useFornitori } from '../features/fornitori/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { fmtDate } from '../lib/format'
+import { useToast } from '../lib/useToast'
 import type { SampleVerdetto } from '../lib/database.types'
 
 const VERDETTI: { value: SampleVerdetto; label: string }[] = [
@@ -56,6 +57,7 @@ export default function Campioni() {
   const createSample = useCreateSample()
   const updateSample = useUpdateSample()
   const deleteSample = useDeleteSample()
+  const showToast = useToast()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -124,8 +126,10 @@ export default function Campioni() {
     try {
       if (modalMode === 'edit' && editingId) {
         await updateSample.mutateAsync({ id: editingId, patch })
+        showToast('success', 'Campione aggiornato.')
       } else {
         await createSample.mutateAsync(patch)
+        showToast('success', 'Campione creato.')
       }
       setModalMode('none')
     } catch (err) {
@@ -135,7 +139,12 @@ export default function Campioni() {
 
   async function handleDelete(s: Sample) {
     if (!window.confirm('Eliminare definitivamente?')) return
-    await deleteSample.mutateAsync(s.id)
+    try {
+      await deleteSample.mutateAsync(s.id)
+      showToast('success', 'Campione eliminato.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
 
   const fornNome = (id: string | null) => fornitori?.find((f) => f.id === id)?.nome ?? '—'

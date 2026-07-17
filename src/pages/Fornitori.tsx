@@ -3,6 +3,7 @@ import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
+import { useToast } from '../lib/useToast'
 import type { FornitoreRuolo, FornitoreStato } from '../lib/database.types'
 import {
   useFornitori,
@@ -85,6 +86,7 @@ export default function Fornitori() {
   const createFornitore = useCreateFornitore()
   const updateFornitore = useUpdateFornitore()
   const deleteFornitore = useDeleteFornitore()
+  const showToast = useToast()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -132,8 +134,10 @@ export default function Fornitori() {
     try {
       if (modalMode === 'edit' && editingId) {
         await updateFornitore.mutateAsync({ id: editingId, patch })
+        showToast('success', 'Fornitore aggiornato.')
       } else {
         await createFornitore.mutateAsync(patch)
+        showToast('success', 'Fornitore creato.')
       }
       closeModal()
     } catch (err) {
@@ -145,8 +149,9 @@ export default function Fornitori() {
     if (!window.confirm(`Eliminare "${f.nome}"?`)) return
     try {
       await deleteFornitore.mutateAsync(f.id)
+      showToast('success', `"${f.nome}" eliminato.`)
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
     }
   }
 

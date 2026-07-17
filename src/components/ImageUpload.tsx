@@ -1,5 +1,6 @@
-import { useRef, useState, type ReactNode } from 'react'
+import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { deleteMediaFile, getMediaUrl, uploadMediaFile } from '../lib/upload'
+import { useToast } from '../lib/useToast'
 
 export default function ImageUpload({
   path,
@@ -21,14 +22,24 @@ export default function ImageUpload({
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const url = getMediaUrl(path)
+  const showToast = useToast()
 
   async function handleFile(file: File) {
     setUploading(true)
-    const { path: newPath } = await uploadMediaFile(file, entityType)
+    const { path: newPath, error } = await uploadMediaFile(file, entityType)
     setUploading(false)
     if (newPath) {
       onUploaded(newPath)
       if (path && path !== newPath) void deleteMediaFile(path)
+    } else if (error) {
+      showToast('error', error)
+    }
+  }
+
+  function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      inputRef.current?.click()
     }
   }
 
@@ -37,7 +48,10 @@ export default function ImageUpload({
       className={className}
       style={url ? { backgroundImage: `url(${url})` } : undefined}
       onClick={() => inputRef.current?.click()}
+      onKeyDown={handleKeyDown}
       title={title}
+      role="button"
+      tabIndex={0}
     >
       {!url && (uploading ? '…' : fallback)}
       {children}

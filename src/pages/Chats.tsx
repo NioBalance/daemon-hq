@@ -14,6 +14,7 @@ import {
   type ChatChannel,
 } from '../features/chatChannels/queries'
 import { OWNER_OPTS } from '../lib/tabs'
+import { useToast } from '../lib/useToast'
 import type { ChatCanale, ChatStato } from '../lib/database.types'
 
 const CH_CANALI: { value: ChatCanale; label: string }[] = [
@@ -48,6 +49,7 @@ export default function Chats() {
   const createChat = useCreateChat()
   const updateChat = useUpdateChat()
   const deleteChat = useDeleteChat()
+  const showToast = useToast()
 
   const { data: channels } = useChatChannels()
   const createChannel = useCreateChatChannel()
@@ -94,8 +96,10 @@ export default function Chats() {
     try {
       if (modalMode === 'edit' && editing) {
         await updateChat.mutateAsync({ id: editing.id, patch })
+        showToast('success', 'Conversazione aggiornata.')
       } else {
         await createChat.mutateAsync(patch)
+        showToast('success', 'Conversazione creata.')
       }
       setModalMode('none')
     } catch (err) {
@@ -105,7 +109,12 @@ export default function Chats() {
 
   async function handleDelete(c: Chat) {
     if (!window.confirm('Eliminare?')) return
-    await deleteChat.mutateAsync(c.id)
+    try {
+      await deleteChat.mutateAsync(c.id)
+      showToast('success', 'Conversazione eliminata.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
 
   function openCreateChannel() {
@@ -131,8 +140,10 @@ export default function Chats() {
     try {
       if (channelModal === 'edit' && editingChannel) {
         await updateChannel.mutateAsync({ id: editingChannel.id, patch })
+        showToast('success', 'Canale aggiornato.')
       } else {
         await createChannel.mutateAsync(patch)
+        showToast('success', 'Canale creato.')
       }
       setChannelModal('none')
     } catch (err) {
@@ -141,7 +152,12 @@ export default function Chats() {
   }
   async function handleDeleteChannel(c: ChatChannel) {
     if (!window.confirm('Eliminare canale?')) return
-    await deleteChannel.mutateAsync(c.id)
+    try {
+      await deleteChannel.mutateAsync(c.id)
+      showToast('success', 'Canale eliminato.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
+    }
   }
 
   const open = (chats ?? []).filter((c) => c.stato !== 'chiusa')
