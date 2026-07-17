@@ -14,6 +14,7 @@ import {
 import { useFornitori } from '../features/fornitori/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { useToast } from '../lib/useToast'
+import { useRegisterNewAction } from '../lib/navigation'
 import type { TechpackStato } from '../lib/database.types'
 
 const TP_STATI: { value: TechpackStato; label: string }[] = [
@@ -67,6 +68,8 @@ export default function TechPack() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const saving = createTechpack.isPending || updateTechpack.isPending
+
+  useRegisterNewAction(openCreate)
 
   const TP_FIELDS: FieldDef[] = [
     { key: 'nome', label: 'Nome capo' },

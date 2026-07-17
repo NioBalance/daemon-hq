@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import { NAV_TABS, type TabKey } from '../lib/tabs'
+import type { TabKey } from '../lib/tabs'
+import NavGroups from './NavGroups'
 import starLogo from '../assets/star-logo.png'
 
 const todayLabel = () =>
@@ -13,28 +13,11 @@ function AiIcon() {
     </svg>
   )
 }
-function MediaIcon() {
+function SearchIcon() {
   return (
     <svg viewBox="0 0 24 24">
-      <polygon points="8,5 19,12 8,19" />
-    </svg>
-  )
-}
-function ChatsIcon() {
-  return (
-    <svg viewBox="0 0 24 24">
-      <path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z" />
-      <line x1="9" y1="11" x2="15" y2="11" />
-    </svg>
-  )
-}
-function CalIcon() {
-  return (
-    <svg viewBox="0 0 24 24">
-      <rect x="3" y="5" width="18" height="16" rx="1" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-      <line x1="8" y1="3" x2="8" y2="7" />
-      <line x1="16" y1="3" x2="16" y2="7" />
+      <circle cx="11" cy="11" r="7" />
+      <line x1="16.5" y1="16.5" x2="21" y2="21" />
     </svg>
   )
 }
@@ -44,21 +27,22 @@ export default function Header({
   onTabChange,
   meName,
   onMeClick,
+  onSearchClick,
 }: {
   activeTab: TabKey
   onTabChange: (t: TabKey) => void
   meName: string
   onMeClick: () => void
+  onSearchClick: () => void
 }) {
-  const shortcuts: { key: TabKey; icon: ReactNode; title: string }[] = [
-    { key: 'ai', icon: <AiIcon />, title: 'AI — strumenti e link' },
-    { key: 'media', icon: <MediaIcon />, title: 'Media — foto, video, loghi' },
-    { key: 'chats', icon: <ChatsIcon />, title: 'Chats — customer care' },
-  ]
-
   return (
     <header>
-      <button className="star-logo-wrap" onClick={() => onTabChange('overview')} title="Overview" aria-label="Vai a Overview">
+      <button
+        className="star-logo-wrap"
+        onClick={() => onTabChange('overview')}
+        title="Overview"
+        aria-label="Vai a Overview"
+      >
         <img src={starLogo} alt="" />
       </button>
       <div className="hdr-inner">
@@ -71,42 +55,25 @@ export default function Header({
           </div>
           <div className="row">
             <div className="hicons">
-              {shortcuts.map((s) => (
-                <button
-                  key={s.key}
-                  className={`hicon${activeTab === s.key ? ' active' : ''}`}
-                  title={s.title}
-                  onClick={() => onTabChange(s.key)}
-                >
-                  {s.icon}
-                </button>
-              ))}
+              <button
+                className={`hicon${activeTab === 'ai' ? ' active' : ''}`}
+                title="AI — strumenti e link"
+                onClick={() => onTabChange('ai')}
+              >
+                <AiIcon />
+              </button>
+              <button className="hicon" title="Cerca (Ctrl+K)" aria-label="Cerca" onClick={onSearchClick}>
+                <SearchIcon />
+              </button>
             </div>
             <button className="mechip" onClick={onMeClick} title="Cambia utente">
               <span className="dot">●</span> <span>{meName || 'Chi sei?'}</span>
             </button>
             <span className="code">{todayLabel()}</span>
-            <button
-              className={`hicon${activeTab === 'cal' ? ' active' : ''}`}
-              title="Calendario — planner team"
-              onClick={() => onTabChange('cal')}
-            >
-              <CalIcon />
-            </button>
           </div>
         </div>
       </div>
-      <nav>
-        {NAV_TABS.map((t) => (
-          <button
-            key={t.key}
-            className={`tab${activeTab === t.key ? ' active' : ''}`}
-            onClick={() => onTabChange(t.key)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </nav>
+      <NavGroups activeTab={activeTab} />
     </header>
   )
 }

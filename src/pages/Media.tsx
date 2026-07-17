@@ -7,6 +7,7 @@ import ImageUpload from '../components/ImageUpload'
 import NotesList from '../components/NotesList'
 import { useMediaItems, useCreateMedia, useUpdateMedia, useDeleteMedia, type MediaItem } from '../features/media/queries'
 import { useToast } from '../lib/useToast'
+import { useRegisterNewAction } from '../lib/navigation'
 import type { MediaTipo } from '../lib/database.types'
 
 const M_TIPI: { value: MediaTipo; label: string }[] = [
@@ -35,6 +36,8 @@ export default function Media() {
   const [editing, setEditing] = useState<MediaItem | null>(null)
   const [values, setValues] = useState<FormValues>({ titolo: '', tipo: 'foto', url: '' })
   const [formError, setFormError] = useState<string | null>(null)
+
+  useRegisterNewAction(openCreate)
 
   function openCreate() {
     setValues({ titolo: '', tipo: 'foto', url: '' })
@@ -92,7 +95,7 @@ export default function Media() {
   return (
     <>
       <PanelHead
-        title="Media"
+        title="Media Studio"
         desc="Foto degli shooting, video brevi e loghi del brand. Le foto si caricano direttamente (compresse); i video restano su Drive e qui vivono con anteprima e link."
         actions={
           <button className="btn" onClick={openCreate}>

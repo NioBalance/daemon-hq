@@ -9,6 +9,7 @@ import { useFornitori } from '../features/fornitori/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { fmtDate } from '../lib/format'
 import { useToast } from '../lib/useToast'
+import { useRegisterNewAction } from '../lib/navigation'
 import type { SampleVerdetto } from '../lib/database.types'
 
 const VERDETTI: { value: SampleVerdetto; label: string }[] = [
@@ -65,6 +66,8 @@ export default function Campioni() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const saving = createSample.isPending || updateSample.isPending
+
+  useRegisterNewAction(openCreate)
 
   const SMP_FIELDS: FieldDef[] = [
     { key: 'nome', label: 'Capo / campione' },

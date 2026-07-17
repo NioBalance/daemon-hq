@@ -7,6 +7,7 @@ import OwnerBadge from '../components/OwnerBadge'
 import { useDesigns, useCreateDesign, useUpdateDesign, useDeleteDesign, type Design } from '../features/designs/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { useToast } from '../lib/useToast'
+import { useRegisterNewAction } from '../lib/navigation'
 import type { DesignFase } from '../lib/database.types'
 
 const FASI: { key: DesignFase; label: string }[] = [
@@ -61,6 +62,8 @@ export default function DesignPage() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const saving = createDesign.isPending || updateDesign.isPending
+
+  useRegisterNewAction(openCreate)
 
   function openCreate() {
     setValues(EMPTY_VALUES)

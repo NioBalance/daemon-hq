@@ -9,12 +9,11 @@ import { useGadgets, useCreateGadget, useUpdateGadget, useDeleteGadget, type Gad
 import { useInspo, useCreateInspo, useUpdateInspo, useDeleteInspo, type Inspo } from '../features/inspo/queries'
 import { useLinks, useCreateLink, useUpdateLink, useDeleteLink, type BrandLink } from '../features/links/queries'
 import { useToast } from '../lib/useToast'
-
-type ArchTab = 'gadgets' | 'inspo' | 'links'
+import { useNav, useRegisterNewAction } from '../lib/navigation'
 
 export default function Archivio() {
   const showToast = useToast()
-  const [archTab, setArchTab] = useState<ArchTab>('gadgets')
+  const { archTab, setArchTab } = useNav()
 
   const gadgets = useGadgets()
   const createGadget = useCreateGadget()
@@ -39,6 +38,10 @@ export default function Archivio() {
   const [editingLink, setEditingLink] = useState<BrandLink | null>(null)
   const [linkValues, setLinkValues] = useState<FormValues>({ label: '', url: '' })
   const [linkError, setLinkError] = useState<string | null>(null)
+
+  useRegisterNewAction(() =>
+    archTab === 'gadgets' ? openAddGadget() : archTab === 'inspo' ? openAddInspo() : openCreateLink(),
+  )
 
   const TITLE_FIELDS: FieldDef[] = [{ key: 'value', label: archTab === 'inspo' ? 'Titolo / idea prodotto' : 'Nome gadget' }]
   const LINK_FIELDS: FieldDef[] = [

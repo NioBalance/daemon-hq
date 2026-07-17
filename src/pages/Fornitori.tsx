@@ -4,6 +4,7 @@ import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
 import { useToast } from '../lib/useToast'
+import { useRegisterNewAction } from '../lib/navigation'
 import type { FornitoreRuolo, FornitoreStato } from '../lib/database.types'
 import {
   useFornitori,
@@ -94,6 +95,8 @@ export default function Fornitori() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const saving = createFornitore.isPending || updateFornitore.isPending
+
+  useRegisterNewAction(openCreate)
 
   function openCreate() {
     setValues(EMPTY_VALUES)

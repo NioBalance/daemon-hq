@@ -4,10 +4,9 @@ import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
 import ArticoloCard from '../components/ArticoloCard'
-import ArticoloDetail from '../components/ArticoloDetail'
 import { useArticoli, useCreateArticolo, type Articolo } from '../features/articoli/queries'
 import { useDrops, type Drop } from '../features/drops/queries'
-import { useNav } from '../lib/navigation'
+import { useNav, useRegisterNewAction } from '../lib/navigation'
 import { useToast } from '../lib/useToast'
 
 const articoloFields = (drops: Drop[]): FieldDef[] => [
@@ -23,7 +22,7 @@ const articoloFields = (drops: Drop[]): FieldDef[] => [
 ]
 
 export default function Catalogo() {
-  const { catFilter, setCatFilter } = useNav()
+  const { catFilter, setCatFilter, openArticolo } = useNav()
   const { data: articoli, isLoading, isError, error, refetch } = useArticoli()
   const { data: drops } = useDrops()
   const createArticolo = useCreateArticolo()
@@ -32,7 +31,8 @@ export default function Catalogo() {
   const [modalOpen, setModalOpen] = useState(false)
   const [values, setValues] = useState<FormValues>({})
   const [formError, setFormError] = useState<string | null>(null)
-  const [openArticoloId, setOpenArticoloId] = useState<string | null>(null)
+
+  useRegisterNewAction(openCreate)
 
   function openCreate() {
     setValues({ nome: '', categoria: '', colori: '', drop_id: '' })
@@ -118,7 +118,7 @@ export default function Catalogo() {
                 <h4>{k}</h4>
                 <div className="art-grid">
                   {byDrop.get(k)!.map((a) => (
-                    <ArticoloCard key={a.id} articolo={a} onClick={() => setOpenArticoloId(a.id)} />
+                    <ArticoloCard key={a.id} articolo={a} onClick={() => openArticolo(a.id)} />
                   ))}
                 </div>
               </div>
@@ -149,8 +149,6 @@ export default function Catalogo() {
           </form>
         </Modal>
       )}
-
-      {openArticoloId && <ArticoloDetail articoloId={openArticoloId} onClose={() => setOpenArticoloId(null)} />}
     </>
   )
 }

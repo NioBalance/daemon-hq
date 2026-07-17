@@ -19,6 +19,7 @@ import {
 import { dropFields, DROP_EMPTY_VALUES, faseFields } from '../features/drops/formFields'
 import { fmtDate, daysUntil } from '../lib/format'
 import { useToast } from '../lib/useToast'
+import { useRegisterNewAction } from '../lib/navigation'
 
 export default function Timeline() {
   const { data: drops, isLoading, isError, error, refetch } = useDrops()
@@ -39,6 +40,8 @@ export default function Timeline() {
   const [faseModal, setFaseModal] = useState<{ dropId: string; fase: DropFase | null } | null>(null)
   const [faseValues, setFaseValues] = useState<FormValues>({ nome: '', data: '' })
   const [faseError, setFaseError] = useState<string | null>(null)
+
+  useRegisterNewAction(openCreateDrop)
 
   function openCreateDrop() {
     setDropValues(DROP_EMPTY_VALUES)

@@ -15,6 +15,7 @@ import {
 } from '../features/chatChannels/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { useToast } from '../lib/useToast'
+import { useRegisterNewAction } from '../lib/navigation'
 import type { ChatCanale, ChatStato } from '../lib/database.types'
 
 const CH_CANALI: { value: ChatCanale; label: string }[] = [
@@ -65,6 +66,8 @@ export default function Chats() {
   const [editingChannel, setEditingChannel] = useState<ChatChannel | null>(null)
   const [channelValues, setChannelValues] = useState<FormValues>({ label: '', url: '' })
   const [channelError, setChannelError] = useState<string | null>(null)
+
+  useRegisterNewAction(openCreate)
 
   function openCreate() {
     setValues({ cliente: '', canale: 'wa', stato: 'aperta', owner: 'logistica' })

@@ -4,12 +4,11 @@ import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
 import ArticoloCard from '../components/ArticoloCard'
-import ArticoloDetail from '../components/ArticoloDetail'
 import { useDrops, useCreateDrop, useUpdateDrop, useDeleteDrop, type Drop } from '../features/drops/queries'
 import { dropFields, DROP_EMPTY_VALUES } from '../features/drops/formFields'
 import { useArticoli, useCreateArticolo } from '../features/articoli/queries'
 import { fmtDate } from '../lib/format'
-import { useNav } from '../lib/navigation'
+import { useNav, useRegisterNewAction } from '../lib/navigation'
 import { useToast } from '../lib/useToast'
 
 const articoloFields = (drops: Drop[]): FieldDef[] => [
@@ -25,7 +24,7 @@ const articoloFields = (drops: Drop[]): FieldDef[] => [
 ]
 
 export default function Drops() {
-  const { goTab } = useNav()
+  const { goTab, openArticolo } = useNav()
   const { data: drops, isLoading, isError, error, refetch } = useDrops()
   const { data: articoli } = useArticoli()
   const createDrop = useCreateDrop()
@@ -43,7 +42,7 @@ export default function Drops() {
   const [articoloValues, setArticoloValues] = useState<FormValues>({})
   const [articoloError, setArticoloError] = useState<string | null>(null)
 
-  const [openArticoloId, setOpenArticoloId] = useState<string | null>(null)
+  useRegisterNewAction(openCreateArticolo)
 
   function openCreateDrop() {
     setDropValues(DROP_EMPTY_VALUES)
@@ -122,7 +121,7 @@ export default function Drops() {
         drop_id: String(articoloValues.drop_id ?? '') || null,
       })
       setArticoloModalOpen(false)
-      setOpenArticoloId(created.id)
+      openArticolo(created.id)
       showToast('success', 'Articolo creato.')
     } catch (err) {
       setArticoloError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
@@ -183,7 +182,7 @@ export default function Drops() {
                 {arts.length ? (
                   <div className="art-scroll">
                     {arts.map((a) => (
-                      <ArticoloCard key={a.id} articolo={a} onClick={() => setOpenArticoloId(a.id)} />
+                      <ArticoloCard key={a.id} articolo={a} onClick={() => openArticolo(a.id)} />
                     ))}
                   </div>
                 ) : (
@@ -205,7 +204,7 @@ export default function Drops() {
               </div>
               <div className="art-scroll">
                 {orphanArticoli.map((a) => (
-                  <ArticoloCard key={a.id} articolo={a} onClick={() => setOpenArticoloId(a.id)} />
+                  <ArticoloCard key={a.id} articolo={a} onClick={() => openArticolo(a.id)} />
                 ))}
               </div>
             </div>
@@ -254,8 +253,6 @@ export default function Drops() {
           </form>
         </Modal>
       )}
-
-      {openArticoloId && <ArticoloDetail articoloId={openArticoloId} onClose={() => setOpenArticoloId(null)} />}
     </>
   )
 }

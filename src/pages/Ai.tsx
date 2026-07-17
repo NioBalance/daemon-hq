@@ -6,6 +6,7 @@ import { Loading, ErrorState } from '../components/QueryState'
 import LinkCard from '../components/LinkCard'
 import { useAiLinks, useCreateAiLink, useUpdateAiLink, useDeleteAiLink, type AiLink } from '../features/aiLinks/queries'
 import { useToast } from '../lib/useToast'
+import { useRegisterNewAction } from '../lib/navigation'
 
 const AI_FIELDS: FieldDef[] = [
   { key: 'label', label: 'Nome strumento' },
@@ -23,6 +24,8 @@ export default function Ai() {
   const [editing, setEditing] = useState<AiLink | null>(null)
   const [values, setValues] = useState<FormValues>({ label: '', url: '' })
   const [formError, setFormError] = useState<string | null>(null)
+
+  useRegisterNewAction(openCreate)
 
   function openCreate() {
     setValues({ label: '', url: '' })
