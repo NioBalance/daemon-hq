@@ -8,11 +8,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
+      includeAssets: ['icons/favicon-48.png', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'DÆMON — Production HQ',
         short_name: 'DÆMON HQ',
         description: 'Dashboard di produzione DÆMON GYMWEAR: drop, catalogo, design, tech pack, campioni, fornitori.',
+        lang: 'it',
         theme_color: '#0B0B0D',
         background_color: '#0B0B0D',
         display: 'standalone',

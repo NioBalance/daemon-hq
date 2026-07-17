@@ -64,6 +64,35 @@ npm run build
 npm run preview
 ```
 
-## Deploy
+## Icone PWA
 
-Configurato per Netlify (`netlify.toml`): build command `npm run build`, publish dir `dist`.
+Generate da [spolli-merch-logo-removebg.png](spolli-merch-logo-removebg.png) (il logo stella, sorgente tenuta nel repo) compositato su sfondo void `#0B0B0D`, in `public/icons/`. Per rigenerarle dopo un cambio logo:
+
+```bash
+npm install -D sharp
+node scripts/generate-icons.mjs
+npm uninstall sharp
+```
+
+`sharp` serve solo per questo script una tantum, non è una dipendenza dell'app.
+
+## Deploy — checklist Netlify (Step 14)
+
+`netlify.toml` è già pronto (build command `npm run build`, publish dir `dist`, redirect SPA, cache disabilitata su `sw.js`/`manifest.webmanifest`). Per andare in produzione:
+
+1. **Netlify → Add new site → Import from Git**, collega questo repo.
+2. **Site configuration → Environment variables**, aggiungi le due variabili (stessi valori di `.env.local`, mai committato):
+   - `VITE_SUPABASE_URL` = `https://clsyjggifbfwnrdbzprk.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY` = la anon key del progetto (Supabase → Project Settings → API).
+3. Deploya e prendi nota dell'URL assegnato (es. `https://nome-a-caso.netlify.app`, o il tuo dominio custom se lo colleghi).
+4. **Supabase → Authentication → URL Configuration** (progetto `clsyjggifbfwnrdbzprk`):
+   - *Site URL* → sostituisci con l'URL Netlify di produzione.
+   - *Redirect URLs* → aggiungi `https://<il-tuo-sito>.netlify.app/**` (lascia anche `http://localhost:5173/**` se continui a sviluppare in locale).
+5. Il template email (con `{{ .Token }}`, vedi sopra) non dipende dal dominio: il codice funziona identico in locale e in produzione, nessuna modifica al template quando cambi URL.
+6. Se non l'hai già fatto per i test, collega l'SMTP esterno (Zoho o altro) in **Project Settings → Auth → SMTP Settings** — il rate limit dell'email integrata di Supabase è troppo basso per un uso di team reale.
+
+### Test PWA (installabile su iOS e desktop)
+
+- **iOS Safari**: apri l'URL di produzione → icona Condividi → "Aggiungi a Home". Verifica che l'icona sia la stella rossa (non il monogramma Æ) e che l'app si apra a schermo intero senza barra Safari.
+- **Desktop (Chrome/Edge)**: apri l'URL → icona di installazione nella barra indirizzi (o menu → "Installa app") → verifica che si apra in una finestra propria, senza tab del browser.
+- In entrambi i casi, dopo l'installazione, fai una modifica di prova (es. una nota) offline/online per confermare che il service worker non blocchi le chiamate a Supabase (deve fare solo caching degli asset statici, mai delle API).

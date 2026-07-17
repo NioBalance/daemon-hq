@@ -5,28 +5,32 @@ import path from 'node:path'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const outDir = path.resolve(__dirname, '../public/icons')
+const sourceLogo = path.resolve(__dirname, '../spolli-merch-logo-removebg.png')
 mkdirSync(outDir, { recursive: true })
 
-const VOID = '#0B0B0D'
-const EMBER = '#E2382A'
+const VOID = { r: 0x0b, g: 0x0b, b: 0x0d, alpha: 1 }
 
-const iconSvg = (size, glyphScale = 0.62) => `
-<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <rect width="${size}" height="${size}" fill="${VOID}"/>
-  <text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle"
-    font-family="Arial, sans-serif" font-weight="900" font-size="${Math.round(size * glyphScale)}"
-    fill="${EMBER}">Æ</text>
-</svg>`
-
+// logoScale = quanto spazio occupa il logo rispetto al canvas. Le icone
+// "maskable" vengono ritagliate dall'OS (cerchio/squircle): il contenuto deve
+// stare dentro la safe zone centrale, quindi scala più piccola.
 const targets = [
-  { file: 'icon-192.png', size: 192, glyphScale: 0.6 },
-  { file: 'icon-512.png', size: 512, glyphScale: 0.6 },
-  { file: 'icon-maskable-512.png', size: 512, glyphScale: 0.42 },
-  { file: 'apple-touch-icon.png', size: 180, glyphScale: 0.6 },
+  { file: 'icon-192.png', size: 192, logoScale: 0.7 },
+  { file: 'icon-512.png', size: 512, logoScale: 0.7 },
+  { file: 'icon-maskable-512.png', size: 512, logoScale: 0.5 },
+  { file: 'apple-touch-icon.png', size: 180, logoScale: 0.72 },
+  { file: 'favicon-48.png', size: 48, logoScale: 0.78 },
 ]
 
 for (const t of targets) {
-  const svg = Buffer.from(iconSvg(t.size, t.glyphScale))
-  await sharp(svg).png().toFile(path.join(outDir, t.file))
+  const logoSize = Math.round(t.size * t.logoScale)
+  const logo = await sharp(sourceLogo).resize(logoSize, logoSize, { fit: 'contain' }).toBuffer()
+
+  await sharp({
+    create: { width: t.size, height: t.size, channels: 4, background: VOID },
+  })
+    .composite([{ input: logo, gravity: 'center' }])
+    .png()
+    .toFile(path.join(outDir, t.file))
+
   console.log('wrote', t.file)
 }

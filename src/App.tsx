@@ -1,24 +1,28 @@
-import { useState, type ComponentType } from 'react'
+import { lazy, Suspense, useState, type ComponentType } from 'react'
 import { AuthProvider } from './auth/AuthContext'
 import { useAuth } from './auth/useAuth'
 import Login from './auth/Login'
 import ProfileForm from './auth/ProfileForm'
 import Header from './components/Header'
+import { Loading } from './components/QueryState'
 import { NavContext } from './lib/navigation'
 import type { TabKey } from './lib/tabs'
-import Overview from './pages/Overview'
-import Drops from './pages/Drops'
-import Catalogo from './pages/Catalogo'
-import Design from './pages/Design'
-import TechPack from './pages/TechPack'
-import Campioni from './pages/Campioni'
-import Timeline from './pages/Timeline'
-import Fornitori from './pages/Fornitori'
-import Archivio from './pages/Archivio'
-import Ai from './pages/Ai'
-import Media from './pages/Media'
-import Chats from './pages/Chats'
-import Calendario from './pages/Calendario'
+
+// Ogni pagina nel proprio chunk: si scarica solo quando l'utente apre quel
+// tab, invece di un unico bundle da mezzo mega con tutte e 13 le sezioni.
+const Overview = lazy(() => import('./pages/Overview'))
+const Drops = lazy(() => import('./pages/Drops'))
+const Catalogo = lazy(() => import('./pages/Catalogo'))
+const Design = lazy(() => import('./pages/Design'))
+const TechPack = lazy(() => import('./pages/TechPack'))
+const Campioni = lazy(() => import('./pages/Campioni'))
+const Timeline = lazy(() => import('./pages/Timeline'))
+const Fornitori = lazy(() => import('./pages/Fornitori'))
+const Archivio = lazy(() => import('./pages/Archivio'))
+const Ai = lazy(() => import('./pages/Ai'))
+const Media = lazy(() => import('./pages/Media'))
+const Chats = lazy(() => import('./pages/Chats'))
+const Calendario = lazy(() => import('./pages/Calendario'))
 
 const PAGES: Record<TabKey, ComponentType> = {
   overview: Overview,
@@ -79,7 +83,9 @@ function AppShell() {
       />
       <main>
         <section className="panel active">
-          <Page />
+          <Suspense fallback={<Loading label="Caricamento sezione…" />}>
+            <Page />
+          </Suspense>
         </section>
       </main>
       {editingProfile && <ProfileForm mode="edit" onDone={() => setEditingProfile(false)} />}
