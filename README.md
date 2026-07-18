@@ -57,6 +57,11 @@ Note sul modello:
 
 Lo script è idempotente (id fissi + `on conflict do nothing`): rieseguirlo non duplica righe né sovrascrive modifiche fatte a mano dopo il seed.
 
+## Setup Supabase — Media Studio (Redesign Fase 3)
+
+1. **SQL Editor** → incolla ed esegui [supabase/migrations/0004_media_studio.sql](supabase/migrations/0004_media_studio.sql) (dopo 0001-0003). Aggiunge la colonna `obiettivo` a `media`, crea `media_tags` (tag multipli: un asset può stare in più righe del Media Studio senza duplicati, con RLS condivisa) e inserisce Photoroom nei link del brand.
+2. Finché la migration non è eseguita, la pagina Media Studio mostra un avviso al posto delle colonne. I media esistenti senza tag compaiono nella fascia "Da classificare" in cima: aprili nel lightbox e usa «Sposta / Tagga».
+
 ## Build
 
 ```bash

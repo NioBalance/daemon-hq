@@ -8,6 +8,21 @@ export type SampleVerdetto = 'in-review' | 'approvato' | 'revisione' | 'scartato
 export type ChatCanale = 'wa' | 'ig' | 'email'
 export type ChatStato = 'aperta' | 'in-attesa' | 'chiusa'
 export type MediaTipo = 'foto' | 'video' | 'logo'
+export type MediaTag =
+  | 'indossati'
+  | 'bg-removed'
+  | 'mobile'
+  | 'pc'
+  | 'loghi'
+  | 'shooting-archivio'
+  | 'adv-pronte'
+  | 'adv-idee'
+  | 'removed-bg'
+  | 'in-edit'
+  | 'stories'
+  | 'post'
+  | 'bozze'
+  | 'reel'
 export type EventTipo = 'meeting' | 'deadline' | 'lancio'
 export type NoteEntityType = 'articoli' | 'gadgets' | 'inspo' | 'media' | 'chats'
 
@@ -351,6 +366,7 @@ export interface Database {
           tipo: MediaTipo
           url: string | null
           img_path: string | null
+          obiettivo: string | null
           ordine: number
           created_at: string
         }
@@ -360,9 +376,26 @@ export interface Database {
           tipo?: MediaTipo
           url?: string | null
           img_path?: string | null
+          obiettivo?: string | null
           ordine?: number
         }
         Update: Partial<Database['public']['Tables']['media']['Insert']>
+        Relationships: []
+      }
+
+      media_tags: {
+        Row: {
+          id: string
+          media_id: string
+          tag: MediaTag
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          media_id: string
+          tag: MediaTag
+        }
+        Update: Partial<Database['public']['Tables']['media_tags']['Insert']>
         Relationships: []
       }
 
