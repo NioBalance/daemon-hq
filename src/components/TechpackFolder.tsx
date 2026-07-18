@@ -12,6 +12,7 @@ import { useAddNote } from '../features/notes/queries'
 import { useAuth } from '../auth/useAuth'
 import { uploadMediaFile, getMediaUrl, deleteMediaFile } from '../lib/upload'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useFormDraft } from '../lib/useFormDraft'
 import type { Techpack } from '../features/techpacks/queries'
 
@@ -31,6 +32,7 @@ export default function TechpackFolder({ techpack, onClose }: { techpack: Techpa
   const deleteFile = useDeleteTechpackFile()
   const addNote = useAddNote('techpacks')
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
 
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [uploading, setUploading] = useState<{ done: number; total: number } | null>(null)
@@ -99,16 +101,12 @@ export default function TechpackFolder({ techpack, onClose }: { techpack: Techpa
     }
   }
 
-  async function handleDeleteFile(f: TechpackFile) {
-    if (!window.confirm(`Rimuovere "${f.nome}" dalla cartella?`)) return
-    try {
+  function handleDeleteFile(f: TechpackFile) {
+    confirmDelete(`Rimuovere "${f.nome}" dalla cartella?`, async () => {
       await deleteFile.mutateAsync(f.id)
       if (f.path) void deleteMediaFile(f.path)
       log(`ha rimosso «${f.nome}»`)
-      showToast('success', 'File rimosso.')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Rimozione non riuscita.')
-    }
+    }, 'File rimosso')
   }
 
   return (

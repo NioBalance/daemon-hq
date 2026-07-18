@@ -7,6 +7,7 @@ import EmptyState from '../components/EmptyState'
 import { useMemos, useCreateMemo, useUpdateMemo, useDeleteMemo, type Memo } from '../features/memos/queries'
 import { useAuth } from '../auth/useAuth'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
@@ -69,6 +70,7 @@ export default function Notes() {
   const updateMemo = useUpdateMemo()
   const deleteMemo = useDeleteMemo()
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
   const logActivity = useActivityLogger()
 
   const [newValues, setNewValues] = useState<FormValues>({ testo: '', colore: '' })
@@ -136,14 +138,8 @@ export default function Notes() {
     }
   }
 
-  async function handleDelete(memo: Memo) {
-    if (!window.confirm('Eliminare questa nota?')) return
-    try {
-      await deleteMemo.mutateAsync(memo.id)
-      showToast('success', 'Nota eliminata.')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+  function handleDelete(memo: Memo) {
+    confirmDelete('Eliminare questa nota?', () => deleteMemo.mutateAsync(memo.id), 'Nota eliminata')
   }
 
   const all = memos ?? []

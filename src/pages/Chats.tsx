@@ -16,6 +16,7 @@ import {
 } from '../features/chatChannels/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
@@ -88,6 +89,7 @@ export default function Chats() {
   const updateChat = useUpdateChat()
   const deleteChat = useDeleteChat()
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
   const logActivity = useActivityLogger()
 
   const { data: channels } = useChatChannels()
@@ -157,14 +159,8 @@ export default function Chats() {
     }
   }
 
-  async function handleDelete(c: Chat) {
-    if (!window.confirm('Eliminare?')) return
-    try {
-      await deleteChat.mutateAsync(c.id)
-      showToast('success', 'Conversazione eliminata.')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+  function handleDelete(c: Chat) {
+    confirmDelete(`Eliminare la conversazione con "${c.cliente}"?`, () => deleteChat.mutateAsync(c.id), 'Conversazione eliminata')
   }
 
   function openCreateChannel() {
@@ -201,14 +197,8 @@ export default function Chats() {
       setChannelError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
     }
   }
-  async function handleDeleteChannel(c: ChatChannel) {
-    if (!window.confirm('Eliminare canale?')) return
-    try {
-      await deleteChannel.mutateAsync(c.id)
-      showToast('success', 'Canale eliminato.')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+  function handleDeleteChannel(c: ChatChannel) {
+    confirmDelete(`Eliminare il canale "${c.label}"?`, () => deleteChannel.mutateAsync(c.id), 'Canale eliminato')
   }
 
   const open = (chats ?? []).filter((c) => c.stato !== 'chiusa')

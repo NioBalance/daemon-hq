@@ -7,6 +7,7 @@ import EmptyState from '../components/EmptyState'
 import LinkCard from '../components/LinkCard'
 import { useAiLinks, useCreateAiLink, useUpdateAiLink, useDeleteAiLink, type AiLink } from '../features/aiLinks/queries'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 
@@ -21,6 +22,7 @@ export default function Ai() {
   const updateLink = useUpdateAiLink()
   const deleteLink = useDeleteAiLink()
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
   const [editing, setEditing] = useState<AiLink | null>(null)
@@ -67,14 +69,8 @@ export default function Ai() {
     }
   }
 
-  async function handleDelete(l: AiLink) {
-    if (!window.confirm('Eliminare?')) return
-    try {
-      await deleteLink.mutateAsync(l.id)
-      showToast('success', 'Strumento eliminato.')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+  function handleDelete(l: AiLink) {
+    confirmDelete(`Eliminare "${l.label}"?`, () => deleteLink.mutateAsync(l.id), 'Strumento eliminato')
   }
 
   return (

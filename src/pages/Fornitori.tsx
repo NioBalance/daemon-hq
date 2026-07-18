@@ -5,6 +5,7 @@ import FormFields, { type FieldDef, type FormValues } from '../components/FormFi
 import { Loading, ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
@@ -91,6 +92,7 @@ export default function Fornitori() {
   const updateFornitore = useUpdateFornitore()
   const deleteFornitore = useDeleteFornitore()
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
   const logActivity = useActivityLogger()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
@@ -156,15 +158,11 @@ export default function Fornitori() {
     }
   }
 
-  async function handleDelete(f: Fornitore) {
-    if (!window.confirm(`Eliminare "${f.nome}"?`)) return
-    try {
+  function handleDelete(f: Fornitore) {
+    confirmDelete(`Eliminare "${f.nome}"?`, async () => {
       await deleteFornitore.mutateAsync(f.id)
-      showToast('success', `"${f.nome}" eliminato.`)
       logActivity('ha eliminato il fornitore', `«${f.nome}»`, 'fornitori')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+    }, 'Fornitore eliminato')
   }
 
   const sorted = [...(fornitori ?? [])].sort(

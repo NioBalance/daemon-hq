@@ -8,6 +8,7 @@ import { useDrops, useDropFasi } from '../features/drops/queries'
 import { useLinks, useUpdateLink } from '../features/links/queries'
 import { fmtDate, todayIso } from '../lib/format'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
@@ -47,6 +48,7 @@ export default function Calendario() {
   const updateEvent = useUpdateEvent()
   const deleteEvent = useDeleteEvent()
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
   const logActivity = useActivityLogger()
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -131,14 +133,8 @@ export default function Calendario() {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
     }
   }
-  async function handleDelete(e: EventRow) {
-    if (!window.confirm('Eliminare?')) return
-    try {
-      await deleteEvent.mutateAsync(e.id)
-      showToast('success', 'Evento eliminato.')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+  function handleDelete(e: EventRow) {
+    confirmDelete(`Eliminare "${e.titolo}"?`, () => deleteEvent.mutateAsync(e.id), 'Evento eliminato')
   }
 
   const manualEvents: CalEvent[] = (events ?? []).map((e) => ({

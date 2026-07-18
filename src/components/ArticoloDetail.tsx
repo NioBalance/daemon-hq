@@ -16,6 +16,7 @@ import { useDrops } from '../features/drops/queries'
 import { useNav } from '../lib/navigation'
 import { onEnterOrSpace } from '../lib/a11y'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 
@@ -30,6 +31,7 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
   const toggleTask = useToggleTask()
   const deleteTask = useDeleteTask()
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
   const logActivity = useActivityLogger()
 
   const [editing, setEditing] = useState(false)
@@ -94,16 +96,13 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
     }
   }
 
-  async function handleDelete() {
-    if (!window.confirm('Eliminare articolo?')) return
-    try {
-      await deleteArticolo.mutateAsync(articolo!.id)
-      showToast('success', 'Articolo eliminato.')
-      logActivity('ha eliminato un articolo', `«${articolo!.nome}»`, 'catalogo')
-      onClose()
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+  function handleDelete() {
+    const { id, nome } = articolo!
+    confirmDelete(`Eliminare "${nome}"?`, async () => {
+      await deleteArticolo.mutateAsync(id)
+      logActivity('ha eliminato un articolo', `«${nome}»`, 'catalogo')
+    }, 'Articolo eliminato')
+    onClose()
   }
 
   async function handleAddTask() {

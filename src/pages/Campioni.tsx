@@ -11,6 +11,7 @@ import { useFornitori } from '../features/fornitori/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { fmtDate } from '../lib/format'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
@@ -63,6 +64,7 @@ export default function Campioni() {
   const updateSample = useUpdateSample()
   const deleteSample = useDeleteSample()
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
   const logActivity = useActivityLogger()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
@@ -149,15 +151,11 @@ export default function Campioni() {
     }
   }
 
-  async function handleDelete(s: Sample) {
-    if (!window.confirm('Eliminare definitivamente?')) return
-    try {
+  function handleDelete(s: Sample) {
+    confirmDelete(`Eliminare "${s.nome}"?`, async () => {
       await deleteSample.mutateAsync(s.id)
-      showToast('success', 'Campione eliminato.')
       logActivity('ha eliminato un campione', 'dalla review', 'samples')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+    }, 'Campione eliminato')
   }
 
   const fornNome = (id: string | null) => fornitori?.find((f) => f.id === id)?.nome ?? '—'

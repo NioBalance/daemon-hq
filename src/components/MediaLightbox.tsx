@@ -7,6 +7,7 @@ import { useUpdateMedia, useDeleteMedia, type MediaItem } from '../features/medi
 import { getMediaUrl, deleteMediaFile } from '../lib/upload'
 import { ALL_MEDIA_ROWS } from '../lib/mediaStudio'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import type { MediaTag } from '../lib/database.types'
 
 const SWIPE_THRESHOLD_PX = 60
@@ -151,6 +152,7 @@ function LightboxPanel({
   onClose: () => void
 }) {
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
   const { data: allTags } = useMediaTags()
   const addTag = useAddMediaTag()
   const removeTag = useRemoveMediaTag()
@@ -172,17 +174,14 @@ function LightboxPanel({
     }
   }
 
-  async function handleDelete() {
-    if (!window.confirm(`Eliminare "${item.titolo}"?`)) return
-    try {
-      await deleteMedia.mutateAsync(item.id)
-      void deleteMediaFile(item.img_path)
-      showToast('success', 'Media eliminato.')
-      if (itemsLength <= 1) onClose()
-      else onIndexChange(Math.min(index, itemsLength - 2))
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+  function handleDelete() {
+    const { id, titolo, img_path } = item
+    confirmDelete(`Eliminare "${titolo}"?`, async () => {
+      await deleteMedia.mutateAsync(id)
+      void deleteMediaFile(img_path)
+    }, 'Media eliminato')
+    if (itemsLength <= 1) onClose()
+    else onIndexChange(Math.min(index, itemsLength - 2))
   }
 
   async function saveObiettivo() {

@@ -4,6 +4,7 @@ import FormFields, { type FieldDef, type FormValues } from './FormFields'
 import FolderCard from './FolderCard'
 import { useGadgets, useCreateGadget, useUpdateGadget, useDeleteGadget, type Gadget } from '../features/gadgets/queries'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useFormDraft } from '../lib/useFormDraft'
 
 const FIELDS: FieldDef[] = [{ key: 'value', label: 'Nome gadget' }]
@@ -17,6 +18,7 @@ export default function GadgetRow() {
   const updateGadget = useUpdateGadget()
   const deleteGadget = useDeleteGadget()
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
 
   const [modal, setModal] = useState<{ id: string | null } | null>(null)
   const [value, setValue] = useState('')
@@ -59,14 +61,8 @@ export default function GadgetRow() {
     }
   }
 
-  async function handleDelete(g: Gadget) {
-    if (!window.confirm(`Eliminare "${g.nome}"?`)) return
-    try {
-      await deleteGadget.mutateAsync(g.id)
-      showToast('success', 'Gadget eliminato.')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+  function handleDelete(g: Gadget) {
+    confirmDelete(`Eliminare "${g.nome}"?`, () => deleteGadget.mutateAsync(g.id), 'Gadget eliminato')
   }
 
   const list = gadgets.data ?? []

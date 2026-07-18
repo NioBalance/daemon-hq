@@ -21,7 +21,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const showToast = useCallback(
-    (variant: ToastVariant, message: string, action?: ToastAction) => {
+    (variant: ToastVariant, message: string, action?: ToastAction, durationMs?: number) => {
       const id = crypto.randomUUID()
       setToasts((t) => {
         const next = [...t, { id, variant, message, action }]
@@ -29,7 +29,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       })
       const timer = window.setTimeout(
         () => dismissToast(id),
-        action ? AUTO_DISMISS_ACTION_MS : AUTO_DISMISS_MS,
+        durationMs ?? (action ? AUTO_DISMISS_ACTION_MS : AUTO_DISMISS_MS),
       )
       timers.current.set(id, timer)
     },

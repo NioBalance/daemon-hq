@@ -9,6 +9,7 @@ import LinkCard from '../components/LinkCard'
 import { useInspo, useCreateInspo, useUpdateInspo, useDeleteInspo, type Inspo } from '../features/inspo/queries'
 import { useLinks, useCreateLink, useUpdateLink, useDeleteLink, type BrandLink } from '../features/links/queries'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useNav, useRegisterNewAction } from '../lib/navigation'
 
@@ -23,6 +24,7 @@ const LINK_FIELDS: FieldDef[] = [
 
 export default function Archivio() {
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
   const { archTab, setArchTab } = useNav()
 
   const inspo = useInspo()
@@ -132,23 +134,11 @@ export default function Archivio() {
     }
   }
 
-  async function handleDeleteInspo(i: Inspo) {
-    if (!window.confirm('Eliminare?')) return
-    try {
-      await deleteInspo.mutateAsync(i.id)
-      showToast('success', 'Inspirazione eliminata.')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+  function handleDeleteInspo(i: Inspo) {
+    confirmDelete(`Eliminare "${i.titolo}"?`, () => deleteInspo.mutateAsync(i.id), 'Inspirazione eliminata')
   }
-  async function handleDeleteLink(l: BrandLink) {
-    if (!window.confirm('Eliminare?')) return
-    try {
-      await deleteLink.mutateAsync(l.id)
-      showToast('success', 'Link eliminato.')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+  function handleDeleteLink(l: BrandLink) {
+    confirmDelete(`Eliminare "${l.label}"?`, () => deleteLink.mutateAsync(l.id), 'Link eliminato')
   }
 
   const activeQuery = archTab === 'inspo' ? inspo : links

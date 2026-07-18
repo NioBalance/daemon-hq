@@ -19,6 +19,7 @@ import { useAddNote } from '../features/notes/queries'
 import { useAuth } from '../auth/useAuth'
 import { OWNER_OPTS } from '../lib/tabs'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
@@ -71,6 +72,7 @@ export default function TechPack() {
   const addNote = useAddNote('techpacks')
   const { profile } = useAuth()
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
   const logActivity = useActivityLogger()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
@@ -172,15 +174,11 @@ export default function TechPack() {
     })
   }
 
-  async function handleDelete(t: Techpack) {
-    if (!window.confirm('Eliminare definitivamente?')) return
-    try {
+  function handleDelete(t: Techpack) {
+    confirmDelete(`Eliminare "${t.nome}" (inclusa la cartella file)?`, async () => {
       await deleteTechpack.mutateAsync(t.id)
-      showToast('success', 'Tech pack eliminato.')
       logActivity('ha eliminato il tech pack', `«${t.nome}»`, 'techpack')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+    }, 'Tech pack eliminato')
   }
 
   const fornNome = (id: string | null) => fornitori?.find((f) => f.id === id)?.nome ?? '—'

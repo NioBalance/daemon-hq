@@ -16,7 +16,7 @@ export interface ToastItem {
 
 export interface ToastContextValue {
   toasts: ToastItem[]
-  showToast: (variant: ToastVariant, message: string, action?: ToastAction) => void
+  showToast: (variant: ToastVariant, message: string, action?: ToastAction, durationMs?: number) => void
   dismissToast: (id: string) => void
 }
 

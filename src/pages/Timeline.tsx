@@ -20,6 +20,7 @@ import {
 import { dropFields, DROP_EMPTY_VALUES, faseFields } from '../features/drops/formFields'
 import { fmtDate, daysUntil, addDaysIso } from '../lib/format'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
@@ -34,6 +35,7 @@ export default function Timeline() {
   const updateFase = useUpdateFase()
   const deleteFase = useDeleteFase()
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
   const logActivity = useActivityLogger()
 
   const [view, setView] = useState<'drop' | 'anno'>('drop')
@@ -95,15 +97,11 @@ export default function Timeline() {
     }
   }
 
-  async function handleDeleteDrop(d: Drop) {
-    if (!window.confirm('Eliminare definitivamente?')) return
-    try {
+  function handleDeleteDrop(d: Drop) {
+    confirmDelete(`Eliminare "${d.nome}" con tutte le sue fasi?`, async () => {
       await deleteDrop.mutateAsync(d.id)
-      showToast('success', 'Drop eliminato.')
       logActivity('ha eliminato un drop', 'dalla timeline', 'drops')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+    }, 'Drop eliminato')
   }
 
   function openAddFase(dropId: string) {

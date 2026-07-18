@@ -7,6 +7,7 @@ import OwnerBadge from '../components/OwnerBadge'
 import { useDesigns, useCreateDesign, useUpdateDesign, useDeleteDesign, type Design } from '../features/designs/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
@@ -57,6 +58,7 @@ export default function DesignPage() {
   const updateDesign = useUpdateDesign()
   const deleteDesign = useDeleteDesign()
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
   const logActivity = useActivityLogger()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
@@ -115,15 +117,11 @@ export default function DesignPage() {
     }
   }
 
-  async function handleDelete(d: Design) {
-    if (!window.confirm('Eliminare definitivamente?')) return
-    try {
+  function handleDelete(d: Design) {
+    confirmDelete(`Eliminare "${d.nome}"?`, async () => {
       await deleteDesign.mutateAsync(d.id)
-      showToast('success', 'Design eliminato.')
       logActivity('ha eliminato un design', 'dalla pipeline', 'design')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+    }, 'Design eliminato')
   }
 
   async function move(d: Design, dir: 1 | -1) {

@@ -13,6 +13,7 @@ import ShortcutsPanel from './components/ShortcutsPanel'
 import { Loading } from './components/QueryState'
 import ToastStack from './components/ToastStack'
 import { ToastProvider } from './lib/ToastProvider'
+import { ConfirmProvider } from './lib/ConfirmProvider'
 import { NavContext } from './lib/navigation'
 import { useKeyboardShortcuts } from './lib/useKeyboardShortcuts'
 import type { ArchTab, NavEntry, TabKey } from './lib/tabs'
@@ -199,9 +200,11 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <LazyMotion features={loadMotionFeatures} strict>
-          <AppShell />
-        </LazyMotion>
+        <ConfirmProvider>
+          <LazyMotion features={loadMotionFeatures} strict>
+            <AppShell />
+          </LazyMotion>
+        </ConfirmProvider>
       </ToastProvider>
     </AuthProvider>
   )

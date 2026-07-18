@@ -11,6 +11,7 @@ import { useArticoli, useCreateArticolo } from '../features/articoli/queries'
 import { fmtDate } from '../lib/format'
 import { useNav, useRegisterNewAction } from '../lib/navigation'
 import { useToast } from '../lib/useToast'
+import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 
@@ -35,6 +36,7 @@ export default function Drops() {
   const deleteDrop = useDeleteDrop()
   const createArticolo = useCreateArticolo()
   const showToast = useToast()
+  const confirmDelete = useConfirmDelete()
   const logActivity = useActivityLogger()
 
   const [dropModal, setDropModal] = useState<'none' | 'create' | 'edit'>('none')
@@ -99,15 +101,11 @@ export default function Drops() {
     }
   }
 
-  async function handleDeleteDrop(d: Drop) {
-    if (!window.confirm(`Eliminare "${d.nome}"? Gli articoli collegati restano ma senza drop.`)) return
-    try {
+  function handleDeleteDrop(d: Drop) {
+    confirmDelete(`Eliminare "${d.nome}"? Gli articoli collegati restano ma senza drop.`, async () => {
       await deleteDrop.mutateAsync(d.id)
-      showToast('success', `"${d.nome}" eliminato.`)
       logActivity('ha eliminato il drop', `«${d.nome}»`, 'dropx')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
+    }, 'Drop eliminato')
   }
 
   function openCreateArticolo(dropId?: string) {
