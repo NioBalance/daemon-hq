@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { NAV_GROUPS, isEntryActive, type TabKey } from '../lib/tabs'
 import { useNav } from '../lib/navigation'
 
@@ -33,7 +35,7 @@ function LiveIcon() {
   )
 }
 
-const GROUP_ICONS: Record<string, () => React.ReactNode> = {
+const GROUP_ICONS: Record<string, () => ReactNode> = {
   production: ProductionIcon,
   gestione: GestioneIcon,
   live: LiveIcon,
@@ -45,6 +47,7 @@ const GROUP_ICONS: Record<string, () => React.ReactNode> = {
  *  della Fase 5: aprire uno chiude l'altro per costruzione. */
 export default function MobileNav({ activeTab }: { activeTab: TabKey }) {
   const { goTab, goEntry, archTab, activeSheet, setActiveSheet } = useNav()
+  const reduceMotion = useReducedMotion()
   const openGroup = NAV_GROUPS.find((g) => activeSheet === `nav:${g.id}`)
 
   return (
@@ -75,10 +78,29 @@ export default function MobileNav({ activeTab }: { activeTab: TabKey }) {
         })}
       </nav>
 
-      {openGroup && (
-        <>
-          <div className="sheet-bg" onClick={() => setActiveSheet(null)} />
-          <div className="sheet" role="dialog" aria-label={openGroup.title}>
+      <AnimatePresence>
+        {openGroup && (
+          <m.div
+            key="sheet-bg"
+            className="sheet-bg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.25 }}
+            onClick={() => setActiveSheet(null)}
+          />
+        )}
+        {openGroup && (
+          <m.div
+            key="sheet"
+            className="sheet"
+            role="dialog"
+            aria-label={openGroup.title}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 28 }}
+            transition={{ duration: reduceMotion ? 0.1 : 0.35, ease: [0.16, 1, 0.3, 1] }}
+          >
             <div className="sheet-handle" />
             <div className="sheet-title">{openGroup.title}</div>
             {openGroup.entries.map((entry) => (
@@ -91,9 +113,9 @@ export default function MobileNav({ activeTab }: { activeTab: TabKey }) {
                 {entry.soon && <span className="soon-pill">Soon</span>}
               </button>
             ))}
-          </div>
-        </>
-      )}
+          </m.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }

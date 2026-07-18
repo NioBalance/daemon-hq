@@ -1,4 +1,7 @@
 import { lazy, Suspense, useCallback, useRef, useState, type ComponentType } from 'react'
+import { LazyMotion, m, useReducedMotion } from 'framer-motion'
+
+const loadMotionFeatures = () => import('./lib/motionFeatures').then((mod) => mod.default)
 import { AuthProvider } from './auth/AuthContext'
 import { useAuth } from './auth/useAuth'
 import Login from './auth/Login'
@@ -61,6 +64,7 @@ function AppShell() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [activeSheet, setActiveSheet] = useState<string | null>(null)
   const newActionRef = useRef<(() => void) | null>(null)
+  const reduceMotion = useReducedMotion()
 
   const goTab = useCallback((tab: TabKey) => {
     setActiveTab(tab)
@@ -159,11 +163,17 @@ function AppShell() {
         onSearchClick={() => setPaletteOpen(true)}
       />
       <main>
-        <section className="panel active" key={activeTab}>
+        <m.section
+          className="panel active"
+          key={activeTab}
+          initial={reduceMotion ? false : { opacity: 0, y: 8, scale: 0.985 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        >
           <Suspense fallback={<Loading label="Caricamento sezione…" />}>
             <Page />
           </Suspense>
-        </section>
+        </m.section>
       </main>
       <MobileNav activeTab={activeTab} />
       {editingProfile && <ProfileForm mode="edit" onDone={() => setEditingProfile(false)} />}
@@ -187,7 +197,9 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <AppShell />
+        <LazyMotion features={loadMotionFeatures} strict>
+          <AppShell />
+        </LazyMotion>
       </ToastProvider>
     </AuthProvider>
   )
