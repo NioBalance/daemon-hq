@@ -3,6 +3,7 @@ import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
+import EmptyState from '../components/EmptyState'
 import { ProgressRing, Sparkline, MiniBars } from '../components/ChartBits'
 import { useDrops, useDropFasi } from '../features/drops/queries'
 import { useArticoli, useArticoloTasks } from '../features/articoli/queries'
@@ -416,7 +417,7 @@ export default function Overview() {
           </div>
         ))
       ) : (
-        <div className="empty">Nessun alert. Tutto sotto controllo.</div>
+        <EmptyState icon="star" text="Nessun alert. Tutto sotto controllo." />
       )}
 
       {kpiOpen && (

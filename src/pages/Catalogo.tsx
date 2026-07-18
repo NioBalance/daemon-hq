@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react'
 import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
-import { Loading, ErrorState } from '../components/QueryState'
+import { ErrorState, SkeletonGrid } from '../components/QueryState'
+import EmptyState from '../components/EmptyState'
 import ArticoloCard from '../components/ArticoloCard'
 import GadgetRow from '../components/GadgetRow'
 import { useArticoli, useCreateArticolo, type Articolo } from '../features/articoli/queries'
@@ -96,7 +97,7 @@ export default function Catalogo() {
         }
       />
 
-      {isLoading && <Loading label="Caricamento catalogo…" />}
+      {isLoading && <SkeletonGrid count={8} height={190} minWidth={180} />}
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
 
       {!isLoading && !isError && (
@@ -131,7 +132,7 @@ export default function Catalogo() {
               </div>
             ))
           ) : (
-            <div className="empty">Nessun articolo in questa categoria.</div>
+            <EmptyState icon="photo" text="Nessun articolo in questa categoria." ctaLabel="+ Articolo" onCta={openCreate} />
           )}
         </>
       )}

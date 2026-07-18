@@ -2,7 +2,8 @@ import { useCallback, useMemo, useState, type FormEvent } from 'react'
 import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
-import { Loading, ErrorState } from '../components/QueryState'
+import { ErrorState, SkeletonGrid } from '../components/QueryState'
+import EmptyState from '../components/EmptyState'
 import FolderCard from '../components/FolderCard'
 import LinkCard from '../components/LinkCard'
 import { useInspo, useCreateInspo, useUpdateInspo, useDeleteInspo, type Inspo } from '../features/inspo/queries'
@@ -171,7 +172,7 @@ export default function Archivio() {
         </button>
       </div>
 
-      {activeQuery.isLoading && <Loading label="Caricamento…" />}
+      {activeQuery.isLoading && <SkeletonGrid count={6} height={220} minWidth={240} />}
       {activeQuery.isError && (
         <ErrorState message={(activeQuery.error as Error).message} onRetry={() => activeQuery.refetch()} />
       )}
@@ -196,7 +197,7 @@ export default function Archivio() {
               />
             ))}
           </div>
-          {(inspo.data ?? []).length === 0 && <div className="empty">Nessuna inspirazione salvata.</div>}
+          {(inspo.data ?? []).length === 0 && <EmptyState icon="star" text="Nessuna inspirazione salvata." ctaLabel="+ Inspirazione" onCta={openAddInspo} />}
         </>
       )}
 

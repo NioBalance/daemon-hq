@@ -3,6 +3,7 @@ import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
+import EmptyState from '../components/EmptyState'
 import { useToast } from '../lib/useToast'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
@@ -211,7 +212,7 @@ export default function Fornitori() {
               </div>
             </div>
           ))}
-          {sorted.length === 0 && <div className="empty">Nessun fornitore. Aggiungine uno.</div>}
+          {sorted.length === 0 && <EmptyState icon="box" text="Nessun fornitore in scheda." ctaLabel="+ Nuovo fornitore" onCta={openCreate} />}
         </div>
       )}
 

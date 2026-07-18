@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react'
 import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
-import { Loading, ErrorState } from '../components/QueryState'
+import { ErrorState } from '../components/QueryState'
+import EmptyState from '../components/EmptyState'
 import ArticoloCard from '../components/ArticoloCard'
 import { useDrops, useCreateDrop, useUpdateDrop, useDeleteDrop, type Drop } from '../features/drops/queries'
 import { dropFields, DROP_EMPTY_VALUES } from '../features/drops/formFields'
@@ -159,7 +160,16 @@ export default function Drops() {
         }
       />
 
-      {isLoading && <Loading label="Caricamento drop…" />}
+      {isLoading && (
+        <div className="drop-row" aria-hidden>
+          <div className="skeleton" style={{ height: 20, width: 220, marginBottom: 12 }} />
+          <div className="art-scroll">
+            {Array.from({ length: 5 }, (_, i) => (
+              <div key={i} className="skeleton" style={{ width: 190, height: 190 }} />
+            ))}
+          </div>
+        </div>
+      )}
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
 
       {!isLoading && !isError && (
@@ -204,7 +214,7 @@ export default function Drops() {
               </div>
             )
           })}
-          {sortedDrops.length === 0 && <div className="empty">Nessun drop. Creane uno.</div>}
+          {sortedDrops.length === 0 && <EmptyState icon="box" text="Nessun drop. Creane uno." ctaLabel="+ Drop" onCta={openCreateDrop} />}
 
           {orphanArticoli.length > 0 && (
             <div className="drop-row">

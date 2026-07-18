@@ -3,6 +3,7 @@ import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
+import EmptyState from '../components/EmptyState'
 import OwnerBadge from '../components/OwnerBadge'
 import {
   useDrops,
@@ -307,7 +308,7 @@ export default function Timeline() {
               </div>
             )
           })}
-          {sortedDrops.length === 0 && <div className="empty">Nessun drop pianificato.</div>}
+          {sortedDrops.length === 0 && <EmptyState icon="calendar" text="Nessun drop pianificato." ctaLabel="+ Nuovo drop" onCta={openCreateDrop} />}
         </>
       )}
 

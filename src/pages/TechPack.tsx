@@ -3,6 +3,7 @@ import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
+import EmptyState from '../components/EmptyState'
 import OwnerBadge from '../components/OwnerBadge'
 import TechpackFolder from '../components/TechpackFolder'
 import {
@@ -234,7 +235,7 @@ export default function TechPack() {
             )
           })}
           {(techpacks ?? []).length === 0 && (
-            <div className="empty">Nessun tech pack. Creane uno dal design approvato.</div>
+            <EmptyState icon="note" text="Nessun tech pack. Creane uno dal design approvato." ctaLabel="+ Nuovo tech pack" onCta={openCreate} />
           )}
         </div>
       )}

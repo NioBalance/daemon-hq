@@ -3,6 +3,7 @@ import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
+import EmptyState from '../components/EmptyState'
 import OwnerBadge from '../components/OwnerBadge'
 import NotesList from '../components/NotesList'
 import { useChats, useCreateChat, useUpdateChat, useDeleteChat, type Chat } from '../features/chats/queries'
@@ -292,7 +293,7 @@ export default function Chats() {
 
           <span className="code">DA SEGUIRE ({open.length})</span>
           <div style={{ marginTop: 10 }}>
-            {open.length ? open.map(chatCard) : <div className="empty" style={{ padding: 18 }}>Nessuna conversazione aperta.</div>}
+            {open.length ? open.map(chatCard) : <EmptyState icon="chat" text="Nessuna conversazione aperta." ctaLabel="+ Conversazione" onCta={openCreate} />}
           </div>
 
           {closed.length > 0 && (

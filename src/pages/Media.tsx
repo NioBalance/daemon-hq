@@ -2,7 +2,7 @@ import { useRef, useState, type FormEvent } from 'react'
 import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
-import { Loading, ErrorState } from '../components/QueryState'
+import { ErrorState } from '../components/QueryState'
 import MediaLightbox from '../components/MediaLightbox'
 import { useMediaItems, useCreateMedia, type MediaItem } from '../features/media/queries'
 import { useMediaTags, useAddMediaTag } from '../features/mediaTags/queries'
@@ -188,7 +188,20 @@ export default function MediaStudio() {
         actions={<span className="code">{allMedia.length} ASSET</span>}
       />
 
-      {isLoading && <Loading label="Caricamento media…" />}
+      {isLoading && (
+        <div className="ms-cols" aria-hidden>
+          {[0, 1, 2].map((c) => (
+            <div className="ms-col" key={c}>
+              <div className="skeleton" style={{ height: 14, width: '50%', margin: '0 auto 14px' }} />
+              <div className="ms-scroll">
+                {Array.from({ length: 4 }, (_, i) => (
+                  <div key={i} className="skeleton" style={{ width: 92, height: 92 }} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
       {tagsQ.isError && (
         <div className="empty">

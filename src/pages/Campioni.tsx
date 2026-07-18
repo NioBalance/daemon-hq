@@ -3,6 +3,7 @@ import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
+import EmptyState from '../components/EmptyState'
 import GadgetRow from '../components/GadgetRow'
 import OwnerBadge from '../components/OwnerBadge'
 import { useSamples, useCreateSample, useUpdateSample, useDeleteSample, type Sample } from '../features/samples/queries'
@@ -227,7 +228,7 @@ export default function Campioni() {
               </div>
             )
           })}
-          {(samples ?? []).length === 0 && <div className="empty">Nessun campione registrato.</div>}
+          {(samples ?? []).length === 0 && <EmptyState icon="star" text="Nessun campione registrato." ctaLabel="+ Nuovo campione" onCta={openCreate} />}
         </div>
       )}
 

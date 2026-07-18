@@ -3,6 +3,7 @@ import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import type { FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
+import EmptyState from '../components/EmptyState'
 import { useMemos, useCreateMemo, useUpdateMemo, useDeleteMemo, type Memo } from '../features/memos/queries'
 import { useAuth } from '../auth/useAuth'
 import { useToast } from '../lib/useToast'
@@ -229,7 +230,7 @@ export default function Notes() {
               </div>
             </>
           )}
-          {all.length === 0 && <div className="empty">Bacheca vuota. Scrivi la prima nota del team.</div>}
+          {all.length === 0 && <EmptyState icon="note" text="Bacheca vuota. Scrivi la prima nota del team." ctaLabel="Scrivi una nota" onCta={() => document.getElementById('memo-new-testo')?.focus()} />}
         </>
       )}
 
