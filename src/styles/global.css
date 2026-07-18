@@ -36,18 +36,12 @@ header{position:sticky;top:0;z-index:var(--z-header);padding:calc(20px + env(saf
 .logo{font-family:var(--font-d);font-size:clamp(28px,5vw,42px);letter-spacing:.04em;text-transform:uppercase;line-height:1}
 .logo .ae{color:var(--ember)}
 .hdr-sub{font-family:var(--font-m);font-size:10px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
-/* Stella centrale: lunetta black-glass TRAPEZOIDALE che esce dall'alto —
-   lato inferiore più largo (perspective+rotateX con origine in alto, così
-   il radius resta morbido), angoli arrotondati solo in basso, hairline di
-   luce solo sul bordo inferiore, ombra che scende sotto. Fondo in gradiente
-   GRADUALE dal nero pieno (alto, alpha 0 sul void) a un nero appena più
-   chiaro (basso): nessuno stacco di colore. Il glow ember pulsante resta
-   DENTRO il pannello (overflow hidden). */
-.star-logo-wrap{position:absolute;top:0;left:50%;transform:translateX(-50%) perspective(700px) rotateX(-8deg);transform-origin:50% 0;z-index:1;display:flex;align-items:center;justify-content:center;width:104px;height:calc(64px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);cursor:pointer;background:linear-gradient(180deg,rgba(234,230,222,0) 0%,rgba(234,230,222,.03) 55%,rgba(234,230,222,.05) 100%);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:none;border-radius:0 0 22px 22px;overflow:hidden;box-shadow:0 18px 30px -12px rgba(0,0,0,.6),0 5px 10px -5px rgba(0,0,0,.55)}
-.star-logo-wrap::before{content:'';position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(226,56,42,.6) 0%,rgba(226,56,42,0) 70%);filter:blur(14px);animation:starGlow 6s ease-in-out infinite}
-.star-logo-wrap::after{content:'';position:absolute;bottom:0;left:14%;right:14%;height:1px;background:linear-gradient(90deg,transparent,rgba(234,230,222,.55),transparent)}
+/* Stella centrale completamente libera: nessun container, nessuna ombra —
+   solo il logo col suo glow ember pulsante. */
+.star-logo-wrap{position:absolute;top:calc(8px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:1;display:flex;align-items:center;justify-content:center;width:64px;height:56px;cursor:pointer;background:none;border:none;padding:0}
+.star-logo-wrap::before{content:'';position:absolute;inset:-16px;border-radius:50%;background:radial-gradient(circle,rgba(226,56,42,.6) 0%,rgba(226,56,42,0) 70%);filter:blur(16px);animation:starGlow 6s ease-in-out infinite}
 .star-logo-wrap img{position:relative;width:34px;height:34px;object-fit:contain}
-.star-logo-wrap:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+.star-logo-wrap:focus-visible{outline:2px solid var(--ember);outline-offset:3px;border-radius:50%}
 @keyframes starGlow{0%,100%{opacity:.25}50%{opacity:.45}}
 @media (prefers-reduced-motion:reduce){.star-logo-wrap::before{animation:none;opacity:.35}}
 @media (max-width:640px){.star-logo-wrap{display:none}}
@@ -68,7 +62,10 @@ header{position:sticky;top:0;z-index:var(--z-header);padding:calc(20px + env(saf
    graduale da trasparente (alto) a +3% bone (basso). */
 .nav-groups{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:12px auto 0;max-width:1240px;width:100%;padding-bottom:12px;position:relative;z-index:2}
 .nav-group{position:relative;display:flex;flex-direction:column;align-items:center;padding:8px 12px 12px;transform:scale(calc(1 + .04*var(--prox,0)));transform-origin:50% 0;transition:transform var(--dur) var(--ease-out)}
-.nav-group::before{content:'';position:absolute;inset:0;border-radius:14px;border-top:1px solid rgba(234,230,222,.1);background:linear-gradient(180deg,rgba(234,230,222,0) 0%,rgba(234,230,222,.035) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transform:perspective(700px) rotateX(8deg);transform-origin:50% 100%;pointer-events:none}
+/* Trapezio esplicito: top rientrato dell'8% per lato, base piena — i lati
+   obliqui si vedono a colpo d'occhio. Il border-top viene clippato dal
+   polygon sul solo segmento superiore: è l'hairline di luce. */
+.nav-group::before{content:'';position:absolute;inset:0;clip-path:polygon(8% 0,92% 0,100% 100%,0 100%);border-top:1px solid rgba(234,230,222,.12);background:linear-gradient(180deg,rgba(234,230,222,.02) 0%,rgba(234,230,222,.045) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);pointer-events:none}
 /* Spider lines: SVG overlay disegnato da NavGroups misurando titolo e voci. */
 .spider{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .spider path{opacity:calc(.35 + .45*var(--prox,0));transition:opacity var(--dur) var(--ease-out)}
