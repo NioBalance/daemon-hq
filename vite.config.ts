@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/favicon-48.png', 'icons/apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'icons/favicon-48.png', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'DÆMON — Production HQ',
         short_name: 'DÆMON HQ',
