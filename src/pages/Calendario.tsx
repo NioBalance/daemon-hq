@@ -5,6 +5,7 @@ import FormFields, { type FieldDef, type FormValues } from '../components/FormFi
 import { Loading, ErrorState } from '../components/QueryState'
 import { useEvents, useCreateEvent, useUpdateEvent, useDeleteEvent, type EventRow } from '../features/events/queries'
 import { useDrops, useDropFasi } from '../features/drops/queries'
+import { useLinks, useUpdateLink } from '../features/links/queries'
 import { fmtDate, todayIso } from '../lib/format'
 import { useToast } from '../lib/useToast'
 import { useFormDraft } from '../lib/useFormDraft'
@@ -30,6 +31,9 @@ interface CalEvent {
 
 const DOW = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
 
+/** Riga fissa di links (seed migration 0005) che ospita l'URL dell'iframe. */
+const EMBED_LINK_ID = 'a0000008-0000-0000-0000-000000000008'
+
 export default function Calendario() {
   const now = new Date()
   const [calY, setCalY] = useState(now.getFullYear())
@@ -48,6 +52,36 @@ export default function Calendario() {
   const [values, setValues] = useState<FormValues>({ titolo: '', data: '', tipo: 'meeting', note: '' })
   const [formError, setFormError] = useState<string | null>(null)
   const draft = useFormDraft(`evento:${editing?.id ?? 'new'}`, modalOpen, values, setValues)
+
+  // Embed Google Calendar (§6.1): iframe ufficiale + la Vista HQ resta come
+  // vista secondaria (è l'unica dove le date drop/fasi entrano da sole).
+  const { data: links } = useLinks()
+  const updateLink = useUpdateLink()
+  const embedLink = links?.find((l) => l.id === EMBED_LINK_ID)
+  const [calView, setCalView] = useState<'embed' | 'hq'>('embed')
+  const [embedInput, setEmbedInput] = useState('')
+
+  async function saveEmbedUrl() {
+    // Accetta sia l'URL diretto sia l'intero snippet <iframe …> di Google.
+    const raw = embedInput.trim()
+    const srcMatch = raw.match(/src="([^"]+)"/)
+    const url = (srcMatch ? srcMatch[1] : raw).replace(/&amp;/g, '&')
+    if (!url.startsWith('https://calendar.google.com/')) {
+      showToast('error', "L'URL deve essere un embed di Google Calendar (calendar.google.com/calendar/embed?...).")
+      return
+    }
+    try {
+      await updateLink.mutateAsync({ id: EMBED_LINK_ID, patch: { url } })
+      showToast('success', 'Calendario collegato per tutto il team.')
+    } catch (err) {
+      showToast(
+        'error',
+        err instanceof Error
+          ? `${err.message} — se la riga non esiste, esegui la migration 0005_fase4.sql.`
+          : 'Salvataggio non riuscito.',
+      )
+    }
+  }
 
   useRegisterNewAction(openCreate)
 
@@ -202,10 +236,49 @@ export default function Calendario() {
         }
       />
 
-      {isLoading && <Loading label="Caricamento calendario…" />}
-      {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
+      <div className="chips">
+        <button className={`chip${calView === 'embed' ? ' active' : ''}`} onClick={() => setCalView('embed')}>
+          Google Calendar
+        </button>
+        <button className={`chip${calView === 'hq' ? ' active' : ''}`} onClick={() => setCalView('hq')}>
+          Vista HQ
+        </button>
+      </div>
 
-      {!isLoading && !isError && (
+      {calView === 'embed' &&
+        (embedLink?.url ? (
+          <div className="cal-embed-wrap">
+            <iframe src={embedLink.url} className="cal-embed" title="Google Calendar" loading="lazy" />
+            <p className="code" style={{ display: 'block', marginTop: 8 }}>
+              URL CONFIGURATO IN ARCHIVIO → LINK («GOOGLE CALENDAR — EMBED») · LE SCADENZE AUTOMATICHE DEI
+              DROP RESTANO NELLA VISTA HQ
+            </p>
+          </div>
+        ) : (
+          <div className="card" style={{ maxWidth: 640 }}>
+            <span className="code">GOOGLE CALENDAR — CONFIGURAZIONE EMBED</span>
+            <p className="card-meta" style={{ margin: '8px 0' }}>
+              Da Google Calendar: Impostazioni → il tuo calendario → «Integra calendario» → copia l'URL
+              dell'iframe (o l'intero snippet) e incollalo qui. Vale per tutto il team e resta modificabile
+              da Archivio → Link.
+            </p>
+            <div className="noteadd">
+              <input
+                value={embedInput}
+                onChange={(e) => setEmbedInput(e.target.value)}
+                placeholder="https://calendar.google.com/calendar/embed?src=…"
+              />
+              <button className="btn sm" onClick={saveEmbedUrl} disabled={updateLink.isPending}>
+                Salva
+              </button>
+            </div>
+          </div>
+        ))}
+
+      {calView === 'hq' && isLoading && <Loading label="Caricamento calendario…" />}
+      {calView === 'hq' && isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
+
+      {!isLoading && !isError && calView === 'hq' && (
         <>
           <div className="cal-head">
             <button className="btn sm ghost" onClick={() => calNav(-1)}>

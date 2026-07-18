@@ -24,7 +24,9 @@ export type MediaTag =
   | 'bozze'
   | 'reel'
 export type EventTipo = 'meeting' | 'deadline' | 'lancio'
-export type NoteEntityType = 'articoli' | 'gadgets' | 'inspo' | 'media' | 'chats'
+export type NoteEntityType = 'articoli' | 'gadgets' | 'inspo' | 'media' | 'chats' | 'techpacks'
+export type MemoColore = 'decisione' | 'idea' | 'urgente'
+export type TechpackFileTipo = 'img' | 'pdf' | 'link'
 
 export interface Database {
   public: {
@@ -396,6 +398,51 @@ export interface Database {
           tag: MediaTag
         }
         Update: Partial<Database['public']['Tables']['media_tags']['Insert']>
+        Relationships: []
+      }
+
+      team_memos: {
+        Row: {
+          id: string
+          author_id: string | null
+          author_name: string
+          testo: string
+          pin: boolean
+          colore: MemoColore | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          author_id?: string | null
+          author_name: string
+          testo: string
+          pin?: boolean
+          colore?: MemoColore | null
+        }
+        Update: Partial<Database['public']['Tables']['team_memos']['Insert']>
+        Relationships: []
+      }
+
+      techpack_files: {
+        Row: {
+          id: string
+          techpack_id: string
+          nome: string
+          tipo: TechpackFileTipo
+          path: string | null
+          url: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          techpack_id: string
+          nome: string
+          tipo: TechpackFileTipo
+          path?: string | null
+          url?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['techpack_files']['Insert']>
         Relationships: []
       }
 

@@ -58,7 +58,7 @@ function AppShell() {
   const [activeTab, setActiveTab] = useState<TabKey>('overview')
   const [editingProfile, setEditingProfile] = useState(false)
   const [catFilter, setCatFilter] = useState('__all__')
-  const [archTab, setArchTab] = useState<ArchTab>('gadgets')
+  const [archTab, setArchTab] = useState<ArchTab>('inspo')
   const [articoloId, setArticoloId] = useState<string | null>(null)
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)

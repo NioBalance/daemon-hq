@@ -8,6 +8,7 @@ export const ALLOWED_MIME_TYPES = [
   'audio/mpeg',
   'video/mp4',
   'video/quicktime',
+  'application/pdf',
 ] as const
 
 const IMAGE_MAX_DIM = 1600
@@ -76,7 +77,7 @@ function compressImage(file: File): Promise<Blob> {
  * decide come mostrarlo, es. toast) o null se il file va bene. */
 export function validateMediaFile(file: File): string | null {
   if (!(ALLOWED_MIME_TYPES as readonly string[]).includes(file.type)) {
-    return `Formato non supportato (${file.type || 'sconosciuto'}). Usa JPEG, PNG, WEBP, MP3, MP4 o MOV.`
+    return `Formato non supportato (${file.type || 'sconosciuto'}). Usa JPEG, PNG, WEBP, PDF, MP3, MP4 o MOV.`
   }
   if (!isImage(file) && file.size > MAX_FILE_BYTES) {
     return `File troppo grande (${formatMb(file.size)} MB, massimo 5 MB). Per i video preferisci un link (Drive/Dropbox) invece di caricarli qui.`

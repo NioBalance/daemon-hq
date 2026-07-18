@@ -434,6 +434,59 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .lightbox-panel{max-width:680px;margin:10px auto 0;width:100%;background:var(--glass-3);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border:var(--glass-border);border-radius:var(--radius-md);box-shadow:var(--shadow-elevation);padding:12px 14px;max-height:42vh;overflow-y:auto}
 .lightbox-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 
+/* NOTE / MEMO — bacheca team */
+.memo-new{margin-bottom:20px}
+.memo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin:10px 0 22px}
+.memo-card{border-left:3px solid var(--steel)}
+.memo-card.pinned{border-left-color:var(--ember)}
+.memo-card.c-decisione{border-left-color:var(--ok)}
+.memo-card.c-idea{border-left-color:var(--amber)}
+.memo-card.c-urgente{border-left-color:var(--ember)}
+.memo-text{margin-top:8px;font-size:14px;white-space:pre-wrap}
+.badge.memo-tag.decisione,.chip.memo-tag.decisione.active{border-color:var(--ok);color:var(--ok)}
+.badge.memo-tag.idea,.chip.memo-tag.idea.active{border-color:var(--amber);color:var(--amber)}
+.badge.memo-tag.urgente,.chip.memo-tag.urgente.active{border-color:var(--ember);color:var(--ember)}
+
+/* TIMELINE — vista anno intero */
+.year-wrap{background:var(--glass-1);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border:var(--glass-border);border-radius:var(--radius-md);box-shadow:var(--shadow-elevation);padding:16px}
+.year-months{display:grid;grid-template-columns:repeat(12,1fr);margin-bottom:6px}
+.year-month{font-family:var(--font-m);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center;border-left:1px dashed var(--line);padding:4px 0}
+.year-row{position:relative;height:36px;border-bottom:1px dashed var(--line)}
+.year-row:last-of-type{border-bottom:none}
+.year-bar{position:absolute;top:5px;height:26px;display:flex;align-items:center;padding:0 10px;border:none;border-radius:var(--radius-pill);background:linear-gradient(90deg,var(--ember-dim),var(--ember));color:var(--bone);font-family:var(--font-b);font-weight:500;font-size:11px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;box-shadow:0 0 14px rgba(226,56,42,.25);transition:box-shadow var(--dur)}
+.year-bar:hover{box-shadow:var(--glow-ember)}
+.year-bar.launched{background:linear-gradient(90deg,rgba(87,179,108,.4),var(--ok));box-shadow:0 0 14px rgba(87,179,108,.2)}
+.year-bar.launched:hover{box-shadow:0 0 24px rgba(87,179,108,.4)}
+
+/* TECH PACK — bordo stato + cartella file */
+.tp-card{border-left:3px solid var(--steel)}
+.tp-card.tp-inviato{border-left-color:var(--amber)}
+.tp-card.tp-confermato{border-left-color:var(--ok)}
+.tp-card.tp-in-produzione{border-left-color:var(--ember)}
+.tpf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.tpf-item{position:relative;background:var(--surface2);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden}
+.tpf-preview{display:flex;align-items:center;justify-content:center;height:90px;background:var(--void);text-decoration:none}
+.tpf-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.tpf-icon{font-family:var(--font-m);font-size:16px;letter-spacing:.1em;color:var(--muted)}
+.tpf-name{font-family:var(--font-m);font-size:9px;color:var(--muted);padding:5px 22px 5px 7px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.tpf-item .tx{position:absolute;right:4px;bottom:3px;background:none;border:none;color:var(--steel);cursor:pointer}
+.tpf-item .tx:hover{color:var(--ember)}
+
+/* GADGET — riga orizzontale in Campioni/Catalogo */
+.gadget-row{margin-top:6px}
+.gadget-scroll{display:grid;grid-auto-flow:column;grid-auto-columns:250px;gap:10px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+
+/* CALENDARIO — embed Google */
+.cal-embed-wrap{background:var(--glass-1);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border:var(--glass-border);border-radius:var(--radius-md);box-shadow:var(--shadow-elevation);padding:10px}
+.cal-embed{width:100%;height:min(72vh,760px);border:none;border-radius:var(--radius-sm);background:var(--bone)}
+
+/* CHATS — bottoni canale grandi */
+.chan-card.chan-big{padding:16px}
+.chan-card.chan-big a{font-size:16px}
+.chan-icon{width:44px;height:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--line);border-radius:var(--radius-md);color:var(--ember)}
+.chan-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.chan-card.chan-big:hover .chan-icon{box-shadow:var(--glow-ember)}
+
 /* SCORCIATOIE */
 .kbd{display:inline-block;font-family:var(--font-m);font-size:11px;line-height:1;background:var(--surface2);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:3px 7px;color:var(--bone)}
 .shortcut-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}

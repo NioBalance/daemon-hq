@@ -17,7 +17,7 @@ import {
   type DropFase,
 } from '../features/drops/queries'
 import { dropFields, DROP_EMPTY_VALUES, faseFields } from '../features/drops/formFields'
-import { fmtDate, daysUntil } from '../lib/format'
+import { fmtDate, daysUntil, addDaysIso } from '../lib/format'
 import { useToast } from '../lib/useToast'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
@@ -33,6 +33,8 @@ export default function Timeline() {
   const deleteFase = useDeleteFase()
   const showToast = useToast()
 
+  const [view, setView] = useState<'drop' | 'anno'>('drop')
+  const [year, setYear] = useState(new Date().getFullYear())
   const [dropModal, setDropModal] = useState<'none' | 'create' | 'edit'>('none')
   const [editingDrop, setEditingDrop] = useState<Drop | null>(null)
   const [dropValues, setDropValues] = useState<FormValues>(DROP_EMPTY_VALUES)
@@ -142,6 +144,26 @@ export default function Timeline() {
 
   const sortedDrops = [...(drops ?? [])].sort((a, b) => (a.data_lancio ?? '9999').localeCompare(b.data_lancio ?? '9999'))
 
+  function gotoDrop(id: string) {
+    setView('drop')
+    window.setTimeout(
+      () => document.getElementById(`drop-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+      80,
+    )
+  }
+
+  // Vista anno: barre posizionate in percentuale sull'anno selezionato —
+  // inizio = prima fase datata (fallback lancio −30gg), fine = data lancio.
+  const yearStart = new Date(year, 0, 1).getTime()
+  const yearMs = new Date(year + 1, 0, 1).getTime() - yearStart
+  const pctOfYear = (iso: string) =>
+    Math.max(0, Math.min(100, ((new Date(iso + 'T00:00:00').getTime() - yearStart) / yearMs) * 100))
+  const dropsInYear = sortedDrops.filter(
+    (d) => d.data_lancio && new Date(d.data_lancio + 'T00:00:00').getFullYear() === year,
+  )
+  const dropsNoDate = sortedDrops.filter((d) => !d.data_lancio)
+  const MESI = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic']
+
   return (
     <>
       <PanelHead
@@ -154,10 +176,75 @@ export default function Timeline() {
         }
       />
 
+      <div className="chips">
+        <button className={`chip${view === 'drop' ? ' active' : ''}`} onClick={() => setView('drop')}>
+          Drop corrente
+        </button>
+        <button className={`chip${view === 'anno' ? ' active' : ''}`} onClick={() => setView('anno')}>
+          Anno intero
+        </button>
+      </div>
+
       {isLoading && <Loading label="Caricamento timeline…" />}
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
 
-      {!isLoading && !isError && (
+      {!isLoading && !isError && view === 'anno' && (
+        <div className="year-wrap">
+          <div className="cal-head">
+            <button className="btn sm ghost" onClick={() => setYear((y) => y - 1)}>
+              ←
+            </button>
+            <span className="cal-month">{year}</span>
+            <button className="btn sm ghost" onClick={() => setYear((y) => y + 1)}>
+              →
+            </button>
+          </div>
+          <div className="year-months">
+            {MESI.map((mese) => (
+              <div className="year-month" key={mese}>
+                {mese}
+              </div>
+            ))}
+          </div>
+          {dropsInYear.map((d) => {
+            const dropFasi = (fasi ?? []).filter((f) => f.drop_id === d.id)
+            const done = dropFasi.filter((f) => f.done).length
+            const dated = dropFasi.filter((f) => f.data).map((f) => f.data!)
+            const startIso = dated.length ? dated.reduce((a, b) => (a < b ? a : b)) : addDaysIso(d.data_lancio!, -30)
+            const left = pctOfYear(startIso)
+            const width = Math.max(3, pctOfYear(d.data_lancio!) - left)
+            const launched = daysUntil(d.data_lancio!) < 0
+            return (
+              <div className="year-row" key={d.id}>
+                <button
+                  className={`year-bar${launched ? ' launched' : ''}`}
+                  style={{ left: `${left}%`, width: `${width}%` }}
+                  onClick={() => gotoDrop(d.id)}
+                  title={`${d.nome} — lancio ${fmtDate(d.data_lancio)} · ${done}/${dropFasi.length} fasi`}
+                >
+                  {d.nome}
+                </button>
+              </div>
+            )
+          })}
+          {dropsInYear.length === 0 && <div className="empty">Nessun drop con data lancio nel {year}.</div>}
+          {dropsNoDate.length > 0 && (
+            <p className="code" style={{ display: 'block', marginTop: 10 }}>
+              SENZA DATA: {dropsNoDate.map((d) => d.nome).join(' · ')}
+            </p>
+          )}
+          <div className="legend" style={{ marginTop: 12 }}>
+            <span>
+              <i style={{ background: 'var(--ember)' }} /> In pipeline
+            </span>
+            <span>
+              <i style={{ background: 'var(--ok)' }} /> Lanciato
+            </span>
+          </div>
+        </div>
+      )}
+
+      {!isLoading && !isError && view === 'drop' && (
         <>
           {sortedDrops.map((d) => {
             const dropFasi = (fasi ?? []).filter((f) => f.drop_id === d.id)
@@ -165,7 +252,7 @@ export default function Timeline() {
             const tot = dropFasi.length
             const days = d.data_lancio ? daysUntil(d.data_lancio) : null
             return (
-              <div className="drop-card" key={d.id}>
+              <div className="drop-card" key={d.id} id={`drop-${d.id}`}>
                 <div className="row" style={{ justifyContent: 'space-between' }}>
                   <div>
                     <div className="card-title" style={{ fontSize: 19, margin: 0 }}>

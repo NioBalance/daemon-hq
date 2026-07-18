@@ -80,11 +80,12 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
             .map((f) => ({ id: `for-${f.id}`, label: f.nome, type: 'Fornitore', tab: 'fornitori' as TabKey })),
         },
         {
+          // I gadget vivono nella riga dentro Catalogo (e Campioni), §5.1.
           heading: 'Gadget',
           hits: gadgets
             .filter((g) => matches(g.nome))
             .slice(0, MAX_PER_GROUP)
-            .map((g) => ({ id: `gad-${g.id}`, label: g.nome, type: 'Gadget', tab: 'archivio' as TabKey, archTab: 'gadgets' as ArchTab })),
+            .map((g) => ({ id: `gad-${g.id}`, label: g.nome, type: 'Gadget', tab: 'catalogo' as TabKey })),
         },
         {
           heading: 'Inspo',

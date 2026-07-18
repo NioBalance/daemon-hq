@@ -5,21 +5,24 @@ import FormFields, { type FieldDef, type FormValues } from '../components/FormFi
 import { Loading, ErrorState } from '../components/QueryState'
 import FolderCard from '../components/FolderCard'
 import LinkCard from '../components/LinkCard'
-import { useGadgets, useCreateGadget, useUpdateGadget, useDeleteGadget, type Gadget } from '../features/gadgets/queries'
 import { useInspo, useCreateInspo, useUpdateInspo, useDeleteInspo, type Inspo } from '../features/inspo/queries'
 import { useLinks, useCreateLink, useUpdateLink, useDeleteLink, type BrandLink } from '../features/links/queries'
 import { useToast } from '../lib/useToast'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useNav, useRegisterNewAction } from '../lib/navigation'
 
+// I gadget non vivono più qui (§5.1): sono una riga orizzontale dentro
+// Campioni e Catalogo (components/GadgetRow).
+
+const TITLE_FIELDS: FieldDef[] = [{ key: 'value', label: 'Titolo / idea prodotto' }]
+const LINK_FIELDS: FieldDef[] = [
+  { key: 'label', label: 'Nome (es. Google Drive — DÆMON)' },
+  { key: 'url', label: 'URL completo (https://…)' },
+]
+
 export default function Archivio() {
   const showToast = useToast()
   const { archTab, setArchTab } = useNav()
-
-  const gadgets = useGadgets()
-  const createGadget = useCreateGadget()
-  const updateGadget = useUpdateGadget()
-  const deleteGadget = useDeleteGadget()
 
   const inspo = useInspo()
   const createInspo = useCreateInspo()
@@ -31,7 +34,7 @@ export default function Archivio() {
   const updateLink = useUpdateLink()
   const deleteLink = useDeleteLink()
 
-  const [titleModal, setTitleModal] = useState<{ mode: 'gadget' | 'inspo'; id: string | null } | null>(null)
+  const [titleModal, setTitleModal] = useState<{ id: string | null } | null>(null)
   const [titleValue, setTitleValue] = useState('')
   const [titleError, setTitleError] = useState<string | null>(null)
 
@@ -40,12 +43,12 @@ export default function Archivio() {
   const [linkValues, setLinkValues] = useState<FormValues>({ label: '', url: '' })
   const [linkError, setLinkError] = useState<string | null>(null)
 
-  // Il modal titolo (gadget/inspo) usa una stringa singola: wrapper stabili
-  // per adattarla alla forma FormValues richiesta dal sistema bozze.
+  // Il modal titolo usa una stringa singola: wrapper stabili per adattarla
+  // alla forma FormValues richiesta dal sistema bozze.
   const titleDraftValues = useMemo(() => ({ value: titleValue }), [titleValue])
   const setTitleDraftValues = useCallback((v: FormValues) => setTitleValue(String(v.value ?? '')), [])
   const titleDraft = useFormDraft(
-    `archivio-${titleModal?.mode ?? 'titolo'}:${titleModal?.id ?? 'new'}`,
+    `archivio-inspo:${titleModal?.id ?? 'new'}`,
     titleModal !== null,
     titleDraftValues,
     setTitleDraftValues,
@@ -57,35 +60,17 @@ export default function Archivio() {
     setLinkValues,
   )
 
-  useRegisterNewAction(() =>
-    archTab === 'gadgets' ? openAddGadget() : archTab === 'inspo' ? openAddInspo() : openCreateLink(),
-  )
+  useRegisterNewAction(() => (archTab === 'inspo' ? openAddInspo() : openCreateLink()))
 
-  const TITLE_FIELDS: FieldDef[] = [{ key: 'value', label: archTab === 'inspo' ? 'Titolo / idea prodotto' : 'Nome gadget' }]
-  const LINK_FIELDS: FieldDef[] = [
-    { key: 'label', label: 'Nome (es. Google Drive — DÆMON)' },
-    { key: 'url', label: 'URL completo (https://…)' },
-  ]
-
-  function openAddGadget() {
-    setTitleValue('')
-    setTitleError(null)
-    setTitleModal({ mode: 'gadget', id: null })
-  }
-  function openEditGadget(g: Gadget) {
-    setTitleValue(g.nome)
-    setTitleError(null)
-    setTitleModal({ mode: 'gadget', id: g.id })
-  }
   function openAddInspo() {
     setTitleValue('')
     setTitleError(null)
-    setTitleModal({ mode: 'inspo', id: null })
+    setTitleModal({ id: null })
   }
   function openEditInspo(i: Inspo) {
     setTitleValue(i.titolo)
     setTitleError(null)
-    setTitleModal({ mode: 'inspo', id: i.id })
+    setTitleModal({ id: i.id })
   }
 
   async function handleTitleSubmit(e: FormEvent) {
@@ -96,19 +81,15 @@ export default function Archivio() {
       return
     }
     try {
-      let successMsg: string
-      if (titleModal.mode === 'gadget') {
-        if (titleModal.id) await updateGadget.mutateAsync({ id: titleModal.id, patch: { nome: trimmed } })
-        else await createGadget.mutateAsync({ nome: trimmed, ordine: (gadgets.data?.length ?? 0) })
-        successMsg = titleModal.id ? 'Gadget aggiornato.' : 'Gadget creato.'
+      if (titleModal.id) {
+        await updateInspo.mutateAsync({ id: titleModal.id, patch: { titolo: trimmed } })
+        showToast('success', 'Inspirazione aggiornata.')
       } else {
-        if (titleModal.id) await updateInspo.mutateAsync({ id: titleModal.id, patch: { titolo: trimmed } })
-        else await createInspo.mutateAsync({ titolo: trimmed, ordine: (inspo.data?.length ?? 0) })
-        successMsg = titleModal.id ? 'Inspirazione aggiornata.' : 'Inspirazione creata.'
+        await createInspo.mutateAsync({ titolo: trimmed, ordine: inspo.data?.length ?? 0 })
+        showToast('success', 'Inspirazione creata.')
       }
       titleDraft.clear()
       setTitleModal(null)
-      showToast('success', successMsg)
     } catch (err) {
       setTitleError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
     }
@@ -150,15 +131,6 @@ export default function Archivio() {
     }
   }
 
-  async function handleDeleteGadget(g: Gadget) {
-    if (!window.confirm('Eliminare?')) return
-    try {
-      await deleteGadget.mutateAsync(g.id)
-      showToast('success', 'Gadget eliminato.')
-    } catch (err) {
-      showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
-    }
-  }
   async function handleDeleteInspo(i: Inspo) {
     if (!window.confirm('Eliminare?')) return
     try {
@@ -178,25 +150,19 @@ export default function Archivio() {
     }
   }
 
-  const activeQuery = archTab === 'gadgets' ? gadgets : archTab === 'inspo' ? inspo : links
+  const activeQuery = archTab === 'inspo' ? inspo : links
 
   return (
     <>
       <PanelHead
         title="Archivio"
         actions={
-          <button
-            className="btn"
-            onClick={archTab === 'gadgets' ? openAddGadget : archTab === 'inspo' ? openAddInspo : openCreateLink}
-          >
-            + {archTab === 'gadgets' ? 'Gadget' : archTab === 'inspo' ? 'Inspirazione' : 'Link'}
+          <button className="btn" onClick={archTab === 'inspo' ? openAddInspo : openCreateLink}>
+            + {archTab === 'inspo' ? 'Inspirazione' : 'Link'}
           </button>
         }
       />
       <div className="subtabs">
-        <button className={`chip${archTab === 'gadgets' ? ' active' : ''}`} onClick={() => setArchTab('gadgets')}>
-          Gadget ({gadgets.data?.length ?? 0})
-        </button>
         <button className={`chip${archTab === 'inspo' ? ' active' : ''}`} onClick={() => setArchTab('inspo')}>
           Inspirazione ({inspo.data?.length ?? 0})
         </button>
@@ -210,33 +176,11 @@ export default function Archivio() {
         <ErrorState message={(activeQuery.error as Error).message} onRetry={() => activeQuery.refetch()} />
       )}
 
-      {!activeQuery.isLoading && !activeQuery.isError && archTab === 'gadgets' && (
-        <>
-          <div className="panel-desc" style={{ marginBottom: 14 }}>
-            Accessori e omaggi del brand: foto + annotazioni firmate del team.
-          </div>
-          <div className="folder-grid">
-            {(gadgets.data ?? []).map((g) => (
-              <FolderCard
-                key={g.id}
-                id={g.id}
-                title={g.nome}
-                imgPath={g.img_path}
-                entityType="gadgets"
-                onEditTitle={() => openEditGadget(g)}
-                onDelete={() => handleDeleteGadget(g)}
-                onImageUploaded={(path) => updateGadget.mutate({ id: g.id, patch: { img_path: path } })}
-              />
-            ))}
-          </div>
-          {(gadgets.data ?? []).length === 0 && <div className="empty">Nessun gadget. Aggiungi il primo.</div>}
-        </>
-      )}
-
       {!activeQuery.isLoading && !activeQuery.isError && archTab === 'inspo' && (
         <>
           <div className="panel-desc" style={{ marginBottom: 14 }}>
-            Screenshot e idee prodotto da tenere d'occhio. Carica lo screen, annota chi l'ha proposto e perché.
+            Screenshot e idee prodotto da tenere d'occhio. Carica lo screen, annota chi l'ha proposto e perché. I
+            gadget vivono ora dentro Campioni e Catalogo.
           </div>
           <div className="folder-grid">
             {(inspo.data ?? []).map((i) => (
@@ -268,7 +212,7 @@ export default function Archivio() {
       )}
 
       {titleModal && (
-        <Modal title={titleModal.id ? 'Modifica' : titleModal.mode === 'inspo' ? 'Nuova inspirazione' : 'Nuovo gadget'} onClose={() => setTitleModal(null)}>
+        <Modal title={titleModal.id ? 'Modifica' : 'Nuova inspirazione'} onClose={() => setTitleModal(null)}>
           <form onSubmit={handleTitleSubmit}>
             <FormFields
               fields={TITLE_FIELDS}

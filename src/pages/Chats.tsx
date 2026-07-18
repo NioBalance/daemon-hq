@@ -46,6 +46,40 @@ const CHANNEL_FIELDS: FieldDef[] = [
   { key: 'url', label: 'URL (es. app.manychat.com…)' },
 ]
 
+/** Icona per i bottoni scorciatoia dei canali (§6.2), scelta dal nome. */
+function ChannelIcon({ label }: { label: string }) {
+  const l = label.toLowerCase()
+  if (l.includes('whatsapp') || l.startsWith('wa'))
+    return (
+      <svg viewBox="0 0 24 24">
+        <path d="M21 11.5a8.5 8.5 0 0 1-12.7 7.4L4 20l1.2-4.1A8.5 8.5 0 1 1 21 11.5z" />
+        <path d="M9 9.5c.5 2.5 3 5 5.5 5.5l1-1.5-2-1-1 .5c-.8-.5-1.5-1.2-2-2l.5-1-1-2z" />
+      </svg>
+    )
+  if (l.includes('instagram') || l.includes('direct'))
+    return (
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.2" cy="6.8" r="0.6" />
+      </svg>
+    )
+  if (l.includes('manychat') || l.includes('bot'))
+    return (
+      <svg viewBox="0 0 24 24">
+        <rect x="4" y="7" width="16" height="12" rx="3" />
+        <circle cx="9" cy="13" r="1" />
+        <circle cx="15" cy="13" r="1" />
+        <line x1="12" y1="3" x2="12" y2="7" />
+      </svg>
+    )
+  return (
+    <svg viewBox="0 0 24 24">
+      <path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z" />
+    </svg>
+  )
+}
+
 export default function Chats() {
   const { data: chats, isLoading, isError, error, refetch } = useChats()
   const createChat = useCreateChat()
@@ -219,8 +253,11 @@ export default function Chats() {
         <>
           <div className="chan-grid">
             {(channels ?? []).map((c) => (
-              <div className="chan-card" key={c.id}>
-                <div>
+              <div className="chan-card chan-big" key={c.id}>
+                <span className="chan-icon" aria-hidden>
+                  <ChannelIcon label={c.label} />
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   {c.url ? (
                     <a href={c.url} target="_blank" rel="noopener">
                       {c.label} ↗

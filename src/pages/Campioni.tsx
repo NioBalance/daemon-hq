@@ -3,6 +3,7 @@ import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
+import GadgetRow from '../components/GadgetRow'
 import OwnerBadge from '../components/OwnerBadge'
 import { useSamples, useCreateSample, useUpdateSample, useDeleteSample, type Sample } from '../features/samples/queries'
 import { useFornitori } from '../features/fornitori/queries'
@@ -224,6 +225,9 @@ export default function Campioni() {
           {(samples ?? []).length === 0 && <div className="empty">Nessun campione registrato.</div>}
         </div>
       )}
+
+      <hr className="divider" />
+      <GadgetRow />
 
       {modalMode !== 'none' && (
         <Modal title={modalMode === 'edit' ? 'Modifica campione' : 'Nuovo campione'} onClose={() => setModalMode('none')}>

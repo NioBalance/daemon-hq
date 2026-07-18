@@ -4,6 +4,7 @@ import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
 import OwnerBadge from '../components/OwnerBadge'
+import TechpackFolder from '../components/TechpackFolder'
 import {
   useTechpacks,
   useCreateTechpack,
@@ -12,6 +13,9 @@ import {
   type Techpack,
 } from '../features/techpacks/queries'
 import { useFornitori } from '../features/fornitori/queries'
+import { useTechpackFiles } from '../features/techpackFiles/queries'
+import { useAddNote } from '../features/notes/queries'
+import { useAuth } from '../auth/useAuth'
 import { OWNER_OPTS } from '../lib/tabs'
 import { useToast } from '../lib/useToast'
 import { useFormDraft } from '../lib/useFormDraft'
@@ -58,13 +62,17 @@ function techpackToValues(t: Techpack): FormValues {
 export default function TechPack() {
   const { data: techpacks, isLoading, isError, error, refetch } = useTechpacks()
   const { data: fornitori } = useFornitori()
+  const { data: tpFiles } = useTechpackFiles()
   const createTechpack = useCreateTechpack()
   const updateTechpack = useUpdateTechpack()
   const deleteTechpack = useDeleteTechpack()
+  const addNote = useAddNote('techpacks')
+  const { profile } = useAuth()
   const showToast = useToast()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [folderId, setFolderId] = useState<string | null>(null)
   const [values, setValues] = useState<FormValues>(EMPTY_VALUES)
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -125,10 +133,18 @@ export default function TechPack() {
     }
     try {
       if (modalMode === 'edit' && editingId) {
+        const original = techpacks?.find((t) => t.id === editingId)
         await updateTechpack.mutateAsync({ id: editingId, patch })
+        logChange(
+          editingId,
+          original && original.stato !== patch.stato
+            ? `ha cambiato lo stato in «${statoLabel(patch.stato)}»`
+            : 'ha aggiornato la scheda',
+        )
         showToast('success', 'Tech pack aggiornato.')
       } else {
-        await createTechpack.mutateAsync(patch)
+        const created = await createTechpack.mutateAsync(patch)
+        logChange(created.id, 'ha creato la scheda')
         showToast('success', 'Tech pack creato.')
       }
       draft.clear()
@@ -136,6 +152,19 @@ export default function TechPack() {
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
     }
+  }
+
+  // Changelog leggero (§5.2): ogni modifica scrive una riga firmata che riusa
+  // il sistema note — visibile nella cartella del tech pack.
+  function logChange(techpackId: string, testo: string) {
+    if (!profile) return
+    addNote.mutate({
+      entity_type: 'techpacks',
+      entity_id: techpackId,
+      author_id: profile.id,
+      author_name: profile.nome,
+      testo,
+    })
   }
 
   async function handleDelete(t: Techpack) {
@@ -167,8 +196,10 @@ export default function TechPack() {
 
       {!isLoading && !isError && (
         <div className="grid c3">
-          {(techpacks ?? []).map((t, i) => (
-            <div className="card" key={t.id}>
+          {(techpacks ?? []).map((t, i) => {
+            const fileCount = (tpFiles ?? []).filter((f) => f.techpack_id === t.id).length
+            return (
+            <div className={`card tp-card tp-${t.stato}`} key={t.id}>
               <div className="row" style={{ justifyContent: 'space-between' }}>
                 <span className="code">TP-{String(i + 1).padStart(2, '0')}</span>
                 <span className={`badge ${statoBadgeClass(t.stato)}`}>{statoLabel(t.stato)}</span>
@@ -184,6 +215,9 @@ export default function TechPack() {
               </div>
               {t.note && <div className="note">{t.note}</div>}
               <div className="card-actions">
+                <button className="btn sm" onClick={() => setFolderId(t.id)}>
+                  Cartella ({fileCount})
+                </button>
                 <button className="btn sm ghost" onClick={() => openEdit(t)}>
                   Modifica
                 </button>
@@ -192,11 +226,19 @@ export default function TechPack() {
                 </button>
               </div>
             </div>
-          ))}
+            )
+          })}
           {(techpacks ?? []).length === 0 && (
             <div className="empty">Nessun tech pack. Creane uno dal design approvato.</div>
           )}
         </div>
+      )}
+
+      {folderId && (techpacks ?? []).some((t) => t.id === folderId) && (
+        <TechpackFolder
+          techpack={(techpacks ?? []).find((t) => t.id === folderId)!}
+          onClose={() => setFolderId(null)}
+        />
       )}
 
       {modalMode !== 'none' && (

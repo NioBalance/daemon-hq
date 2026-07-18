@@ -14,7 +14,9 @@ export type TabKey =
   | 'cal'
   | 'notes'
 
-export type ArchTab = 'gadgets' | 'inspo' | 'links'
+// I gadget non sono più una sezione autonoma dell'Archivio (§5.1): vivono
+// come riga orizzontale dentro Campioni e Catalogo.
+export type ArchTab = 'inspo' | 'links'
 
 export interface NavEntry {
   id: string
@@ -56,7 +58,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { id: 'timeline', label: 'Timeline', tab: 'drops', shortcut: 'l' },
       { id: 'fornitori', label: 'Fornitori', tab: 'fornitori', shortcut: 'f' },
       { id: 'cal', label: 'Calendario', tab: 'cal', shortcut: 'e' },
-      { id: 'notes', label: 'Note / Memo', tab: 'notes', shortcut: 'n', soon: true },
+      { id: 'notes', label: 'Note / Memo', tab: 'notes', shortcut: 'n' },
       { id: 'links', label: 'Link', tab: 'archivio', archTab: 'links', shortcut: 'k' },
     ],
   },

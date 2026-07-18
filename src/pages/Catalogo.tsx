@@ -4,6 +4,7 @@ import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
 import ArticoloCard from '../components/ArticoloCard'
+import GadgetRow from '../components/GadgetRow'
 import { useArticoli, useCreateArticolo, type Articolo } from '../features/articoli/queries'
 import { useDrops, type Drop } from '../features/drops/queries'
 import { useNav, useRegisterNewAction } from '../lib/navigation'
@@ -131,6 +132,9 @@ export default function Catalogo() {
           )}
         </>
       )}
+
+      <hr className="divider" />
+      <GadgetRow />
 
       {modalOpen && (
         <Modal title="Nuovo articolo" onClose={() => setModalOpen(false)}>

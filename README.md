@@ -62,6 +62,12 @@ Lo script è idempotente (id fissi + `on conflict do nothing`): rieseguirlo non 
 1. **SQL Editor** → incolla ed esegui [supabase/migrations/0004_media_studio.sql](supabase/migrations/0004_media_studio.sql) (dopo 0001-0003). Aggiunge la colonna `obiettivo` a `media`, crea `media_tags` (tag multipli: un asset può stare in più righe del Media Studio senza duplicati, con RLS condivisa) e inserisce Photoroom nei link del brand.
 2. Finché la migration non è eseguita, la pagina Media Studio mostra un avviso al posto delle colonne. I media esistenti senza tag compaiono nella fascia "Da classificare" in cima: aprili nel lightbox e usa «Sposta / Tagga».
 
+## Setup Supabase — Fase 4 (Note/Memo, Tech Pack cartelle, Calendario embed)
+
+1. **SQL Editor** → incolla ed esegui [supabase/migrations/0005_fase4.sql](supabase/migrations/0005_fase4.sql) (dopo 0001-0004). Crea `team_memos` (bacheca con pin e tag colore, RLS: solo l'autore modifica/cancella) e `techpack_files` (cartella file per tech pack), aggiunge `techpacks` ai tipi di nota (changelog firmato), abilita `application/pdf` sul bucket `media` e seeda la riga link «Google Calendar — Embed».
+2. **Calendario**: nella vista Google Calendar, incolla l'URL embed (da Google Calendar → Impostazioni → Integra calendario) — vale per tutto il team, modificabile poi da Archivio → Link.
+3. I gadget non sono più in Archivio: vivono come riga orizzontale in fondo a Campioni e Catalogo (stessi dati, nessuna migrazione necessaria).
+
 ## Build
 
 ```bash
