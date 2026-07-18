@@ -7,6 +7,7 @@ import { useEvents, useCreateEvent, useUpdateEvent, useDeleteEvent, type EventRo
 import { useDrops, useDropFasi } from '../features/drops/queries'
 import { fmtDate, todayIso } from '../lib/format'
 import { useToast } from '../lib/useToast'
+import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import { onEnterOrSpace } from '../lib/a11y'
 import type { EventTipo } from '../lib/database.types'
@@ -46,6 +47,7 @@ export default function Calendario() {
   const [editing, setEditing] = useState<EventRow | null>(null)
   const [values, setValues] = useState<FormValues>({ titolo: '', data: '', tipo: 'meeting', note: '' })
   const [formError, setFormError] = useState<string | null>(null)
+  const draft = useFormDraft(`evento:${editing?.id ?? 'new'}`, modalOpen, values, setValues)
 
   useRegisterNewAction(openCreate)
 
@@ -86,6 +88,7 @@ export default function Calendario() {
         await createEvent.mutateAsync(patch)
         showToast('success', 'Evento creato.')
       }
+      draft.clear()
       setModalOpen(false)
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')

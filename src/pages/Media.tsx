@@ -7,6 +7,7 @@ import ImageUpload from '../components/ImageUpload'
 import NotesList from '../components/NotesList'
 import { useMediaItems, useCreateMedia, useUpdateMedia, useDeleteMedia, type MediaItem } from '../features/media/queries'
 import { useToast } from '../lib/useToast'
+import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import type { MediaTipo } from '../lib/database.types'
 
@@ -36,6 +37,7 @@ export default function Media() {
   const [editing, setEditing] = useState<MediaItem | null>(null)
   const [values, setValues] = useState<FormValues>({ titolo: '', tipo: 'foto', url: '' })
   const [formError, setFormError] = useState<string | null>(null)
+  const draft = useFormDraft(`media:${editing?.id ?? 'new'}`, modalMode !== 'none', values, setValues)
 
   useRegisterNewAction(openCreate)
 
@@ -73,6 +75,7 @@ export default function Media() {
         await createMedia.mutateAsync({ ...patch, ordine: media?.length ?? 0 })
         showToast('success', 'Media creato.')
       }
+      draft.clear()
       setModalMode('none')
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')

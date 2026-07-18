@@ -16,6 +16,7 @@ import { useDrops } from '../features/drops/queries'
 import { useNav } from '../lib/navigation'
 import { onEnterOrSpace } from '../lib/a11y'
 import { useToast } from '../lib/useToast'
+import { useFormDraft } from '../lib/useFormDraft'
 
 export default function ArticoloDetail({ articoloId, onClose }: { articoloId: string; onClose: () => void }) {
   const { goCategoria } = useNav()
@@ -33,6 +34,7 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
   const [values, setValues] = useState<FormValues>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [newTask, setNewTask] = useState('')
+  const draft = useFormDraft(`articolo:${articoloId}`, editing, values, setValues)
 
   const articolo = articoli?.find((a) => a.id === articoloId)
   const myTasks = (tasks ?? []).filter((t) => t.articolo_id === articoloId)
@@ -81,6 +83,7 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
           drop_id: String(values.drop_id ?? '') || null,
         },
       })
+      draft.clear()
       setEditing(false)
       showToast('success', 'Articolo aggiornato.')
     } catch (err) {

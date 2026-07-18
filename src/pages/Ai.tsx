@@ -6,6 +6,7 @@ import { Loading, ErrorState } from '../components/QueryState'
 import LinkCard from '../components/LinkCard'
 import { useAiLinks, useCreateAiLink, useUpdateAiLink, useDeleteAiLink, type AiLink } from '../features/aiLinks/queries'
 import { useToast } from '../lib/useToast'
+import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 
 const AI_FIELDS: FieldDef[] = [
@@ -24,6 +25,7 @@ export default function Ai() {
   const [editing, setEditing] = useState<AiLink | null>(null)
   const [values, setValues] = useState<FormValues>({ label: '', url: '' })
   const [formError, setFormError] = useState<string | null>(null)
+  const draft = useFormDraft(`ai-link:${editing?.id ?? 'new'}`, modalMode !== 'none', values, setValues)
 
   useRegisterNewAction(openCreate)
 
@@ -57,6 +59,7 @@ export default function Ai() {
         await createLink.mutateAsync(patch)
         showToast('success', 'Strumento creato.')
       }
+      draft.clear()
       setModalMode('none')
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')

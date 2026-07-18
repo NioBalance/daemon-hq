@@ -10,6 +10,7 @@ import { useArticoli, useCreateArticolo } from '../features/articoli/queries'
 import { fmtDate } from '../lib/format'
 import { useNav, useRegisterNewAction } from '../lib/navigation'
 import { useToast } from '../lib/useToast'
+import { useFormDraft } from '../lib/useFormDraft'
 
 const articoloFields = (drops: Drop[]): FieldDef[] => [
   { key: 'nome', label: 'Nome articolo' },
@@ -41,6 +42,8 @@ export default function Drops() {
   const [articoloModalOpen, setArticoloModalOpen] = useState(false)
   const [articoloValues, setArticoloValues] = useState<FormValues>({})
   const [articoloError, setArticoloError] = useState<string | null>(null)
+  const dropDraft = useFormDraft(`drop:${editingDrop?.id ?? 'new'}`, dropModal !== 'none', dropValues, setDropValues)
+  const articoloDraft = useFormDraft('articolo:new', articoloModalOpen, articoloValues, setArticoloValues)
 
   useRegisterNewAction(openCreateArticolo)
 
@@ -84,6 +87,7 @@ export default function Drops() {
         await createDrop.mutateAsync({ ...patch, withTemplate: dropValues.template !== 'no' })
         showToast('success', 'Drop creato.')
       }
+      dropDraft.clear()
       setDropModal('none')
     } catch (err) {
       setDropError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
@@ -120,6 +124,7 @@ export default function Drops() {
         colori: String(articoloValues.colori ?? '').trim() || null,
         drop_id: String(articoloValues.drop_id ?? '') || null,
       })
+      articoloDraft.clear()
       setArticoloModalOpen(false)
       openArticolo(created.id)
       showToast('success', 'Articolo creato.')

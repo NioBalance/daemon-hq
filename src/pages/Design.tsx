@@ -7,6 +7,7 @@ import OwnerBadge from '../components/OwnerBadge'
 import { useDesigns, useCreateDesign, useUpdateDesign, useDeleteDesign, type Design } from '../features/designs/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { useToast } from '../lib/useToast'
+import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import type { DesignFase } from '../lib/database.types'
 
@@ -62,6 +63,7 @@ export default function DesignPage() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const saving = createDesign.isPending || updateDesign.isPending
+  const draft = useFormDraft(`design:${editingId ?? 'new'}`, modalMode !== 'none', values, setValues)
 
   useRegisterNewAction(openCreate)
 
@@ -102,6 +104,7 @@ export default function DesignPage() {
         await createDesign.mutateAsync({ ...patch, ordine: maxOrdine + 1 })
         showToast('success', 'Design creato.')
       }
+      draft.clear()
       setModalMode('none')
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')

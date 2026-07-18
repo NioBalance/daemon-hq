@@ -8,6 +8,7 @@ import { useArticoli, useCreateArticolo, type Articolo } from '../features/artic
 import { useDrops, type Drop } from '../features/drops/queries'
 import { useNav, useRegisterNewAction } from '../lib/navigation'
 import { useToast } from '../lib/useToast'
+import { useFormDraft } from '../lib/useFormDraft'
 
 const articoloFields = (drops: Drop[]): FieldDef[] => [
   { key: 'nome', label: 'Nome articolo' },
@@ -31,6 +32,7 @@ export default function Catalogo() {
   const [modalOpen, setModalOpen] = useState(false)
   const [values, setValues] = useState<FormValues>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const draft = useFormDraft('articolo:new', modalOpen, values, setValues)
 
   useRegisterNewAction(openCreate)
 
@@ -54,6 +56,7 @@ export default function Catalogo() {
         colori: String(values.colori ?? '').trim() || null,
         drop_id: String(values.drop_id ?? '') || null,
       })
+      draft.clear()
       setModalOpen(false)
       showToast('success', 'Articolo creato.')
     } catch (err) {

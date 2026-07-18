@@ -14,6 +14,7 @@ import {
 import { useFornitori } from '../features/fornitori/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { useToast } from '../lib/useToast'
+import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import type { TechpackStato } from '../lib/database.types'
 
@@ -68,6 +69,7 @@ export default function TechPack() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const saving = createTechpack.isPending || updateTechpack.isPending
+  const draft = useFormDraft(`techpack:${editingId ?? 'new'}`, modalMode !== 'none', values, setValues)
 
   useRegisterNewAction(openCreate)
 
@@ -129,6 +131,7 @@ export default function TechPack() {
         await createTechpack.mutateAsync(patch)
         showToast('success', 'Tech pack creato.')
       }
+      draft.clear()
       setModalMode('none')
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')

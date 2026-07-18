@@ -19,6 +19,7 @@ import {
 import { dropFields, DROP_EMPTY_VALUES, faseFields } from '../features/drops/formFields'
 import { fmtDate, daysUntil } from '../lib/format'
 import { useToast } from '../lib/useToast'
+import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 
 export default function Timeline() {
@@ -40,6 +41,8 @@ export default function Timeline() {
   const [faseModal, setFaseModal] = useState<{ dropId: string; fase: DropFase | null } | null>(null)
   const [faseValues, setFaseValues] = useState<FormValues>({ nome: '', data: '' })
   const [faseError, setFaseError] = useState<string | null>(null)
+  const dropDraft = useFormDraft(`drop:${editingDrop?.id ?? 'new'}`, dropModal !== 'none', dropValues, setDropValues)
+  const faseDraft = useFormDraft(`fase:${faseModal?.fase?.id ?? 'new'}`, faseModal !== null, faseValues, setFaseValues)
 
   useRegisterNewAction(openCreateDrop)
 
@@ -78,6 +81,7 @@ export default function Timeline() {
         await createDrop.mutateAsync({ ...patch, withTemplate: dropValues.template !== 'no' })
         showToast('success', 'Drop creato.')
       }
+      dropDraft.clear()
       setDropModal('none')
     } catch (err) {
       setDropError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
@@ -121,6 +125,7 @@ export default function Timeline() {
         const dropFasiCount = (fasi ?? []).filter((f) => f.drop_id === faseModal.dropId).length
         await addFase.mutateAsync({ drop_id: faseModal.dropId, nome, data, ordine: dropFasiCount })
       }
+      faseDraft.clear()
       setFaseModal(null)
     } catch (err) {
       setFaseError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')

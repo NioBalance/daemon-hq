@@ -13,6 +13,17 @@ export default function ToastStack() {
         <div className={`toast ${t.variant}`} key={t.id} role="status">
           <span className="toast-icon">{ICON[t.variant]}</span>
           <span>{t.message}</span>
+          {t.action && (
+            <button
+              className="btn sm ghost"
+              onClick={() => {
+                t.action!.onClick()
+                ctx.dismissToast(t.id)
+              }}
+            >
+              {t.action.label}
+            </button>
+          )}
           <button className="toast-close" onClick={() => ctx.dismissToast(t.id)} aria-label="Chiudi notifica">
             ✕
           </button>

@@ -4,6 +4,7 @@ import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
 import { useToast } from '../lib/useToast'
+import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import type { FornitoreRuolo, FornitoreStato } from '../lib/database.types'
 import {
@@ -95,6 +96,7 @@ export default function Fornitori() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const saving = createFornitore.isPending || updateFornitore.isPending
+  const draft = useFormDraft(`fornitore:${editingId ?? 'new'}`, modalMode !== 'none', values, setValues)
 
   useRegisterNewAction(openCreate)
 
@@ -142,6 +144,7 @@ export default function Fornitori() {
         await createFornitore.mutateAsync(patch)
         showToast('success', 'Fornitore creato.')
       }
+      draft.clear()
       closeModal()
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')

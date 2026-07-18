@@ -15,6 +15,7 @@ import {
 } from '../features/chatChannels/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { useToast } from '../lib/useToast'
+import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import type { ChatCanale, ChatStato } from '../lib/database.types'
 
@@ -66,6 +67,13 @@ export default function Chats() {
   const [editingChannel, setEditingChannel] = useState<ChatChannel | null>(null)
   const [channelValues, setChannelValues] = useState<FormValues>({ label: '', url: '' })
   const [channelError, setChannelError] = useState<string | null>(null)
+  const chatDraft = useFormDraft(`chat:${editing?.id ?? 'new'}`, modalMode !== 'none', values, setValues)
+  const channelDraft = useFormDraft(
+    `chat-channel:${editingChannel?.id ?? 'new'}`,
+    channelModal !== 'none',
+    channelValues,
+    setChannelValues,
+  )
 
   useRegisterNewAction(openCreate)
 
@@ -104,6 +112,7 @@ export default function Chats() {
         await createChat.mutateAsync(patch)
         showToast('success', 'Conversazione creata.')
       }
+      chatDraft.clear()
       setModalMode('none')
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
@@ -148,6 +157,7 @@ export default function Chats() {
         await createChannel.mutateAsync(patch)
         showToast('success', 'Canale creato.')
       }
+      channelDraft.clear()
       setChannelModal('none')
     } catch (err) {
       setChannelError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')

@@ -9,6 +9,7 @@ import { useFornitori } from '../features/fornitori/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { fmtDate } from '../lib/format'
 import { useToast } from '../lib/useToast'
+import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import type { SampleVerdetto } from '../lib/database.types'
 
@@ -66,6 +67,7 @@ export default function Campioni() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const saving = createSample.isPending || updateSample.isPending
+  const draft = useFormDraft(`campione:${editingId ?? 'new'}`, modalMode !== 'none', values, setValues)
 
   useRegisterNewAction(openCreate)
 
@@ -134,6 +136,7 @@ export default function Campioni() {
         await createSample.mutateAsync(patch)
         showToast('success', 'Campione creato.')
       }
+      draft.clear()
       setModalMode('none')
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useCallback, useMemo, useState, type FormEvent } from 'react'
 import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
@@ -9,6 +9,7 @@ import { useGadgets, useCreateGadget, useUpdateGadget, useDeleteGadget, type Gad
 import { useInspo, useCreateInspo, useUpdateInspo, useDeleteInspo, type Inspo } from '../features/inspo/queries'
 import { useLinks, useCreateLink, useUpdateLink, useDeleteLink, type BrandLink } from '../features/links/queries'
 import { useToast } from '../lib/useToast'
+import { useFormDraft } from '../lib/useFormDraft'
 import { useNav, useRegisterNewAction } from '../lib/navigation'
 
 export default function Archivio() {
@@ -38,6 +39,23 @@ export default function Archivio() {
   const [editingLink, setEditingLink] = useState<BrandLink | null>(null)
   const [linkValues, setLinkValues] = useState<FormValues>({ label: '', url: '' })
   const [linkError, setLinkError] = useState<string | null>(null)
+
+  // Il modal titolo (gadget/inspo) usa una stringa singola: wrapper stabili
+  // per adattarla alla forma FormValues richiesta dal sistema bozze.
+  const titleDraftValues = useMemo(() => ({ value: titleValue }), [titleValue])
+  const setTitleDraftValues = useCallback((v: FormValues) => setTitleValue(String(v.value ?? '')), [])
+  const titleDraft = useFormDraft(
+    `archivio-${titleModal?.mode ?? 'titolo'}:${titleModal?.id ?? 'new'}`,
+    titleModal !== null,
+    titleDraftValues,
+    setTitleDraftValues,
+  )
+  const linkDraft = useFormDraft(
+    `brand-link:${editingLink?.id ?? 'new'}`,
+    linkModal !== 'none',
+    linkValues,
+    setLinkValues,
+  )
 
   useRegisterNewAction(() =>
     archTab === 'gadgets' ? openAddGadget() : archTab === 'inspo' ? openAddInspo() : openCreateLink(),
@@ -88,6 +106,7 @@ export default function Archivio() {
         else await createInspo.mutateAsync({ titolo: trimmed, ordine: (inspo.data?.length ?? 0) })
         successMsg = titleModal.id ? 'Inspirazione aggiornata.' : 'Inspirazione creata.'
       }
+      titleDraft.clear()
       setTitleModal(null)
       showToast('success', successMsg)
     } catch (err) {
@@ -124,6 +143,7 @@ export default function Archivio() {
         await createLink.mutateAsync({ ...patch, ordine: links.data?.length ?? 0 })
         showToast('success', 'Link creato.')
       }
+      linkDraft.clear()
       setLinkModal('none')
     } catch (err) {
       setLinkError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
