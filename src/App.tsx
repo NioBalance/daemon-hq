@@ -8,6 +8,7 @@ import Login from './auth/Login'
 import ProfileForm from './auth/ProfileForm'
 import Header from './components/Header'
 import MobileNav from './components/MobileNav'
+import WidgetsPanel from './components/WidgetsPanel'
 import ShortcutsPanel from './components/ShortcutsPanel'
 import { Loading } from './components/QueryState'
 import ToastStack from './components/ToastStack'
@@ -176,6 +177,7 @@ function AppShell() {
         </m.section>
       </main>
       <MobileNav activeTab={activeTab} />
+      <WidgetsPanel />
       {editingProfile && <ProfileForm mode="edit" onDone={() => setEditingProfile(false)} />}
       {articoloId && (
         <Suspense fallback={null}>

@@ -19,6 +19,7 @@ import {
 import { dropFields, DROP_EMPTY_VALUES, faseFields } from '../features/drops/formFields'
 import { fmtDate, daysUntil, addDaysIso } from '../lib/format'
 import { useToast } from '../lib/useToast'
+import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 
@@ -32,6 +33,7 @@ export default function Timeline() {
   const updateFase = useUpdateFase()
   const deleteFase = useDeleteFase()
   const showToast = useToast()
+  const logActivity = useActivityLogger()
 
   const [view, setView] = useState<'drop' | 'anno'>('drop')
   const [year, setYear] = useState(new Date().getFullYear())
@@ -79,9 +81,11 @@ export default function Timeline() {
       if (dropModal === 'edit' && editingDrop) {
         await updateDrop.mutateAsync({ id: editingDrop.id, patch })
         showToast('success', 'Drop aggiornato.')
+        logActivity('ha aggiornato il drop', `«${nome}»`, 'drops')
       } else {
         await createDrop.mutateAsync({ ...patch, withTemplate: dropValues.template !== 'no' })
         showToast('success', 'Drop creato.')
+        logActivity('ha creato il drop', `«${nome}»`, 'drops')
       }
       dropDraft.clear()
       setDropModal('none')
@@ -95,6 +99,7 @@ export default function Timeline() {
     try {
       await deleteDrop.mutateAsync(d.id)
       showToast('success', 'Drop eliminato.')
+      logActivity('ha eliminato un drop', 'dalla timeline', 'drops')
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
     }

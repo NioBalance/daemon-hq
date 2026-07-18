@@ -68,6 +68,11 @@ Lo script è idempotente (id fissi + `on conflict do nothing`): rieseguirlo non 
 2. **Calendario**: nella vista Google Calendar, incolla l'URL embed (da Google Calendar → Impostazioni → Integra calendario) — vale per tutto il team, modificabile poi da Archivio → Link.
 3. I gadget non sono più in Archivio: vivono come riga orizzontale in fondo a Campioni e Catalogo (stessi dati, nessuna migrazione necessaria).
 
+## Setup Supabase — Fase 5 (widget team + KPI)
+
+1. **SQL Editor** → incolla ed esegui [supabase/migrations/0006_fase5.sql](supabase/migrations/0006_fase5.sql) (dopo 0001-0005). Crea `activity` (log attività per il widget notifiche, cap ~200 voci FIFO gestito dall'app, badge non-visti in chiave locale per utente) e `kpi_snapshots` (metriche esterne inserite a mano: follower, ordini, pacchi, waitlist, revenue — un valore per metrica al giorno, upsert).
+2. Il pannello widget vive a destra su desktop (campanella per aprirlo/chiuderlo, stato ricordato) e come sheet «Team» nella bottom-nav su mobile. I KPI si inseriscono da Overview → «Aggiorna KPI».
+
 ## Build
 
 ```bash

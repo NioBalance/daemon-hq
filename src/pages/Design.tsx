@@ -7,6 +7,7 @@ import OwnerBadge from '../components/OwnerBadge'
 import { useDesigns, useCreateDesign, useUpdateDesign, useDeleteDesign, type Design } from '../features/designs/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { useToast } from '../lib/useToast'
+import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import type { DesignFase } from '../lib/database.types'
@@ -56,6 +57,7 @@ export default function DesignPage() {
   const updateDesign = useUpdateDesign()
   const deleteDesign = useDeleteDesign()
   const showToast = useToast()
+  const logActivity = useActivityLogger()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -99,10 +101,12 @@ export default function DesignPage() {
       if (modalMode === 'edit' && editingId) {
         await updateDesign.mutateAsync({ id: editingId, patch })
         showToast('success', 'Design aggiornato.')
+        logActivity('ha aggiornato il design', `«${nome}»`, 'design')
       } else {
         const maxOrdine = Math.max(-1, ...(designs ?? []).map((d) => d.ordine))
         await createDesign.mutateAsync({ ...patch, ordine: maxOrdine + 1 })
         showToast('success', 'Design creato.')
+        logActivity('ha creato il design', `«${nome}»`, 'design')
       }
       draft.clear()
       setModalMode('none')
@@ -116,6 +120,7 @@ export default function DesignPage() {
     try {
       await deleteDesign.mutateAsync(d.id)
       showToast('success', 'Design eliminato.')
+      logActivity('ha eliminato un design', 'dalla pipeline', 'design')
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
     }

@@ -8,6 +8,7 @@ import { useDrops, useDropFasi } from '../features/drops/queries'
 import { useLinks, useUpdateLink } from '../features/links/queries'
 import { fmtDate, todayIso } from '../lib/format'
 import { useToast } from '../lib/useToast'
+import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import { onEnterOrSpace } from '../lib/a11y'
@@ -46,6 +47,7 @@ export default function Calendario() {
   const updateEvent = useUpdateEvent()
   const deleteEvent = useDeleteEvent()
   const showToast = useToast()
+  const logActivity = useActivityLogger()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<EventRow | null>(null)
@@ -121,6 +123,7 @@ export default function Calendario() {
       } else {
         await createEvent.mutateAsync(patch)
         showToast('success', 'Evento creato.')
+        logActivity('ha creato un evento', 'in calendario', 'cal')
       }
       draft.clear()
       setModalOpen(false)

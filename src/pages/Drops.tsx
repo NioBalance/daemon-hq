@@ -10,6 +10,7 @@ import { useArticoli, useCreateArticolo } from '../features/articoli/queries'
 import { fmtDate } from '../lib/format'
 import { useNav, useRegisterNewAction } from '../lib/navigation'
 import { useToast } from '../lib/useToast'
+import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 
 const articoloFields = (drops: Drop[]): FieldDef[] => [
@@ -33,6 +34,7 @@ export default function Drops() {
   const deleteDrop = useDeleteDrop()
   const createArticolo = useCreateArticolo()
   const showToast = useToast()
+  const logActivity = useActivityLogger()
 
   const [dropModal, setDropModal] = useState<'none' | 'create' | 'edit'>('none')
   const [editingDrop, setEditingDrop] = useState<Drop | null>(null)
@@ -83,9 +85,11 @@ export default function Drops() {
       if (dropModal === 'edit' && editingDrop) {
         await updateDrop.mutateAsync({ id: editingDrop.id, patch })
         showToast('success', 'Drop aggiornato.')
+        logActivity('ha aggiornato il drop', `«${nome}»`, 'dropx')
       } else {
         await createDrop.mutateAsync({ ...patch, withTemplate: dropValues.template !== 'no' })
         showToast('success', 'Drop creato.')
+        logActivity('ha creato il drop', `«${nome}»`, 'dropx')
       }
       dropDraft.clear()
       setDropModal('none')
@@ -99,6 +103,7 @@ export default function Drops() {
     try {
       await deleteDrop.mutateAsync(d.id)
       showToast('success', `"${d.nome}" eliminato.`)
+      logActivity('ha eliminato il drop', `«${d.nome}»`, 'dropx')
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
     }
@@ -128,6 +133,7 @@ export default function Drops() {
       setArticoloModalOpen(false)
       openArticolo(created.id)
       showToast('success', 'Articolo creato.')
+      logActivity('ha creato un articolo', `«${created.nome}»`, 'catalogo')
     } catch (err) {
       setArticoloError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
     }

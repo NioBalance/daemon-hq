@@ -16,6 +16,7 @@ import { useDrops } from '../features/drops/queries'
 import { useNav } from '../lib/navigation'
 import { onEnterOrSpace } from '../lib/a11y'
 import { useToast } from '../lib/useToast'
+import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 
 export default function ArticoloDetail({ articoloId, onClose }: { articoloId: string; onClose: () => void }) {
@@ -29,6 +30,7 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
   const toggleTask = useToggleTask()
   const deleteTask = useDeleteTask()
   const showToast = useToast()
+  const logActivity = useActivityLogger()
 
   const [editing, setEditing] = useState(false)
   const [values, setValues] = useState<FormValues>({})
@@ -86,6 +88,7 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
       draft.clear()
       setEditing(false)
       showToast('success', 'Articolo aggiornato.')
+      logActivity('ha aggiornato un articolo', `«${nome}»`, 'catalogo')
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
     }
@@ -96,6 +99,7 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
     try {
       await deleteArticolo.mutateAsync(articolo!.id)
       showToast('success', 'Articolo eliminato.')
+      logActivity('ha eliminato un articolo', `«${articolo!.nome}»`, 'catalogo')
       onClose()
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')

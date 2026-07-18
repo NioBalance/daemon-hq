@@ -4,6 +4,7 @@ import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
 import { useToast } from '../lib/useToast'
+import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import type { FornitoreRuolo, FornitoreStato } from '../lib/database.types'
@@ -89,6 +90,7 @@ export default function Fornitori() {
   const updateFornitore = useUpdateFornitore()
   const deleteFornitore = useDeleteFornitore()
   const showToast = useToast()
+  const logActivity = useActivityLogger()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -140,9 +142,11 @@ export default function Fornitori() {
       if (modalMode === 'edit' && editingId) {
         await updateFornitore.mutateAsync({ id: editingId, patch })
         showToast('success', 'Fornitore aggiornato.')
+        logActivity('ha aggiornato il fornitore', `«${nome}»`, 'fornitori')
       } else {
         await createFornitore.mutateAsync(patch)
         showToast('success', 'Fornitore creato.')
+        logActivity('ha creato il fornitore', `«${nome}»`, 'fornitori')
       }
       draft.clear()
       closeModal()
@@ -156,6 +160,7 @@ export default function Fornitori() {
     try {
       await deleteFornitore.mutateAsync(f.id)
       showToast('success', `"${f.nome}" eliminato.`)
+      logActivity('ha eliminato il fornitore', `«${f.nome}»`, 'fornitori')
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
     }

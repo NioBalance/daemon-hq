@@ -15,6 +15,7 @@ import {
 } from '../features/chatChannels/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { useToast } from '../lib/useToast'
+import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import type { ChatCanale, ChatStato } from '../lib/database.types'
@@ -86,6 +87,7 @@ export default function Chats() {
   const updateChat = useUpdateChat()
   const deleteChat = useDeleteChat()
   const showToast = useToast()
+  const logActivity = useActivityLogger()
 
   const { data: channels } = useChatChannels()
   const createChannel = useCreateChatChannel()
@@ -145,6 +147,7 @@ export default function Chats() {
       } else {
         await createChat.mutateAsync(patch)
         showToast('success', 'Conversazione creata.')
+        logActivity('ha aperto una conversazione', 'nel customer care', 'chats')
       }
       chatDraft.clear()
       setModalMode('none')

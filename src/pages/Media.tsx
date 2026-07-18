@@ -9,6 +9,7 @@ import { useMediaTags, useAddMediaTag } from '../features/mediaTags/queries'
 import { uploadMediaFile, getMediaUrl } from '../lib/upload'
 import { MEDIA_COLUMNS, PHOTOROOM_URL, rowLabel, type MediaRowDef } from '../lib/mediaStudio'
 import { useToast } from '../lib/useToast'
+import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import type { MediaTag } from '../lib/database.types'
 
@@ -85,6 +86,7 @@ export default function MediaStudio() {
   const createMedia = useCreateMedia()
   const addTag = useAddMediaTag()
   const showToast = useToast()
+  const logActivity = useActivityLogger()
 
   const [activeCol, setActiveCol] = useState<'sito' | 'creative' | 'instagram'>('sito')
   const [lightbox, setLightbox] = useState<LightboxTarget | null>(null)
@@ -139,7 +141,10 @@ export default function MediaStudio() {
       setUpload((u) => (u ? { ...u, done: u.done + 1 } : u))
     }
     setUpload(null)
-    if (ok > 0) showToast('success', `${ok} file caricat${ok === 1 ? 'o' : 'i'} in «${rowLabel(tag)}».`)
+    if (ok > 0) {
+      showToast('success', `${ok} file caricat${ok === 1 ? 'o' : 'i'} in «${rowLabel(tag)}».`)
+      logActivity('ha caricato', `${ok} media in «${rowLabel(tag)}»`, 'media')
+    }
   }
 
   function openAddVideo(tag: MediaTag) {
@@ -163,6 +168,7 @@ export default function MediaStudio() {
       videoDraft.clear()
       setVideoTarget(null)
       showToast('success', `Video aggiunto in «${rowLabel(videoTarget)}» — apri il lightbox per caricare l'anteprima.`)
+      logActivity('ha aggiunto un video', `in «${rowLabel(videoTarget)}»`, 'media')
     } catch (err) {
       setVideoError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
     }

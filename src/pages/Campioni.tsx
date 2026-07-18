@@ -10,6 +10,7 @@ import { useFornitori } from '../features/fornitori/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { fmtDate } from '../lib/format'
 import { useToast } from '../lib/useToast'
+import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import type { SampleVerdetto } from '../lib/database.types'
@@ -61,6 +62,7 @@ export default function Campioni() {
   const updateSample = useUpdateSample()
   const deleteSample = useDeleteSample()
   const showToast = useToast()
+  const logActivity = useActivityLogger()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -133,9 +135,11 @@ export default function Campioni() {
       if (modalMode === 'edit' && editingId) {
         await updateSample.mutateAsync({ id: editingId, patch })
         showToast('success', 'Campione aggiornato.')
+        logActivity('ha aggiornato il campione', `«${nome}»`, 'samples')
       } else {
         await createSample.mutateAsync(patch)
         showToast('success', 'Campione creato.')
+        logActivity('ha creato il campione', `«${nome}»`, 'samples')
       }
       draft.clear()
       setModalMode('none')
@@ -149,6 +153,7 @@ export default function Campioni() {
     try {
       await deleteSample.mutateAsync(s.id)
       showToast('success', 'Campione eliminato.')
+      logActivity('ha eliminato un campione', 'dalla review', 'samples')
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
     }

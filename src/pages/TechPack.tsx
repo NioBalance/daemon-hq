@@ -18,6 +18,7 @@ import { useAddNote } from '../features/notes/queries'
 import { useAuth } from '../auth/useAuth'
 import { OWNER_OPTS } from '../lib/tabs'
 import { useToast } from '../lib/useToast'
+import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import type { TechpackStato } from '../lib/database.types'
@@ -69,6 +70,7 @@ export default function TechPack() {
   const addNote = useAddNote('techpacks')
   const { profile } = useAuth()
   const showToast = useToast()
+  const logActivity = useActivityLogger()
 
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -142,10 +144,12 @@ export default function TechPack() {
             : 'ha aggiornato la scheda',
         )
         showToast('success', 'Tech pack aggiornato.')
+        logActivity('ha aggiornato il tech pack', `«${nome}»`, 'techpack')
       } else {
         const created = await createTechpack.mutateAsync(patch)
         logChange(created.id, 'ha creato la scheda')
         showToast('success', 'Tech pack creato.')
+        logActivity('ha creato il tech pack', `«${nome}»`, 'techpack')
       }
       draft.clear()
       setModalMode('none')
@@ -172,6 +176,7 @@ export default function TechPack() {
     try {
       await deleteTechpack.mutateAsync(t.id)
       showToast('success', 'Tech pack eliminato.')
+      logActivity('ha eliminato il tech pack', `«${t.nome}»`, 'techpack')
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : 'Eliminazione non riuscita.')
     }

@@ -27,6 +27,12 @@ export type EventTipo = 'meeting' | 'deadline' | 'lancio'
 export type NoteEntityType = 'articoli' | 'gadgets' | 'inspo' | 'media' | 'chats' | 'techpacks'
 export type MemoColore = 'decisione' | 'idea' | 'urgente'
 export type TechpackFileTipo = 'img' | 'pdf' | 'link'
+export type KpiMetrica =
+  | 'instagram_followers'
+  | 'ordini_totali'
+  | 'pacchi_drop'
+  | 'waitlist'
+  | 'revenue_drop'
 
 export interface Database {
   public: {
@@ -443,6 +449,48 @@ export interface Database {
           url?: string | null
         }
         Update: Partial<Database['public']['Tables']['techpack_files']['Insert']>
+        Relationships: []
+      }
+
+      activity: {
+        Row: {
+          id: string
+          author_id: string | null
+          author_name: string
+          azione: string
+          oggetto: string
+          tab: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          author_id?: string | null
+          author_name: string
+          azione: string
+          oggetto: string
+          tab?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['activity']['Insert']>
+        Relationships: []
+      }
+
+      kpi_snapshots: {
+        Row: {
+          id: string
+          metrica: KpiMetrica
+          valore: number
+          data: string
+          inserito_da: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          metrica: KpiMetrica
+          valore: number
+          data?: string
+          inserito_da: string
+        }
+        Update: Partial<Database['public']['Tables']['kpi_snapshots']['Insert']>
         Relationships: []
       }
 

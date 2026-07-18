@@ -9,6 +9,7 @@ import { useArticoli, useCreateArticolo, type Articolo } from '../features/artic
 import { useDrops, type Drop } from '../features/drops/queries'
 import { useNav, useRegisterNewAction } from '../lib/navigation'
 import { useToast } from '../lib/useToast'
+import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 
 const articoloFields = (drops: Drop[]): FieldDef[] => [
@@ -29,6 +30,7 @@ export default function Catalogo() {
   const { data: drops } = useDrops()
   const createArticolo = useCreateArticolo()
   const showToast = useToast()
+  const logActivity = useActivityLogger()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [values, setValues] = useState<FormValues>({})
@@ -60,6 +62,7 @@ export default function Catalogo() {
       draft.clear()
       setModalOpen(false)
       showToast('success', 'Articolo creato.')
+      logActivity('ha creato un articolo', `«${nome}»`, 'catalogo')
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Salvataggio non riuscito.')
     }

@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { NAV_GROUPS, isEntryActive, type TabKey } from '../lib/tabs'
 import { useNav } from '../lib/navigation'
+import { BellIcon } from './WidgetsPanel'
+import { useUnseenActivity } from '../features/activity/queries'
 
 function OverviewIcon() {
   return (
@@ -48,6 +50,7 @@ const GROUP_ICONS: Record<string, () => ReactNode> = {
 export default function MobileNav({ activeTab }: { activeTab: TabKey }) {
   const { goTab, goEntry, archTab, activeSheet, setActiveSheet } = useNav()
   const reduceMotion = useReducedMotion()
+  const unseen = useUnseenActivity()
   const openGroup = NAV_GROUPS.find((g) => activeSheet === `nav:${g.id}`)
 
   return (
@@ -76,6 +79,16 @@ export default function MobileNav({ activeTab }: { activeTab: TabKey }) {
             </button>
           )
         })}
+        <button
+          className={`bottom-nav-btn${activeSheet === 'widgets' ? ' active' : ''}`}
+          aria-expanded={activeSheet === 'widgets'}
+          onClick={() => setActiveSheet(activeSheet === 'widgets' ? null : 'widgets')}
+          style={{ position: 'relative' }}
+        >
+          <BellIcon />
+          <span>Team</span>
+          {unseen > 0 && <span className="widgets-badge">{unseen > 9 ? '9+' : unseen}</span>}
+        </button>
       </nav>
 
       <AnimatePresence>

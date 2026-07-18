@@ -6,6 +6,7 @@ import { Loading, ErrorState } from '../components/QueryState'
 import { useMemos, useCreateMemo, useUpdateMemo, useDeleteMemo, type Memo } from '../features/memos/queries'
 import { useAuth } from '../auth/useAuth'
 import { useToast } from '../lib/useToast'
+import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import { fmtDate } from '../lib/format'
@@ -67,6 +68,7 @@ export default function Notes() {
   const updateMemo = useUpdateMemo()
   const deleteMemo = useDeleteMemo()
   const showToast = useToast()
+  const logActivity = useActivityLogger()
 
   const [newValues, setNewValues] = useState<FormValues>({ testo: '', colore: '' })
   const [editing, setEditing] = useState<Memo | null>(null)
@@ -92,6 +94,7 @@ export default function Notes() {
       newDraft.clear()
       setNewValues({ testo: '', colore: '' })
       showToast('success', 'Nota pubblicata.')
+      logActivity('ha pubblicato una nota', `«${testo.slice(0, 40)}${testo.length > 40 ? '…' : ''}»`, 'notes')
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : 'Salvataggio non riuscito.')
     }
