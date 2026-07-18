@@ -22,7 +22,7 @@ import { useToast } from '../lib/useToast'
 import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
-import { useRegisterNewAction } from '../lib/navigation'
+import { useRegisterNewAction, usePendingEntity } from '../lib/navigation'
 import type { TechpackStato } from '../lib/database.types'
 
 const TP_STATI: { value: TechpackStato; label: string }[] = [
@@ -85,6 +85,11 @@ export default function TechPack() {
   const draft = useFormDraft(`techpack:${editingId ?? 'new'}`, modalMode !== 'none', values, setValues)
 
   useRegisterNewAction(openCreate)
+
+  usePendingEntity('techpack', !!techpacks, (id) => {
+    const t = techpacks?.find((x) => x.id === id)
+    if (t) openEdit(t)
+  })
 
   const TP_FIELDS: FieldDef[] = [
     { key: 'nome', label: 'Nome capo' },

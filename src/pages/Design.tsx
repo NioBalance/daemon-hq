@@ -151,13 +151,28 @@ export default function DesignPage() {
           {FASI.map((f, i) => {
             const items = (designs ?? []).filter((d) => d.fase === f.key)
             return (
-              <div className="kcol" key={f.key}>
+              <div
+                className="kcol"
+                key={f.key}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  const droppedId = e.dataTransfer.getData('text/plain')
+                  const dropped = designs?.find((x) => x.id === droppedId)
+                  if (dropped && dropped.fase !== f.key) updateDesign.mutate({ id: droppedId, patch: { fase: f.key } })
+                }}
+              >
                 <div className="kcol-head">
                   <span>{f.label}</span>
                   <span>{items.length}</span>
                 </div>
                 {items.map((d) => (
-                  <div className="kcard" key={d.id}>
+                  <div
+                    className="kcard"
+                    key={d.id}
+                    draggable
+                    onDragStart={(e) => e.dataTransfer.setData('text/plain', d.id)}
+                  >
                     <div className="row" style={{ justifyContent: 'space-between' }}>
                       <span className="nm">{d.nome}</span>
                       <OwnerBadge owner={d.owner} />

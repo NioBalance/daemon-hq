@@ -65,8 +65,12 @@ function AppShell() {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [activeSheet, setActiveSheet] = useState<string | null>(null)
+  const [pendingEntity, setPendingEntity] = useState<{ kind: string; id: string } | null>(null)
   const newActionRef = useRef<(() => void) | null>(null)
   const reduceMotion = useReducedMotion()
+
+  const openEntity = useCallback((kind: string, id: string) => setPendingEntity({ kind, id }), [])
+  const clearPendingEntity = useCallback(() => setPendingEntity(null), [])
 
   const goTab = useCallback((tab: TabKey) => {
     setActiveTab(tab)
@@ -155,6 +159,9 @@ function AppShell() {
         triggerNew,
         activeSheet,
         setActiveSheet,
+        pendingEntity,
+        openEntity,
+        clearPendingEntity,
       }}
     >
       <Header

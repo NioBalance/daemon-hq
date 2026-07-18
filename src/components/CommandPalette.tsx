@@ -18,9 +18,10 @@ interface EntityHit {
   type: string
   tab: TabKey
   archTab?: ArchTab
-  /** Solo gli articoli aprono anche la scheda di dettaglio (deep-open per
-   *  tutte le entità: Fase 6, vedi TODO.md). */
   articoloId?: string
+  /** Deep-open generico (Fase 6): la pagina di destinazione apre la scheda. */
+  kind?: string
+  entityId?: string
 }
 
 const MAX_PER_GROUP = 8
@@ -29,7 +30,7 @@ const MAX_PER_GROUP = 8
 const AI_ENTRY: NavEntry = { id: 'ai', label: 'AI', tab: 'ai', shortcut: '' }
 
 export default function CommandPalette({ onClose }: { onClose: () => void }) {
-  const { goEntry, goTab, setArchTab, openArticolo } = useNav()
+  const { goEntry, goTab, setArchTab, openArticolo, openEntity } = useNav()
   const [query, setQuery] = useState('')
 
   const articoli = useArticoli().data ?? []
@@ -63,21 +64,21 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
           hits: techpacks
             .filter((t) => matches(t.nome) || matches(t.categoria))
             .slice(0, MAX_PER_GROUP)
-            .map((t) => ({ id: `tp-${t.id}`, label: t.nome, type: 'Tech pack', tab: 'techpack' as TabKey })),
+            .map((t) => ({ id: `tp-${t.id}`, label: t.nome, type: 'Tech pack', tab: 'techpack' as TabKey, kind: 'techpack', entityId: t.id })),
         },
         {
           heading: 'Campioni',
           hits: samples
             .filter((s) => matches(s.nome))
             .slice(0, MAX_PER_GROUP)
-            .map((s) => ({ id: `smp-${s.id}`, label: s.nome, type: 'Campione', tab: 'samples' as TabKey })),
+            .map((s) => ({ id: `smp-${s.id}`, label: s.nome, type: 'Campione', tab: 'samples' as TabKey, kind: 'sample', entityId: s.id })),
         },
         {
           heading: 'Fornitori',
           hits: fornitori
             .filter((f) => matches(f.nome) || matches(f.luogo))
             .slice(0, MAX_PER_GROUP)
-            .map((f) => ({ id: `for-${f.id}`, label: f.nome, type: 'Fornitore', tab: 'fornitori' as TabKey })),
+            .map((f) => ({ id: `for-${f.id}`, label: f.nome, type: 'Fornitore', tab: 'fornitori' as TabKey, kind: 'fornitore', entityId: f.id })),
         },
         {
           // I gadget vivono nella riga dentro Catalogo (e Campioni), §5.1.
@@ -85,35 +86,35 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
           hits: gadgets
             .filter((g) => matches(g.nome))
             .slice(0, MAX_PER_GROUP)
-            .map((g) => ({ id: `gad-${g.id}`, label: g.nome, type: 'Gadget', tab: 'catalogo' as TabKey })),
+            .map((g) => ({ id: `gad-${g.id}`, label: g.nome, type: 'Gadget', tab: 'catalogo' as TabKey, kind: 'gadget', entityId: g.id })),
         },
         {
           heading: 'Inspo',
           hits: inspo
             .filter((i) => matches(i.titolo))
             .slice(0, MAX_PER_GROUP)
-            .map((i) => ({ id: `ins-${i.id}`, label: i.titolo, type: 'Inspo', tab: 'archivio' as TabKey, archTab: 'inspo' as ArchTab })),
+            .map((i) => ({ id: `ins-${i.id}`, label: i.titolo, type: 'Inspo', tab: 'archivio' as TabKey, archTab: 'inspo' as ArchTab, kind: 'inspo', entityId: i.id })),
         },
         {
           heading: 'Link',
           hits: links
             .filter((l) => matches(l.label))
             .slice(0, MAX_PER_GROUP)
-            .map((l) => ({ id: `lnk-${l.id}`, label: l.label, type: 'Link', tab: 'archivio' as TabKey, archTab: 'links' as ArchTab })),
+            .map((l) => ({ id: `lnk-${l.id}`, label: l.label, type: 'Link', tab: 'archivio' as TabKey, archTab: 'links' as ArchTab, kind: 'link', entityId: l.id })),
         },
         {
           heading: 'Media',
           hits: media
             .filter((m) => matches(m.titolo))
             .slice(0, MAX_PER_GROUP)
-            .map((m) => ({ id: `med-${m.id}`, label: m.titolo, type: 'Media', tab: 'media' as TabKey })),
+            .map((m) => ({ id: `med-${m.id}`, label: m.titolo, type: 'Media', tab: 'media' as TabKey, kind: 'media', entityId: m.id })),
         },
         {
           heading: 'Chats',
           hits: chats
             .filter((c) => matches(c.cliente))
             .slice(0, MAX_PER_GROUP)
-            .map((c) => ({ id: `cha-${c.id}`, label: c.cliente, type: 'Chat', tab: 'chats' as TabKey })),
+            .map((c) => ({ id: `cha-${c.id}`, label: c.cliente, type: 'Chat', tab: 'chats' as TabKey, kind: 'chat', entityId: c.id })),
         },
       ].filter((g) => g.hits.length > 0)
     : []
@@ -124,6 +125,7 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
     if (hit.archTab) setArchTab(hit.archTab)
     goTab(hit.tab)
     if (hit.articoloId) openArticolo(hit.articoloId)
+    else if (hit.kind && hit.entityId) openEntity(hit.kind, hit.entityId)
     onClose()
   }
 

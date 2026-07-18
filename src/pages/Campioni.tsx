@@ -14,7 +14,7 @@ import { useToast } from '../lib/useToast'
 import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
-import { useRegisterNewAction } from '../lib/navigation'
+import { useRegisterNewAction, usePendingEntity } from '../lib/navigation'
 import type { SampleVerdetto } from '../lib/database.types'
 
 const VERDETTI: { value: SampleVerdetto; label: string }[] = [
@@ -76,6 +76,11 @@ export default function Campioni() {
   const draft = useFormDraft(`campione:${editingId ?? 'new'}`, modalMode !== 'none', values, setValues)
 
   useRegisterNewAction(openCreate)
+
+  usePendingEntity('sample', !!samples, (id) => {
+    const s = samples?.find((x) => x.id === id)
+    if (s) openEdit(s)
+  })
 
   const SMP_FIELDS: FieldDef[] = [
     { key: 'nome', label: 'Capo / campione' },

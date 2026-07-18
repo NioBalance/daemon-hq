@@ -19,7 +19,7 @@ import { useToast } from '../lib/useToast'
 import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
-import { useRegisterNewAction } from '../lib/navigation'
+import { useRegisterNewAction, usePendingEntity } from '../lib/navigation'
 import type { ChatCanale, ChatStato } from '../lib/database.types'
 
 const CH_CANALI: { value: ChatCanale; label: string }[] = [
@@ -115,6 +115,11 @@ export default function Chats() {
   )
 
   useRegisterNewAction(openCreate)
+
+  usePendingEntity('chat', !!chats, (id) => {
+    const c = chats?.find((x) => x.id === id)
+    if (c) openEdit(c)
+  })
 
   function openCreate() {
     setValues({ cliente: '', canale: 'wa', stato: 'aperta', owner: 'logistica' })

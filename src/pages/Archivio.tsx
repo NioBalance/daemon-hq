@@ -11,7 +11,7 @@ import { useLinks, useCreateLink, useUpdateLink, useDeleteLink, type BrandLink }
 import { useToast } from '../lib/useToast'
 import { useConfirmDelete } from '../lib/confirm-context'
 import { useFormDraft } from '../lib/useFormDraft'
-import { useNav, useRegisterNewAction } from '../lib/navigation'
+import { useNav, useRegisterNewAction, usePendingEntity } from '../lib/navigation'
 
 // I gadget non vivono più qui (§5.1): sono una riga orizzontale dentro
 // Campioni e Catalogo (components/GadgetRow).
@@ -64,6 +64,15 @@ export default function Archivio() {
   )
 
   useRegisterNewAction(() => (archTab === 'inspo' ? openAddInspo() : openCreateLink()))
+
+  usePendingEntity('inspo', !!inspo.data, (id) => {
+    const i = inspo.data?.find((x) => x.id === id)
+    if (i) openEditInspo(i)
+  })
+  usePendingEntity('link', !!links.data, (id) => {
+    const l = links.data?.find((x) => x.id === id)
+    if (l) openEditLink(l)
+  })
 
   function openAddInspo() {
     setTitleValue('')

@@ -11,6 +11,7 @@ import { MEDIA_COLUMNS, PHOTOROOM_URL, rowLabel, type MediaRowDef } from '../lib
 import { useToast } from '../lib/useToast'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
+import { usePendingEntity } from '../lib/navigation'
 import type { MediaTag } from '../lib/database.types'
 
 const VIDEO_FIELDS: FieldDef[] = [
@@ -108,6 +109,13 @@ export default function MediaStudio() {
   }
   const taggedIds = new Set(allTags.map((t) => t.media_id))
   const untagged = allMedia.filter((x) => !taggedIds.has(x.id))
+
+  usePendingEntity('media', !!media && !!tagsQ.data, (id) => {
+    const tagRow = allTags.find((t) => t.media_id === id)?.tag
+    const list = tagRow ? (byTag.get(tagRow) ?? []) : untagged
+    const index = list.findIndex((x) => x.id === id)
+    if (index >= 0) setLightbox({ tag: tagRow ?? '__untagged__', index })
+  })
 
   function pickFiles(tag: MediaTag) {
     pendingTagRef.current = tag

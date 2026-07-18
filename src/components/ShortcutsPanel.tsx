@@ -30,8 +30,8 @@ export default function ShortcutsPanel({ onClose }: { onClose: () => void }) {
         </div>
       ))}
       <p className="palette-roadmap">
-        La palette apre la scheda completa solo per gli articoli, per ora — l'apertura diretta per
-        tutte le entità arriva con la Fase 6 (vedi TODO.md).
+        La palette (Ctrl/Cmd+K) apre direttamente la scheda dell'elemento selezionato per tutte le
+        entità: articoli, tech pack, campioni, fornitori, gadget, inspo, link, media e chat.
       </p>
     </Modal>
   )

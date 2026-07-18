@@ -19,6 +19,11 @@ export interface NavContextValue {
    *  un solo sheet aperto alla volta, mai due sovrapposti. */
   activeSheet: string | null
   setActiveSheet: (sheet: string | null) => void
+  /** Deep-open dalla palette: la pagina di destinazione consuma la richiesta
+   *  (usePendingEntity) e apre la scheda/modal dell'elemento. */
+  pendingEntity: { kind: string; id: string } | null
+  openEntity: (kind: string, id: string) => void
+  clearPendingEntity: () => void
 }
 
 export const NavContext = createContext<NavContextValue | null>(null)
@@ -27,6 +32,26 @@ export function useNav() {
   const ctx = useContext(NavContext)
   if (!ctx) throw new Error('useNav must be used within NavContext.Provider')
   return ctx
+}
+
+/** Consuma una richiesta di deep-open (palette → scheda aperta): quando i
+ *  dati della pagina sono pronti e il kind combacia, apre l'elemento e
+ *  azzera la richiesta. Le setState passano da queueMicrotask per non
+ *  scattare sincrone dentro l'effect. */
+export function usePendingEntity(kind: string, ready: boolean, onOpen: (id: string) => void) {
+  const { pendingEntity, clearPendingEntity } = useNav()
+  const onOpenRef = useRef(onOpen)
+  useEffect(() => {
+    onOpenRef.current = onOpen
+  })
+  useEffect(() => {
+    if (!ready || pendingEntity?.kind !== kind) return
+    const id = pendingEntity.id
+    queueMicrotask(() => {
+      clearPendingEntity()
+      onOpenRef.current(id)
+    })
+  }, [ready, pendingEntity, kind, clearPendingEntity])
 }
 
 /** Le pagine registrano qui la loro azione di creazione primaria; la scorciatoia

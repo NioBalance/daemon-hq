@@ -8,7 +8,7 @@ import { useToast } from '../lib/useToast'
 import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
-import { useRegisterNewAction } from '../lib/navigation'
+import { useRegisterNewAction, usePendingEntity } from '../lib/navigation'
 import type { FornitoreRuolo, FornitoreStato } from '../lib/database.types'
 import {
   useFornitori,
@@ -104,6 +104,11 @@ export default function Fornitori() {
   const draft = useFormDraft(`fornitore:${editingId ?? 'new'}`, modalMode !== 'none', values, setValues)
 
   useRegisterNewAction(openCreate)
+
+  usePendingEntity('fornitore', !!fornitori, (id) => {
+    const f = fornitori?.find((x) => x.id === id)
+    if (f) openEdit(f)
+  })
 
   function openCreate() {
     setValues(EMPTY_VALUES)

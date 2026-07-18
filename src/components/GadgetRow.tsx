@@ -6,6 +6,7 @@ import { useGadgets, useCreateGadget, useUpdateGadget, useDeleteGadget, type Gad
 import { useToast } from '../lib/useToast'
 import { useConfirmDelete } from '../lib/confirm-context'
 import { useFormDraft } from '../lib/useFormDraft'
+import { usePendingEntity } from '../lib/navigation'
 
 const FIELDS: FieldDef[] = [{ key: 'value', label: 'Nome gadget' }]
 
@@ -27,6 +28,11 @@ export default function GadgetRow() {
   const draftValues = useMemo(() => ({ value }), [value])
   const setDraftValues = useCallback((v: FormValues) => setValue(String(v.value ?? '')), [])
   const draft = useFormDraft(`gadget:${modal?.id ?? 'new'}`, modal !== null, draftValues, setDraftValues)
+
+  usePendingEntity('gadget', !!gadgets.data, (id) => {
+    const g = gadgets.data?.find((x) => x.id === id)
+    if (g) openEdit(g)
+  })
 
   function openAdd() {
     setValue('')
