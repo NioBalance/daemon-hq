@@ -51,7 +51,7 @@ export default function Header({
             <div className="logo">
               D<span className="ae">Æ</span>MON
             </div>
-            <div className="hdr-sub">GYMWEAR — HQ</div>
+            <div className="hdr-sub">TEAM DASHBOARD — HQ</div>
           </div>
           <div className="row">
             <div className="hicons">
