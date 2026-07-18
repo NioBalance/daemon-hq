@@ -195,13 +195,9 @@ export default function Timeline() {
       {!isLoading && !isError && view === 'anno' && (
         <div className="year-wrap">
           <div className="cal-head">
-            <button className="btn sm ghost" onClick={() => setYear((y) => y - 1)}>
-              ←
-            </button>
+            <button className="btn sm ghost" onClick={() => setYear((y) => y - 1)} aria-label="Precedente">←</button>
             <span className="cal-month">{year}</span>
-            <button className="btn sm ghost" onClick={() => setYear((y) => y + 1)}>
-              →
-            </button>
+            <button className="btn sm ghost" onClick={() => setYear((y) => y + 1)} aria-label="Successivo">→</button>
           </div>
           <div className="year-months">
             {MESI.map((mese) => (
@@ -279,9 +275,7 @@ export default function Timeline() {
                     <button className="btn sm ghost" onClick={() => openAddFase(d.id)}>
                       + Fase
                     </button>
-                    <button className="btn sm danger" onClick={() => handleDeleteDrop(d)}>
-                      ✕
-                    </button>
+                    <button className="btn sm danger" onClick={() => handleDeleteDrop(d)} aria-label="Elimina">✕</button>
                   </div>
                 </div>
                 <div className="progressbar">
@@ -293,12 +287,8 @@ export default function Timeline() {
                       <input type="checkbox" checked={f.done} onChange={() => toggleFase(f)} aria-label="Completa fase" />
                       <span className="pn">{f.nome}</span>
                       <span className="pd">{fmtDate(f.data)}</span>
-                      <button className="btn sm ghost" onClick={() => openEditFase(d.id, f)}>
-                        ✎
-                      </button>
-                      <button className="btn sm danger" onClick={() => handleDeleteFase(f)}>
-                        ✕
-                      </button>
+                      <button className="btn sm ghost" onClick={() => openEditFase(d.id, f)} aria-label="Modifica">✎</button>
+                      <button className="btn sm danger" onClick={() => handleDeleteFase(f)} aria-label="Elimina">✕</button>
                     </div>
                   ))}
                 </div>

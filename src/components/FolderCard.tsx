@@ -34,12 +34,8 @@ export default function FolderCard({
             {title}
           </span>
           <span className="row">
-            <button className="btn sm ghost" onClick={onEditTitle}>
-              ✎
-            </button>
-            <button className="btn sm danger" onClick={onDelete}>
-              ✕
-            </button>
+            <button className="btn sm ghost" onClick={onEditTitle} aria-label="Modifica">✎</button>
+            <button className="btn sm danger" onClick={onDelete} aria-label="Elimina">✕</button>
           </span>
         </div>
         <NotesList entityType={entityType} entityId={id} />

@@ -193,9 +193,7 @@ export default function Drops() {
                     <button className="btn sm ghost" onClick={() => openEditDrop(d)}>
                       Modifica
                     </button>
-                    <button className="btn sm danger" onClick={() => handleDeleteDrop(d)}>
-                      ✕
-                    </button>
+                    <button className="btn sm danger" onClick={() => handleDeleteDrop(d)} aria-label="Elimina">✕</button>
                   </div>
                 </div>
                 {arts.length ? (

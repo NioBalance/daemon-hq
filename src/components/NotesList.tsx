@@ -34,9 +34,7 @@ export default function NotesList({ entityType, entityId }: { entityType: NoteEn
           <span className="na">{n.author_name}</span>
           <span className="nd">{fmtDate(n.created_at)}</span>
           {n.author_id === profile?.id && (
-            <button className="nx" onClick={() => deleteNote.mutate(n.id)} title="Cancella nota">
-              ✕
-            </button>
+            <button className="nx" onClick={() => deleteNote.mutate(n.id)} title="Cancella nota" aria-label="Elimina">✕</button>
           )}
           <p>{n.testo}</p>
         </div>
@@ -50,9 +48,7 @@ export default function NotesList({ entityType, entityId }: { entityType: NoteEn
             if (e.key === 'Enter') handleAdd()
           }}
         />
-        <button className="btn sm" onClick={handleAdd}>
-          +
-        </button>
+        <button className="btn sm" onClick={handleAdd} aria-label="Aggiungi">+</button>
       </div>
     </div>
   )

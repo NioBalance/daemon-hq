@@ -92,6 +92,16 @@ npm uninstall sharp
 
 `sharp` serve solo per questo script una tantum, non è una dipendenza dell'app.
 
+## Audit PWA (Fase 6 — da eseguire a mano)
+
+Il service worker è in `autoUpdate` con `navigateFallback` su `index.html` e pulizia delle cache obsolete: un nuovo deploy sostituisce il SW e la app si aggiorna al load successivo (se un aggiornamento sembra non arrivare, chiudere tutte le tab dell'app e riaprire).
+
+Checklist da fare su ambiente reale (non automatizzabile da CLI):
+1. **Lighthouse** (Chrome DevTools → Lighthouse → PWA + Performance + Accessibility, in incognito sull'URL di produzione): attesi "Installable" ✓ e service worker attivo; contrasti principali verificati (muted `#8B8B96` su void ≈ 4.6:1).
+2. **Installazione desktop** (Chrome/Edge): icona installa nella barra indirizzi → finestra standalone con icona stella.
+3. **iOS Safari**: Condividi → "Aggiungi a Home" → apertura fullscreen, icona stella, login OTP funzionante nella PWA (motivo per cui il magic link fu sostituito dal codice).
+4. **Aggiornamento**: dopo un deploy, ricaricare due volte e verificare in DevTools → Application → Service Workers che la versione nuova sia "activated".
+
 ## Deploy — checklist Netlify (Step 14)
 
 `netlify.toml` è già pronto (build command `npm run build`, publish dir `dist`, redirect SPA, cache disabilitata su `sw.js`/`manifest.webmanifest`). Per andare in produzione:

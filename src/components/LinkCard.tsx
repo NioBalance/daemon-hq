@@ -22,13 +22,9 @@ export default function LinkCard({
         <div className="url">{url || 'URL non impostato'}</div>
       </div>
       <div className="row">
-        <button className="btn sm ghost" onClick={onEdit}>
-          ✎
-        </button>
+        <button className="btn sm ghost" onClick={onEdit} aria-label="Modifica">✎</button>
         {onDelete && (
-          <button className="btn sm danger" onClick={onDelete}>
-            ✕
-          </button>
+          <button className="btn sm danger" onClick={onDelete} aria-label="Elimina">✕</button>
         )}
       </div>
     </div>

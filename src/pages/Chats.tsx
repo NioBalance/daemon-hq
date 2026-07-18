@@ -221,12 +221,8 @@ export default function Chats() {
           <OwnerBadge owner={c.owner} />
         </div>
         <div className="row">
-          <button className="btn sm ghost" onClick={() => openEdit(c)}>
-            ✎
-          </button>
-          <button className="btn sm danger" onClick={() => handleDelete(c)}>
-            ✕
-          </button>
+          <button className="btn sm ghost" onClick={() => openEdit(c)} aria-label="Modifica">✎</button>
+          <button className="btn sm danger" onClick={() => handleDelete(c)} aria-label="Elimina">✕</button>
         </div>
       </div>
       <NotesList entityType="chats" entityId={c.id} />
@@ -269,12 +265,8 @@ export default function Chats() {
                   </div>
                 </div>
                 <div className="row">
-                  <button className="btn sm ghost" onClick={() => openEditChannel(c)}>
-                    ✎
-                  </button>
-                  <button className="btn sm danger" onClick={() => handleDeleteChannel(c)}>
-                    ✕
-                  </button>
+                  <button className="btn sm ghost" onClick={() => openEditChannel(c)} aria-label="Modifica">✎</button>
+                  <button className="btn sm danger" onClick={() => handleDeleteChannel(c)} aria-label="Elimina">✕</button>
                 </div>
               </div>
             ))}

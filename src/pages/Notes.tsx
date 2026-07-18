@@ -49,12 +49,8 @@ function MemoCard({
             <button className="btn sm ghost" onClick={onTogglePin} title={memo.pin ? 'Togli il pin' : 'Pinna in cima'}>
               {memo.pin ? 'Unpin' : 'Pin'}
             </button>
-            <button className="btn sm ghost" onClick={onEdit}>
-              ✎
-            </button>
-            <button className="btn sm danger" onClick={onDelete}>
-              ✕
-            </button>
+            <button className="btn sm ghost" onClick={onEdit} aria-label="Modifica">✎</button>
+            <button className="btn sm danger" onClick={onDelete} aria-label="Elimina">✕</button>
           </div>
         )}
       </div>

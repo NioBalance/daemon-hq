@@ -280,17 +280,13 @@ export default function Calendario() {
       {!isLoading && !isError && calView === 'hq' && (
         <>
           <div className="cal-head">
-            <button className="btn sm ghost" onClick={() => calNav(-1)}>
-              ←
-            </button>
+            <button className="btn sm ghost" onClick={() => calNav(-1)} aria-label="Precedente">←</button>
             <span className="cal-month">{monthName}</span>
             <div className="row">
               <button className="btn sm ghost" onClick={calToday}>
                 Oggi
               </button>
-              <button className="btn sm ghost" onClick={() => calNav(1)}>
-                →
-              </button>
+              <button className="btn sm ghost" onClick={() => calNav(1)} aria-label="Successivo">→</button>
             </div>
           </div>
 

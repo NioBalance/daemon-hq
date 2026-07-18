@@ -183,9 +183,7 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
               onChange={() => toggleTask.mutate({ id: t.id, done: !t.done })}
             />
             <span>{t.testo}</span>
-            <button className="tx" onClick={() => deleteTask.mutate(t.id)}>
-              ✕
-            </button>
+            <button className="tx" onClick={() => deleteTask.mutate(t.id)} aria-label="Elimina">✕</button>
           </div>
         ))}
       </div>
@@ -198,9 +196,7 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
             if (e.key === 'Enter') handleAddTask()
           }}
         />
-        <button className="btn sm" onClick={handleAddTask}>
-          +
-        </button>
+        <button className="btn sm" onClick={handleAddTask} aria-label="Aggiungi">+</button>
       </div>
       <NotesList entityType="articoli" entityId={articolo.id} />
     </Modal>
