@@ -1,0 +1,34 @@
+{
+  "projectId": "68456579-4e2f-43b0-9db1-3dc0050929c8",
+  "shape": "package",
+  "pkg": "daemon-production-hq",
+  "globalName": "DaemonHQ",
+  "entry": ".design-sync/ds-entry.ts",
+  "cssEntry": "src/styles/global.css",
+  "extraFonts": [".design-sync/fonts/fonts.css"],
+  "docsDir": ".design-sync/docs",
+  "readmeHeader": ".design-sync/conventions.md",
+  "overrides": {
+    "Modal": { "cardMode": "single", "viewport": "760x560" },
+    "ShortcutsPanel": { "cardMode": "single", "viewport": "760x780" },
+    "ToastStack": { "cardMode": "single", "viewport": "640x360" }
+  },
+  "componentSrcMap": {
+    "Modal": "src/components/Modal.tsx",
+    "FormFields": "src/components/FormFields.tsx",
+    "EmptyState": "src/components/EmptyState.tsx",
+    "ErrorBoundary": "src/components/ErrorBoundary.tsx",
+    "PanelHead": "src/components/PanelHead.tsx",
+    "OwnerBadge": "src/components/OwnerBadge.tsx",
+    "LinkCard": "src/components/LinkCard.tsx",
+    "ShortcutsPanel": "src/components/ShortcutsPanel.tsx",
+    "ToastStack": "src/components/ToastStack.tsx",
+    "ToastProvider": "src/lib/ToastProvider.tsx",
+    "Loading": "src/components/QueryState.tsx",
+    "SkeletonGrid": "src/components/QueryState.tsx",
+    "ErrorState": "src/components/QueryState.tsx",
+    "ProgressRing": "src/components/ChartBits.tsx",
+    "Sparkline": "src/components/ChartBits.tsx",
+    "MiniBars": "src/components/ChartBits.tsx"
+  }
+}

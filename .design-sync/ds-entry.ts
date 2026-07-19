@@ -1,0 +1,16 @@
+// Entry della libreria per design-sync: SOLO i componenti presentazionali
+// scelti per claude.ai/design — niente Supabase, niente contesti app.
+export { default as Modal } from '../src/components/Modal'
+export { default as FormFields } from '../src/components/FormFields'
+export { default as EmptyState } from '../src/components/EmptyState'
+export { default as ErrorBoundary } from '../src/components/ErrorBoundary'
+export { default as PanelHead } from '../src/components/PanelHead'
+export { default as OwnerBadge } from '../src/components/OwnerBadge'
+export { default as LinkCard } from '../src/components/LinkCard'
+export { default as ShortcutsPanel } from '../src/components/ShortcutsPanel'
+export { default as ToastStack } from '../src/components/ToastStack'
+export { Loading, SkeletonGrid, ErrorState } from '../src/components/QueryState'
+export { ProgressRing, Sparkline, MiniBars } from '../src/components/ChartBits'
+export { ToastProvider } from '../src/lib/ToastProvider'
+export { useToast } from '../src/lib/useToast'
+export { MotionRoot } from './motion-root'
