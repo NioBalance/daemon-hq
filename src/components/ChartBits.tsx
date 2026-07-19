@@ -32,7 +32,7 @@ export function ProgressRing({
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
           initial={reduceMotion ? false : { pathLength: 0 }}
           animate={{ pathLength: clamped }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
         />
       </svg>
       <span className="ring-label">{label ?? `${Math.round(clamped * 100)}%`}</span>
@@ -40,22 +40,43 @@ export function ProgressRing({
   )
 }
 
-/** Sparkline minimale: linea ember su glass, niente assi. */
-export function Sparkline({ data, height = 40 }: { data: number[]; height?: number }) {
+/** Sparkline minimale: linea sottile senza assi, draw-in one-shot al mount
+ *  (fermo con reduced-motion). Mono-serie: il colore identifica il grafico,
+ *  il valore vive nel testo accanto, mai sulla linea. */
+export function Sparkline({
+  data,
+  height = 40,
+  color = 'var(--ember)',
+}: {
+  data: number[]
+  height?: number
+  color?: string
+}) {
+  const reduceMotion = useReducedMotion()
   if (data.length < 2) return <div className="spark-empty" style={{ height }} />
   const points = data.map((v, i) => ({ i, v }))
   return (
     <div style={{ width: '100%', height }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={points} margin={{ top: 4, right: 2, bottom: 2, left: 2 }}>
-          <Line type="monotone" dataKey="v" stroke="var(--ember)" strokeWidth={1.6} dot={false} isAnimationActive={false} />
+          <Line
+            type="monotone"
+            dataKey="v"
+            stroke={color}
+            strokeWidth={1.6}
+            dot={false}
+            isAnimationActive={!reduceMotion}
+            animationDuration={1400}
+            animationEasing="ease-out"
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>
   )
 }
 
-/** Mini bar chart senza assi rumorosi (colori per barra opzionali). */
+/** Mini bar chart senza assi rumorosi (colori per barra opzionali),
+ *  grow-up al mount, fermo con reduced-motion. */
 export function MiniBars({
   data,
   height = 44,
@@ -63,11 +84,18 @@ export function MiniBars({
   data: { label: string; value: number; color?: string }[]
   height?: number
 }) {
+  const reduceMotion = useReducedMotion()
   return (
     <div style={{ width: '100%', height }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
-          <Bar dataKey="value" radius={[3, 3, 0, 0]} isAnimationActive={false}>
+          <Bar
+            dataKey="value"
+            radius={[3, 3, 0, 0]}
+            isAnimationActive={!reduceMotion}
+            animationDuration={600}
+            animationEasing="ease-out"
+          >
             {data.map((d, i) => (
               <Cell key={i} fill={d.color ?? 'var(--ember)'} />
             ))}

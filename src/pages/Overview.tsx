@@ -4,7 +4,7 @@ import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
-import { Sparkline } from '../components/ChartBits'
+import { ProgressRing, Sparkline, MiniBars } from '../components/ChartBits'
 import { useDrops, useDropFasi } from '../features/drops/queries'
 import { useArticoli, useArticoloTasks } from '../features/articoli/queries'
 import { useDesigns } from '../features/designs/queries'
@@ -18,7 +18,7 @@ import { useNav } from '../lib/navigation'
 import { useAuth } from '../auth/useAuth'
 import { useToast } from '../lib/useToast'
 import { useFormDraft } from '../lib/useFormDraft'
-import { fmtDate, todayIso, addDaysIso, daysUntil } from '../lib/format'
+import { fmtDate, todayIso, addDaysIso, daysUntil, localDateIso } from '../lib/format'
 import type { KpiMetrica } from '../lib/database.types'
 import type { TabKey } from '../lib/tabs'
 
@@ -36,16 +36,6 @@ function CountNum({ value, decimals = 0, suffix = '' }: { value: number; decimal
       {v.toLocaleString('it-IT', { maximumFractionDigits: decimals })}
       {suffix}
     </>
-  )
-}
-
-function Delta({ pct }: { pct: number | null }) {
-  if (pct === null || !isFinite(pct)) return null
-  const up = pct >= 0
-  return (
-    <span className={`delta ${up ? 'up' : 'down'}`}>
-      {up ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
-    </span>
   )
 }
 
@@ -159,6 +149,7 @@ export default function Overview() {
 
   const nextFasi = nextDrop ? fasiList.filter((f) => f.drop_id === nextDrop.id) : []
   const fasiDone = nextFasi.filter((f) => f.done).length
+  const fasiPct = nextFasi.length ? fasiDone / nextFasi.length : 0
 
 
   const scored = samplesList
@@ -167,6 +158,21 @@ export default function Overview() {
   const mediaCampioni = scored.length
     ? scored.reduce((sum, a) => sum + a.reduce((x, y) => x + y, 0) / a.length, 0) / scored.length
     : 0
+
+  const pctApprovati = samplesList.length
+    ? samplesList.filter((s) => s.verdetto === 'approvato').length / samplesList.length
+    : 0
+
+  const activityList = activityQ.data ?? []
+  const weekAgoIso = addDaysIso(todayStr, -6)
+  const giorniBars = Array.from({ length: 7 }, (_, i) => {
+    const day = addDaysIso(weekAgoIso, i)
+    return {
+      label: day.slice(8),
+      value: activityList.filter((a) => localDateIso(a.created_at) === day).length,
+      color: 'var(--ember)',
+    }
+  })
 
   const tpConti = {
     bozza: techpacksList.filter((t) => t.stato === 'bozza').length,
@@ -181,13 +187,8 @@ export default function Overview() {
   for (const snap of kpiList) {
     kpiSeries.set(snap.metrica, [...(kpiSeries.get(snap.metrica) ?? []), snap])
   }
-  const kpiDelta = (series: KpiSnapshot[]): number | null => {
-    const latest = series[series.length - 1]
-    if (!latest) return null
-    const prev = [...series].reverse().find((s) => s.data <= addDaysIso(latest.data, -28))
-    if (!prev || prev.valore === 0) return null
-    return ((latest.valore - prev.valore) / prev.valore) * 100
-  }
+  const followerVals = (kpiSeries.get('instagram_followers') ?? []).map((x) => x.valore)
+  const ordiniVals = (kpiSeries.get('ordini_totali') ?? []).map((x) => x.valore)
 
   // --- Cockpit: testata, ticker LIVE, number band ---
   const now = new Date()
@@ -322,54 +323,49 @@ export default function Overview() {
         </div>
       </div>
 
-      <PanelHead
-        title="KPI esterni"
-        desc="Follower, ordini, pacchi, waitlist e revenue: inseriti a mano, tracciati nel tempo. Delta calcolato sul valore di ~un mese prima."
-        actions={
-          <button className="btn" onClick={() => openKpi()}>
-            Aggiorna KPI
-          </button>
-        }
-      />
-      {kpiQ.isError ? (
-        <div className="empty">
-          KPI non disponibili — esegui la migration 0006_fase5.sql su Supabase, poi ricarica.
+      <div className="chart-band">
+        <div className="cb-cell">
+          <span className="cb-lbl">Follower · trend</span>
+          {followerVals.length >= 2 ? (
+            <Sparkline data={followerVals} height={46} />
+          ) : (
+            <span className="cb-none">servono 2+ snapshot</span>
+          )}
+          <span className="cb-val">
+            {followerVals.length ? followerVals[followerVals.length - 1].toLocaleString('it-IT') : '—'}
+          </span>
         </div>
-      ) : (
-        <div className="kpi-grid">
-          {KPI_METRICHE.map((m) => {
-            const series = kpiSeries.get(m.value) ?? []
-            const latest = series[series.length - 1]
-            if (!latest) {
-              return (
-                <div className="card kpi-block kpi-empty" key={m.value}>
-                  <span className="lbl">{m.label}</span>
-                  <p className="card-meta" style={{ margin: '10px 0' }}>
-                    Nessun dato ancora.
-                  </p>
-                  <button className="btn sm ghost" onClick={() => openKpi(m.value)}>
-                    Inserisci il primo valore
-                  </button>
-                </div>
-              )
-            }
-            return (
-              <div className="card kpi-block" key={m.value}>
-                <span className="lbl">{m.label}</span>
-                <div className="kpi-big">
-                  <CountNum value={latest.valore} />
-                  {m.unit && <span className="kpi-big-sub"> {m.unit}</span>}{' '}
-                  <Delta pct={kpiDelta(series)} />
-                </div>
-                <Sparkline data={series.map((s) => s.valore)} />
-                <span className="code" style={{ marginTop: 6 }}>
-                  AGG. {fmtDate(latest.data)} · {latest.inserito_da}
-                </span>
-              </div>
-            )
-          })}
+        <div className="cb-cell">
+          <span className="cb-lbl">Attività · 7gg</span>
+          {activityQ.isError ? (
+            <span className="cb-none">manca la migration 0006</span>
+          ) : (
+            <MiniBars data={giorniBars} height={46} />
+          )}
+          <span className="cb-val">{activityList.length ? giorniBars.reduce((a, b) => a + b.value, 0) : '—'} azioni</span>
         </div>
-      )}
+        <div className="cb-cell">
+          <span className="cb-lbl">Pipeline {nextDrop ? nextDrop.nome : 'drop'}</span>
+          <ProgressRing value={fasiPct} size={62} stroke={4} />
+          <span className="cb-val">{fasiDone}/{nextFasi.length} fasi</span>
+        </div>
+        <div className="cb-cell">
+          <span className="cb-lbl">Ordini · trend</span>
+          {ordiniVals.length >= 2 ? (
+            <Sparkline data={ordiniVals} height={46} color="var(--ok)" />
+          ) : (
+            <span className="cb-none">servono 2+ snapshot</span>
+          )}
+          <span className="cb-val">
+            {ordiniVals.length ? ordiniVals[ordiniVals.length - 1].toLocaleString('it-IT') : '—'}
+          </span>
+        </div>
+        <div className="cb-cell">
+          <span className="cb-lbl">Qualità campioni</span>
+          <ProgressRing value={pctApprovati} size={62} stroke={4} />
+          <span className="cb-val">{mediaCampioni ? `media ${mediaCampioni.toFixed(1)}★` : '—'}</span>
+        </div>
+      </div>
 
       <PanelHead title="Da fare adesso" desc="Alert automatici, cliccabili: fasi in scadenza, tech pack in attesa, campioni da valutare." />
       {alerts.length ? (
