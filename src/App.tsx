@@ -7,6 +7,7 @@ import { useAuth } from './auth/useAuth'
 import Login from './auth/Login'
 import ProfileForm from './auth/ProfileForm'
 import Header from './components/Header'
+import Sidebar from './components/Sidebar'
 import ErrorBoundary from './components/ErrorBoundary'
 import MobileNav from './components/MobileNav'
 import WidgetsPanel from './components/WidgetsPanel'
@@ -174,14 +175,17 @@ function AppShell() {
         clearPendingEntity,
       }}
     >
-      <Header
-        activeTab={activeTab}
-        onTabChange={goTab}
-        meName={profile?.nome ?? ''}
-        onMeClick={() => setEditingProfile(true)}
-        onSearchClick={() => setPaletteOpen(true)}
-      />
-      <main>
+      <div className="shell">
+        <Sidebar activeTab={activeTab} />
+        <div className="shell-main">
+          <Header
+            activeTab={activeTab}
+            onTabChange={goTab}
+            meName={profile?.nome ?? ''}
+            onMeClick={() => setEditingProfile(true)}
+            onSearchClick={() => setPaletteOpen(true)}
+          />
+          <main>
         <m.section
           className="panel active"
           key={activeTab}
@@ -195,7 +199,9 @@ function AppShell() {
             </Suspense>
           </ErrorBoundary>
         </m.section>
-      </main>
+          </main>
+        </div>
+      </div>
       <MobileNav activeTab={activeTab} />
       <WidgetsPanel />
       {editingProfile && <ProfileForm mode="edit" onDone={() => setEditingProfile(false)} />}

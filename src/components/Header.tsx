@@ -1,5 +1,4 @@
 import type { TabKey } from '../lib/tabs'
-import NavGroups from './NavGroups'
 import starLogo from '../assets/star-logo.png'
 
 const todayLabel = () =>
@@ -73,7 +72,6 @@ export default function Header({
           </div>
         </div>
       </div>
-      <NavGroups activeTab={activeTab} />
     </header>
   )
 }
