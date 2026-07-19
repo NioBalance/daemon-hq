@@ -1,84 +1,44 @@
-import type { ReactNode } from 'react'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
-import { NAV_GROUPS, isEntryActive, type TabKey } from '../lib/tabs'
+import { NAV_GROUPS, UTILITY_ENTRIES, ALL_NAV_ENTRIES, isEntryActive, type TabKey } from '../lib/tabs'
 import { useNav } from '../lib/navigation'
 import { BellIcon } from './WidgetsPanel'
 import { useUnseenActivity } from '../features/activity/queries'
+import { ICONS } from './navIcons'
 
-function OverviewIcon() {
-  return (
-    <svg viewBox="0 0 24 24">
-      <path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z" />
-    </svg>
-  )
-}
-function ProductionIcon() {
-  return (
-    <svg viewBox="0 0 24 24">
-      <path d="M12 19l7-7-3-3-7 7-1.5 4.5z" />
-      <line x1="14.5" y1="7.5" x2="16.5" y2="9.5" />
-    </svg>
-  )
-}
-function GestioneIcon() {
-  return (
-    <svg viewBox="0 0 24 24">
-      <line x1="4" y1="7" x2="20" y2="7" />
-      <line x1="4" y1="12" x2="16" y2="12" />
-      <line x1="4" y1="17" x2="12" y2="17" />
-    </svg>
-  )
-}
-function LiveIcon() {
-  return (
-    <svg viewBox="0 0 24 24">
-      <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" />
-    </svg>
-  )
-}
+// Voci dirette della bottom-nav v4 (spec §2 mobile): le 4 più usate.
+const DIRECT_IDS = ['overview', 'oggi', 'dropx', 'media'] as const
 
-const GROUP_ICONS: Record<string, () => ReactNode> = {
-  production: ProductionIcon,
-  gestione: GestioneIcon,
-  live: LiveIcon,
-}
-
-/** Bottom-nav a 2 livelli: Overview diretta + 3 gruppi che aprono un
- *  bottom-sheet con le voci (max 2 tap per qualsiasi pagina). Lo sheet usa lo
- *  slot unico activeSheet ("nav:<gruppo>") condiviso col futuro widget-sheet
- *  della Fase 5: aprire uno chiude l'altro per costruzione. */
+/** Bottom-nav v4: 4 voci dirette + Menu (tutti i 5 gruppi + utility, che su
+ *  mobile non hanno né sidebar né tastiera) + Team. Max 2 tap ovunque. Lo
+ *  sheet usa lo slot unico activeSheet: aprirne uno chiude l'altro. */
 export default function MobileNav({ activeTab }: { activeTab: TabKey }) {
-  const { goTab, goEntry, archTab, activeSheet, setActiveSheet } = useNav()
+  const { goEntry, archTab, activeSheet, setActiveSheet } = useNav()
   const reduceMotion = useReducedMotion()
   const unseen = useUnseenActivity()
-  const openGroup = NAV_GROUPS.find((g) => activeSheet === `nav:${g.id}`)
+  const direct = DIRECT_IDS.map((id) => ALL_NAV_ENTRIES.find((e) => e.id === id)!).filter(Boolean)
+  const menuOpen = activeSheet === 'nav:menu'
 
   return (
     <>
       <nav className="bottom-nav" aria-label="Navigazione">
+        {direct.map((entry) => (
+          <button
+            key={entry.id}
+            className={`bottom-nav-btn${isEntryActive(entry, activeTab, archTab) ? ' active' : ''}`}
+            onClick={() => goEntry(entry)}
+          >
+            {ICONS[entry.id]}
+            <span>{entry.label === 'Media Studio' ? 'Media' : entry.label}</span>
+          </button>
+        ))}
         <button
-          className={`bottom-nav-btn${activeTab === 'overview' ? ' active' : ''}`}
-          onClick={() => goTab('overview')}
+          className={`bottom-nav-btn${menuOpen ? ' active' : ''}`}
+          aria-expanded={menuOpen}
+          onClick={() => setActiveSheet(menuOpen ? null : 'nav:menu')}
         >
-          <OverviewIcon />
-          <span>Overview</span>
+          {ICONS.menu}
+          <span>Menu</span>
         </button>
-        {NAV_GROUPS.map((group) => {
-          const Icon = GROUP_ICONS[group.id]
-          const groupActive = group.entries.some((e) => isEntryActive(e, activeTab, archTab))
-          const isOpen = activeSheet === `nav:${group.id}`
-          return (
-            <button
-              key={group.id}
-              className={`bottom-nav-btn${groupActive ? ' active' : ''}`}
-              aria-expanded={isOpen}
-              onClick={() => setActiveSheet(isOpen ? null : `nav:${group.id}`)}
-            >
-              <Icon />
-              <span>{group.short}</span>
-            </button>
-          )
-        })}
         <button
           className={`bottom-nav-btn${activeSheet === 'widgets' ? ' active' : ''}`}
           aria-expanded={activeSheet === 'widgets'}
@@ -92,7 +52,7 @@ export default function MobileNav({ activeTab }: { activeTab: TabKey }) {
       </nav>
 
       <AnimatePresence>
-        {openGroup && (
+        {menuOpen && (
           <m.div
             key="sheet-bg"
             className="sheet-bg"
@@ -103,29 +63,45 @@ export default function MobileNav({ activeTab }: { activeTab: TabKey }) {
             onClick={() => setActiveSheet(null)}
           />
         )}
-        {openGroup && (
+        {menuOpen && (
           <m.div
             key="sheet"
             className="sheet"
             role="dialog"
-            aria-label={openGroup.title}
+            aria-label="Menu"
             initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 28 }}
             transition={{ duration: reduceMotion ? 0.1 : 0.35, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="sheet-handle" />
-            <div className="sheet-title">{openGroup.title}</div>
-            {openGroup.entries.map((entry) => (
-              <button
-                key={entry.id}
-                className={`sheet-item${isEntryActive(entry, activeTab, archTab) ? ' active' : ''}`}
-                onClick={() => goEntry(entry)}
-              >
-                {entry.label}
-                {entry.soon && <span className="soon-pill">Soon</span>}
-              </button>
+            {NAV_GROUPS.map((group) => (
+              <div key={group.id} className="sheet-group">
+                <div className="sheet-title">{group.title}</div>
+                {group.entries.map((entry) => (
+                  <button
+                    key={entry.id}
+                    className={`sheet-item${isEntryActive(entry, activeTab, archTab) ? ' active' : ''}`}
+                    onClick={() => goEntry(entry)}
+                  >
+                    {entry.label}
+                    {entry.soon && <span className="soon-pill">Soon</span>}
+                  </button>
+                ))}
+              </div>
             ))}
+            <div className="sheet-group">
+              <div className="sheet-title">Utility</div>
+              {UTILITY_ENTRIES.map((entry) => (
+                <button
+                  key={entry.id}
+                  className={`sheet-item${isEntryActive(entry, activeTab, archTab) ? ' active' : ''}`}
+                  onClick={() => goEntry(entry)}
+                >
+                  {entry.label}
+                </button>
+              ))}
+            </div>
           </m.div>
         )}
       </AnimatePresence>
