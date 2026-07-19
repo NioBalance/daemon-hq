@@ -4,7 +4,7 @@ import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
-import { ProgressRing, Sparkline, MiniBars } from '../components/ChartBits'
+import { Sparkline } from '../components/ChartBits'
 import { useDrops, useDropFasi } from '../features/drops/queries'
 import { useArticoli, useArticoloTasks } from '../features/articoli/queries'
 import { useDesigns } from '../features/designs/queries'
@@ -18,7 +18,7 @@ import { useNav } from '../lib/navigation'
 import { useAuth } from '../auth/useAuth'
 import { useToast } from '../lib/useToast'
 import { useFormDraft } from '../lib/useFormDraft'
-import { fmtDate, todayIso, addDaysIso, daysUntil, localDateIso } from '../lib/format'
+import { fmtDate, todayIso, addDaysIso, daysUntil } from '../lib/format'
 import type { KpiMetrica } from '../lib/database.types'
 import type { TabKey } from '../lib/tabs'
 
@@ -141,13 +141,10 @@ export default function Overview() {
 
   const dropList = drops.data ?? []
   const fasiList = fasi.data ?? []
-  const articoliList = articoli.data ?? []
   const tasksList = tasks.data ?? []
-  const designsList = designs.data ?? []
   const techpacksList = techpacks.data ?? []
   const samplesList = samples.data ?? []
   const fornitoriList = fornitori.data ?? []
-  const activityList = activityQ.data ?? []
   const kpiList = kpiQ.data ?? []
 
   const todayStr = todayIso()
@@ -162,13 +159,7 @@ export default function Overview() {
 
   const nextFasi = nextDrop ? fasiList.filter((f) => f.drop_id === nextDrop.id) : []
   const fasiDone = nextFasi.filter((f) => f.done).length
-  const fasiPct = nextFasi.length ? fasiDone / nextFasi.length : 0
 
-  const dropArticoli = nextDrop ? articoliList.filter((a) => a.drop_id === nextDrop.id) : []
-  const dropArticoliIds = new Set(dropArticoli.map((a) => a.id))
-  const dropTasks = tasksList.filter((t) => dropArticoliIds.has(t.articolo_id))
-  const dropTasksDone = dropTasks.filter((t) => t.done).length
-  const prontiPct = dropTasks.length ? dropTasksDone / dropTasks.length : 0
 
   const scored = samplesList
     .map((s) => [s.fit, s.tessuto, s.cuciture, s.colore].filter((n): n is number => n != null))
@@ -176,15 +167,6 @@ export default function Overview() {
   const mediaCampioni = scored.length
     ? scored.reduce((sum, a) => sum + a.reduce((x, y) => x + y, 0) / a.length, 0) / scored.length
     : 0
-  const pctApprovati = samplesList.length
-    ? samplesList.filter((s) => s.verdetto === 'approvato').length / samplesList.length
-    : 0
-  const verdettoBars = [
-    { label: 'In review', value: samplesList.filter((s) => s.verdetto === 'in-review').length, color: 'var(--amber)' },
-    { label: 'Approvati', value: samplesList.filter((s) => s.verdetto === 'approvato').length, color: 'var(--ok)' },
-    { label: 'Da rivedere', value: samplesList.filter((s) => s.verdetto === 'revisione').length, color: 'var(--steel)' },
-    { label: 'Scartati', value: samplesList.filter((s) => s.verdetto === 'scartato').length, color: 'var(--ember)' },
-  ]
 
   const tpConti = {
     bozza: techpacksList.filter((t) => t.stato === 'bozza').length,
@@ -193,16 +175,6 @@ export default function Overview() {
     produzione: techpacksList.filter((t) => t.stato === 'in-produzione').length,
   }
 
-  const weekAgoIso = addDaysIso(todayStr, -6)
-  const attivita7g = activityList.filter((a) => localDateIso(a.created_at) >= weekAgoIso)
-  const giorniBars = Array.from({ length: 7 }, (_, i) => {
-    const day = addDaysIso(weekAgoIso, i)
-    return {
-      label: day.slice(8),
-      value: attivita7g.filter((a) => localDateIso(a.created_at) === day).length,
-      color: 'var(--ember)',
-    }
-  })
 
   // --- KPI esterni (kpi_snapshots) ---
   const kpiSeries = new Map<KpiMetrica, KpiSnapshot[]>()
@@ -217,28 +189,23 @@ export default function Overview() {
     return ((latest.valore - prev.valore) / prev.valore) * 100
   }
 
-  // --- Ticker ---
-  const tickerItems: { label: string; value: string; delta?: number | null }[] = [
-    { label: 'Prossimo drop', value: days !== null ? `T−${days}g` : '—' },
-    { label: 'Fasi drop', value: `${Math.round(fasiPct * 100)}%` },
-    { label: 'Articoli pronti', value: `${Math.round(prontiPct * 100)}%` },
-    { label: 'Qualità campioni', value: mediaCampioni ? mediaCampioni.toFixed(1) : '—' },
-    { label: 'Campioni ok', value: `${Math.round(pctApprovati * 100)}%` },
-    { label: 'TP confermati', value: String(tpConti.confermato + tpConti.produzione) },
-    { label: 'Attività 7g', value: String(attivita7g.length) },
-    { label: 'Articoli', value: String(articoliList.length) },
-    { label: 'Design pipeline', value: String(designsList.length) },
-    { label: 'Fornitori attivi', value: String(fornitoriList.filter((f) => f.stato === 'attivo').length) },
-    ...KPI_METRICHE.map((m) => {
-      const series = kpiSeries.get(m.value) ?? []
-      const latest = series[series.length - 1]
-      return {
-        label: m.label,
-        value: latest ? `${latest.valore.toLocaleString('it-IT')}${m.unit ? ` ${m.unit}` : ''}` : '—',
-        delta: kpiDelta(series),
-      }
-    }),
-  ]
+  // --- Cockpit: testata, ticker LIVE, number band ---
+  const now = new Date()
+  const headDate = now
+    .toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })
+    .toUpperCase()
+  const headTime = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+  const syncOk = !kpiQ.isError && !activityQ.isError
+
+  const kpiLatest = (m: KpiMetrica) => {
+    const series = kpiSeries.get(m) ?? []
+    return series[series.length - 1] ?? null
+  }
+
+  const campioniInReview = samplesList.filter((s) => s.verdetto === 'in-review').length
+  const taskAperti = tasksList.filter((t) => !t.done).length
+  const fornitoriAttivi = fornitoriList.filter((f) => f.stato === 'attivo')
+  const fornitoriBackup = fornitoriList.filter((f) => f.ruolo === 'backup' && f.stato === 'attivo').length
 
   // --- Alert (cliccabili: saltano alla sezione interessata) ---
   const alerts: Alert[] = []
@@ -266,83 +233,92 @@ export default function Overview() {
 
   return (
     <>
-      <div className="kpi-ticker">
-        <div className="kpi-ticker-track">
-          {[0, 1].map((dup) =>
-            tickerItems.map((it, i) => (
-              <span className="kpi-tick" key={`${dup}-${i}`}>
-                <span className="lbl">{it.label}</span>
-                <span className="val">{it.value}</span>
-                {it.delta !== undefined && <Delta pct={it.delta ?? null} />}
-              </span>
-            )),
-          )}
+      <div className="ov-head">
+        <h2 className="ov-title">Overview</h2>
+        <div className="ov-sub">
+          {headDate} · {headTime} — {syncOk ? <span className="ok">tutto sincronizzato</span> : 'sync parziale: esegui le migration mancanti'}
         </div>
       </div>
 
-      <div className="kpi-computed">
-        <div className="card kpi-block">
-          <span className="lbl">Prossimo drop</span>
-          <div className="kpi-big hot">{days !== null ? <CountNum value={days} /> : '—'}</div>
-          <span className="lbl">{nextDrop?.nome ?? 'Nessun drop pianificato'}{days !== null ? ' · giorni' : ''}</span>
-          <div className="row" style={{ marginTop: 10, gap: 12 }}>
-            <ProgressRing value={fasiPct} size={64} />
-            <span className="card-meta">
-              {fasiDone}/{nextFasi.length} fasi
-              <br />
-              completate
-            </span>
-          </div>
+      <div className="live-ticker">
+        <div className="live-ticker-in">
+          <span className="lt-live">
+            <span className="lt-dot" aria-hidden /> LIVE
+          </span>
+          <span className="lt-sep" aria-hidden />
+          {KPI_METRICHE.map((m) => {
+            const latest = kpiLatest(m.value)
+            return (
+              <span className={`lt-item${m.value === 'pacchi_drop' ? ' hot' : ''}`} key={m.value}>
+                <span className="lt-lbl">{m.label}</span>
+                <span className="lt-val">
+                  {latest ? `${latest.valore.toLocaleString('it-IT')}${m.unit ? ` ${m.unit}` : ''}` : '—'}
+                </span>
+              </span>
+            )
+          })}
+          <button className="tlink lt-cta" onClick={() => openKpi()}>
+            Aggiorna KPI →
+          </button>
         </div>
+      </div>
 
-        <div className="card kpi-block">
-          <span className="lbl">Articoli pronti — drop attivo</span>
-          <div className="row" style={{ marginTop: 10, gap: 12 }}>
-            <ProgressRing value={prontiPct} size={72} />
-            <span className="card-meta">
-              {dropTasksDone}/{dropTasks.length} task completate su {dropArticoli.length} articoli
-            </span>
+      <div className="kpi-band">
+        <div className="kb-cell">
+          <span className="kb-lbl">Prossimo drop</span>
+          <div className={`kb-num${days !== null && days <= 14 ? ' hot' : ''}`}>
+            {days !== null ? <CountNum value={days} /> : '—'}
           </div>
+          <span className="kb-meta">
+            {nextDrop ? `${nextDrop.nome} · ${fasiDone}/${nextFasi.length} fasi` : 'Nessun drop pianificato'}
+          </span>
+          <button className="kb-cta" onClick={() => goTab('drops')}>
+            Timeline →
+          </button>
         </div>
-
-        <div className="card kpi-block">
-          <span className="lbl">Qualità campioni</span>
-          <div className="kpi-big">
-            {mediaCampioni ? <CountNum value={mediaCampioni} decimals={1} /> : '—'}
-            <span className="kpi-big-sub"> / 5 · {Math.round(pctApprovati * 100)}% approvati</span>
+        <div className="kb-cell">
+          <span className="kb-lbl">Campioni</span>
+          <div className="kb-num">
+            <CountNum value={campioniInReview} />
           </div>
-          <MiniBars data={verdettoBars} />
+          <span className="kb-meta">
+            in review{mediaCampioni ? ` · media ${mediaCampioni.toFixed(1)}★` : ''}
+          </span>
+          <button className="kb-cta" onClick={() => goTab('samples')}>
+            Campioni →
+          </button>
         </div>
-
-        <div className="card kpi-block">
-          <span className="lbl">Tech pack per stato</span>
-          <div className="row" style={{ margin: '10px 0' }}>
-            <span className="badge steel">Bozza {tpConti.bozza}</span>
-            <span className="badge amber">Inviati {tpConti.inviato}</span>
-            <span className="badge ok">Confermati {tpConti.confermato}</span>
-            <span className="badge ember">In produzione {tpConti.produzione}</span>
+        <div className="kb-cell">
+          <span className="kb-lbl">Tech pack</span>
+          <div className="kb-num">
+            <CountNum value={tpConti.inviato} />
           </div>
-          <MiniBars
-            data={[
-              { label: 'Bozza', value: tpConti.bozza, color: 'var(--steel)' },
-              { label: 'Inviati', value: tpConti.inviato, color: 'var(--amber)' },
-              { label: 'Confermati', value: tpConti.confermato, color: 'var(--ok)' },
-              { label: 'Produzione', value: tpConti.produzione, color: 'var(--ember)' },
-            ]}
-          />
+          <span className="kb-meta">
+            in attesa fornitore · {tpConti.confermato + tpConti.produzione} confermati
+          </span>
+          <button className="kb-cta" onClick={() => goTab('techpack')}>
+            Tech Pack →
+          </button>
         </div>
-
-        <div className="card kpi-block">
-          <span className="lbl">Attività team — 7 giorni</span>
-          <div className="kpi-big">
-            <CountNum value={attivita7g.length} />
-            <span className="kpi-big-sub"> azioni</span>
+        <div className="kb-cell">
+          <span className="kb-lbl">Task aperti</span>
+          <div className="kb-num">
+            <CountNum value={taskAperti} />
           </div>
-          {activityQ.isError ? (
-            <p className="widgets-empty">Esegui la migration 0006_fase5.sql per attivare il log.</p>
-          ) : (
-            <MiniBars data={giorniBars} />
-          )}
+          <span className="kb-meta">su {tasksList.length} totali, articoli</span>
+          <button className="kb-cta" onClick={() => goTab('dropx')}>
+            Drops →
+          </button>
+        </div>
+        <div className="kb-cell">
+          <span className="kb-lbl">Fornitori attivi</span>
+          <div className="kb-num">
+            <CountNum value={fornitoriAttivi.length} />
+          </div>
+          <span className="kb-meta">{fornitoriBackup} backup attivi</span>
+          <button className="kb-cta" onClick={() => goTab('fornitori')}>
+            Fornitori →
+          </button>
         </div>
       </div>
 
