@@ -7,6 +7,7 @@ import { useAuth } from './auth/useAuth'
 import Login from './auth/Login'
 import ProfileForm from './auth/ProfileForm'
 import Header from './components/Header'
+import ErrorBoundary from './components/ErrorBoundary'
 import MobileNav from './components/MobileNav'
 import WidgetsPanel from './components/WidgetsPanel'
 import ShortcutsPanel from './components/ShortcutsPanel'
@@ -179,9 +180,11 @@ function AppShell() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
         >
-          <Suspense fallback={<Loading label="Caricamento sezione…" />}>
-            <Page />
-          </Suspense>
+          <ErrorBoundary zona="questa sezione" key={activeTab}>
+            <Suspense fallback={<Loading label="Caricamento sezione…" />}>
+              <Page />
+            </Suspense>
+          </ErrorBoundary>
         </m.section>
       </main>
       <MobileNav activeTab={activeTab} />
@@ -209,7 +212,9 @@ function App() {
       <ToastProvider>
         <ConfirmProvider>
           <LazyMotion features={loadMotionFeatures} strict>
-            <AppShell />
+            <ErrorBoundary>
+              <AppShell />
+            </ErrorBoundary>
           </LazyMotion>
         </ConfirmProvider>
       </ToastProvider>
