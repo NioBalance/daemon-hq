@@ -124,9 +124,17 @@ export async function uploadMediaFile(
   return { path, error: null }
 }
 
-export function getMediaUrl(path: string | null | undefined): string | null {
+/** Durata delle signed URL: 1h; la cache le riusa finché restano valide. */
+export const SIGNED_URL_TTL_S = 3600
+
+/** Il bucket è PRIVATO (audit A1): niente più URL pubbliche. Questa è la
+ *  primitiva imperativa; nei componenti usare l'hook useSignedUrl, che
+ *  deduplica e cache-a via React Query. */
+export async function getSignedMediaUrl(path: string | null | undefined): Promise<string | null> {
   if (!path) return null
-  return supabase.storage.from('media').getPublicUrl(path).data.publicUrl
+  const { data, error } = await supabase.storage.from('media').createSignedUrl(path, SIGNED_URL_TTL_S)
+  if (error || !data) return null
+  return data.signedUrl
 }
 
 export async function deleteMediaFile(path: string | null | undefined): Promise<void> {

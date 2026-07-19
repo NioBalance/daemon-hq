@@ -1,5 +1,6 @@
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { deleteMediaFile, getMediaUrl, uploadMediaFile } from '../lib/upload'
+import { deleteMediaFile, uploadMediaFile } from '../lib/upload'
+import { useSignedUrl } from '../lib/useSignedUrl'
 import { useToast } from '../lib/useToast'
 
 export default function ImageUpload({
@@ -21,7 +22,7 @@ export default function ImageUpload({
 }) {
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
-  const url = getMediaUrl(path)
+  const url = useSignedUrl(path)
   const showToast = useToast()
 
   async function handleFile(file: File) {

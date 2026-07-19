@@ -10,11 +10,35 @@ import {
 } from '../features/techpackFiles/queries'
 import { useAddNote } from '../features/notes/queries'
 import { useAuth } from '../auth/useAuth'
-import { uploadMediaFile, getMediaUrl, deleteMediaFile } from '../lib/upload'
+import { uploadMediaFile, deleteMediaFile } from '../lib/upload'
+import { useSignedUrl } from '../lib/useSignedUrl'
 import { useToast } from '../lib/useToast'
 import { useConfirmDelete } from '../lib/confirm-context'
 import { useFormDraft } from '../lib/useFormDraft'
 import type { Techpack } from '../features/techpacks/queries'
+
+/** Riga file: componente separato perché la signed URL è un hook per-item. */
+function TpfItem({ file: f, onDelete }: { file: TechpackFile; onDelete: () => void }) {
+  const signed = useSignedUrl(f.tipo === 'link' ? null : f.path)
+  const href = f.tipo === 'link' ? (f.url ?? '#') : (signed ?? '#')
+  return (
+    <div className="tpf-item">
+      <a className="tpf-preview" href={href} target="_blank" rel="noopener" title={f.nome}>
+        {f.tipo === 'img' ? (
+          <img src={signed ?? undefined} alt="" loading="lazy" />
+        ) : (
+          <span className="tpf-icon">{f.tipo === 'pdf' ? 'PDF' : '🔗'}</span>
+        )}
+      </a>
+      <div className="tpf-name" title={f.nome}>
+        {f.nome}
+      </div>
+      <button className="tx" onClick={onDelete} aria-label={`Rimuovi ${f.nome}`}>
+        ✕
+      </button>
+    </div>
+  )
+}
 
 const LINK_FIELDS: FieldDef[] = [
   { key: 'nome', label: 'Nome (es. Cartella misure — Drive)' },
@@ -127,26 +151,9 @@ export default function TechpackFolder({ techpack, onClose }: { techpack: Techpa
 
       {files.length ? (
         <div className="tpf-grid">
-          {files.map((f) => {
-            const href = f.tipo === 'link' ? (f.url ?? '#') : (getMediaUrl(f.path) ?? '#')
-            return (
-              <div className="tpf-item" key={f.id}>
-                <a className="tpf-preview" href={href} target="_blank" rel="noopener" title={f.nome}>
-                  {f.tipo === 'img' ? (
-                    <img src={getMediaUrl(f.path) ?? undefined} alt="" loading="lazy" />
-                  ) : (
-                    <span className="tpf-icon">{f.tipo === 'pdf' ? 'PDF' : '🔗'}</span>
-                  )}
-                </a>
-                <div className="tpf-name" title={f.nome}>
-                  {f.nome}
-                </div>
-                <button className="tx" onClick={() => handleDeleteFile(f)} aria-label={`Rimuovi ${f.nome}`}>
-                  ✕
-                </button>
-              </div>
-            )
-          })}
+          {files.map((f) => (
+            <TpfItem key={f.id} file={f} onDelete={() => handleDeleteFile(f)} />
+          ))}
         </div>
       ) : (
         <div className="empty" style={{ padding: 20 }}>

@@ -6,7 +6,8 @@ import { ErrorState } from '../components/QueryState'
 import MediaLightbox from '../components/MediaLightbox'
 import { useMediaItems, useCreateMedia, type MediaItem } from '../features/media/queries'
 import { useMediaTags, useAddMediaTag } from '../features/mediaTags/queries'
-import { uploadMediaFile, getMediaUrl } from '../lib/upload'
+import { uploadMediaFile } from '../lib/upload'
+import { useSignedUrl } from '../lib/useSignedUrl'
 import { MEDIA_COLUMNS, PHOTOROOM_URL, rowLabel, type MediaRowDef } from '../lib/mediaStudio'
 import { useToast } from '../lib/useToast'
 import { useActivityLogger } from '../features/activity/queries'
@@ -23,7 +24,7 @@ type LightboxTarget = { tag: MediaTag | '__untagged__'; index: number }
 type UploadProgress = { tag: MediaTag; done: number; total: number }
 
 function Thumb({ item }: { item: MediaItem }) {
-  const url = getMediaUrl(item.img_path)
+  const url = useSignedUrl(item.img_path)
   if (!url) return <span className="ph">{item.tipo === 'video' ? '▶' : 'Æ'}</span>
   return (
     <>

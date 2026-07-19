@@ -1,7 +1,7 @@
 import type { KeyboardEvent, MouseEvent } from 'react'
 import { useArticoloTasks, type Articolo } from '../features/articoli/queries'
 import { useNotesByType } from '../features/notes/queries'
-import { getMediaUrl } from '../lib/upload'
+import { useSignedUrl } from '../lib/useSignedUrl'
 import { useNav } from '../lib/navigation'
 import { onEnterOrSpace } from '../lib/a11y'
 
@@ -9,7 +9,7 @@ export default function ArticoloCard({ articolo, onClick }: { articolo: Articolo
   const { goCategoria } = useNav()
   const { data: tasks } = useArticoloTasks()
   const { data: notes } = useNotesByType('articoli')
-  const url = getMediaUrl(articolo.img_path)
+  const url = useSignedUrl(articolo.img_path)
   const myTasks = (tasks ?? []).filter((t) => t.articolo_id === articolo.id)
   const doneCount = myTasks.filter((t) => t.done).length
   const noteCount = (notes ?? []).filter((n) => n.entity_id === articolo.id).length

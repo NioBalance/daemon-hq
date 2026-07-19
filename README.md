@@ -73,6 +73,11 @@ Lo script è idempotente (id fissi + `on conflict do nothing`): rieseguirlo non 
 1. **SQL Editor** → incolla ed esegui [supabase/migrations/0006_fase5.sql](supabase/migrations/0006_fase5.sql) (dopo 0001-0005). Crea `activity` (log attività per il widget notifiche, cap ~200 voci FIFO gestito dall'app, badge non-visti in chiave locale per utente) e `kpi_snapshots` (metriche esterne inserite a mano: follower, ordini, pacchi, waitlist, revenue — un valore per metrica al giorno, upsert).
 2. Il pannello widget vive a destra su desktop (campanella per aprirlo/chiuderlo, stato ricordato) e come sheet «Team» nella bottom-nav su mobile. I KPI si inseriscono da Overview → «Aggiorna KPI».
 
+## Setup Supabase — Storage privato (audit A1)
+
+1. **SQL Editor** → incolla ed esegui [supabase/migrations/0007_storage_privato.sql](supabase/migrations/0007_storage_privato.sql) (dopo 0001-0006). Rende privato il bucket `media`: la lettura passa da URL pubbliche permanenti a **signed URL con scadenza 1h**, generate on-demand dall'app (serve il login). Le vecchie URL pubbliche eventualmente condivise in giro smettono di funzionare.
+2. Nessun dato da migrare: nel database sono salvati solo i path, non le URL.
+
 ## Build
 
 ```bash

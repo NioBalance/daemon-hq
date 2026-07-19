@@ -4,7 +4,8 @@ import NotesList from './NotesList'
 import ImageUpload from './ImageUpload'
 import { useMediaTags, useAddMediaTag, useRemoveMediaTag } from '../features/mediaTags/queries'
 import { useUpdateMedia, useDeleteMedia, type MediaItem } from '../features/media/queries'
-import { getMediaUrl, deleteMediaFile } from '../lib/upload'
+import { deleteMediaFile } from '../lib/upload'
+import { useSignedUrl } from '../lib/useSignedUrl'
 import { ALL_MEDIA_ROWS } from '../lib/mediaStudio'
 import { useToast } from '../lib/useToast'
 import { useConfirmDelete } from '../lib/confirm-context'
@@ -106,7 +107,7 @@ export default function MediaLightbox({
 }
 
 function LightboxImage({ item, reduceMotion }: { item: MediaItem; reduceMotion: boolean }) {
-  const url = getMediaUrl(item.img_path)
+  const url = useSignedUrl(item.img_path)
   const updateMedia = useUpdateMedia()
   if (!url && item.tipo === 'video') {
     return (
