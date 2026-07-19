@@ -30,7 +30,7 @@ Queste quattro regole prevalgono su qualunque indicazione estetica precedente (v
 
 1. **Editoriale-minimal.** La pagina è un flusso tipografico su void, non un insieme di scatole. La gerarchia la fanno tipografia, spaziatura e colore — non i pannelli.
 2. **Niente container/box.** Sezioni, liste e card non vivono dentro riquadri con bordo+sfondo. Le superfici piene restano solo ai layer che flottano sopra la pagina (modal, sheet, toast, palette); il glass si ritira a quel ruolo.
-3. **Font: solo Chakra Petch + Space Grotesk, mono sui codici.** IBM Plex Mono esce dallo stack (con Anton): titoli in Chakra Petch, UI e testo in Space Grotesk, codici/date/etichette tecniche in monospace di sistema (`ui-monospace` stack). Due famiglie caricate, punto.
+3. **Font: tre famiglie con ruoli rigidi.** **Anton ESCLUSIVAMENTE sul logo/wordmark** «DÆMON» (sidebar espansa e monogramma DÆ collassato — provato Chakra Petch sul wordmark: non funziona). **Poppins** per titoli, eyebrow e numeri hero. **Space Grotesk** per UI e body. Codici/date/etichette tecniche in monospace di sistema (`ui-monospace` stack) — IBM Plex Mono e Chakra Petch escono del tutto.
 4. **Separazione ad aria e hairline.** Dove serve dividere: spazio bianco generoso e hairline `1px var(--line)` — mai un box. Le hairline sono l'unico tratto di confine ammesso nel flusso di pagina.
 
 **Si ferma:** solo le iterazioni *fini a sé stesse* sull'estetica della nav. Gli asset costruiti **non si buttano, si riusano con una funzione**: le spider-lines diventano l'animazione di apertura dei sotto-menu (→ §2), gli effetti di prossimità restano in forma raffinata — il target per Claude Design resta **UI/UX premium**. La regola è: prima il corpo operativo, poi nuove esplorazioni estetiche; il linguaggio premium già costruito si mette al servizio della funzione.
@@ -165,7 +165,7 @@ Prima del punto 1: chiudere il **blocco critico dell'audit** (C1 signup aperto, 
 
 ## 10. Nota per /design-sync (Claude Design)
 
-Da sincronizzare come riferimenti: **layout sidebar + KPI card pattern di PartnerTribe** (struttura, non estetica — l'estetica resta la nostra: void/glass/ember), **pipeline card con stati e scadenze di Digital Hub**, e i riferimenti PLM già scelti (**Techpacker, Backbone PLM**) per le schede prodotto/tech pack. Il design system v3 (token, motion) è la base, **corretto dalle regole finali di §1.1** (editoriale-minimal, niente container, due famiglie font, aria + hairline): Claude Design deve comporre *layout operativi* con quel linguaggio, non inventarne un altro.
+Da sincronizzare come riferimenti: **layout sidebar + KPI card pattern di PartnerTribe** (struttura, non estetica — l'estetica resta la nostra: void/glass/ember), **pipeline card con stati e scadenze di Digital Hub**, e i riferimenti PLM già scelti (**Techpacker, Backbone PLM**) per le schede prodotto/tech pack. Il design system v3 (token, motion) è la base, **corretto dalle regole finali di §1.1** (editoriale-minimal, niente container, tre famiglie font a ruoli rigidi, aria + hairline): Claude Design deve comporre *layout operativi* con quel linguaggio, non inventarne un altro.
 
 ---
 
@@ -173,7 +173,7 @@ Da sincronizzare come riferimenti: **layout sidebar + KPI card pattern di Partne
 
 Ogni tipo di template disponibile, con la sua funzione qui. Nessuno lasciato fuori: quelli non applicabili sono segnati come tali invece di essere ignorati.
 
-- **Color + typography** — sincronizzazione letterale del design system: palette void/bone/ember, Chakra Petch/Space Grotesk + mono di sistema sui codici (niente IBM Plex Mono — regole §1.1). Primo template da generare: è la base su cui si allineano tutti gli altri.
+- **Color + typography** — sincronizzazione letterale del design system: palette void/bone/ember, Anton (solo logo) + Poppins + Space Grotesk con mono di sistema sui codici (regole §1.1). Primo template da generare: è la base su cui si allineano tutti gli altri.
 - **Wireframe** — per strutturare le pagine nuove prima del mockup pieno: Riunioni, Adv & Campagne, Contratti. Più veloce del mockup completo per validare la struttura prima di vestirla.
 - **UI mockups** — le schermate principali: Overview cockpit, Media Studio a 3 colonne, Tech Pack come file manager, sidebar + top-nav. Il mockup HTML già condiviso è il ponte diretto verso questo template.
 - **Mobile app UI** — versione PWA mobile: bottom-nav, drawer, regola dei 2 tap, widget come bottom-sheet.
