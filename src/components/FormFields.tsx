@@ -73,12 +73,14 @@ function FieldInput({
   onChange: (key: string, value: FieldValue) => void
 }) {
   const v = value ?? ''
+  const inputId = `ff-${field.key}`
 
   if (field.type === 'textarea') {
     return (
       <div className="field">
-        <label>{field.label}</label>
+        <label htmlFor={inputId}>{field.label}</label>
         <textarea
+          id={inputId}
           value={String(v)}
           placeholder={field.placeholder}
           onChange={(e) => onChange(field.key, e.target.value)}
@@ -90,8 +92,8 @@ function FieldInput({
   if (field.type === 'select') {
     return (
       <div className="field">
-        <label>{field.label}</label>
-        <select value={String(v)} onChange={(e) => onChange(field.key, e.target.value)}>
+        <label htmlFor={inputId}>{field.label}</label>
+        <select id={inputId} value={String(v)} onChange={(e) => onChange(field.key, e.target.value)}>
           {field.options?.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
@@ -104,8 +106,9 @@ function FieldInput({
 
   return (
     <div className="field">
-      <label>{field.label}</label>
+      <label htmlFor={inputId}>{field.label}</label>
       <input
+        id={inputId}
         type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
         value={v}
         placeholder={field.placeholder}

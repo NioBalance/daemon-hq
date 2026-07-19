@@ -1,4 +1,5 @@
 import { useCallback, useState, type ReactNode } from 'react'
+import Modal from '../components/Modal'
 import { ConfirmContext } from './confirm-context'
 import { useToast } from './useToast'
 
@@ -56,25 +57,17 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     <ConfirmContext.Provider value={{ confirmDelete }}>
       {children}
       {pending && (
-        <div
-          className="modal-bg open"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setPending(null)
-          }}
-        >
-          <div className="modal" role="alertdialog" aria-label="Conferma eliminazione">
-            <h3>Conferma eliminazione</h3>
-            <p style={{ fontSize: 14 }}>{pending.message}</p>
-            <div className="modal-actions">
-              <button className="btn ghost" onClick={() => setPending(null)} autoFocus>
-                Annulla
-              </button>
-              <button className="btn danger" onClick={onConfirm}>
-                Elimina
-              </button>
-            </div>
+        <Modal title="Conferma eliminazione" role="alertdialog" onClose={() => setPending(null)}>
+          <p style={{ fontSize: 14 }}>{pending.message}</p>
+          <div className="modal-actions">
+            <button className="btn ghost" onClick={() => setPending(null)}>
+              Annulla
+            </button>
+            <button className="btn danger" onClick={onConfirm}>
+              Elimina
+            </button>
           </div>
-        </div>
+        </Modal>
       )}
     </ConfirmContext.Provider>
   )
