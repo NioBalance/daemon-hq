@@ -13,6 +13,10 @@ export type TabKey =
   | 'chats'
   | 'cal'
   | 'notes'
+  | 'oggi'
+  | 'riunioni'
+  | 'contratti'
+  | 'publish'
 
 // I gadget non sono più una sezione autonoma dell'Archivio (§5.1): vivono
 // come riga orizzontale dentro Campioni e Catalogo.
@@ -38,45 +42,72 @@ export interface NavGroup {
   entries: NavEntry[]
 }
 
+// Struttura v4 (spec §2): 5 gruppi operativi in sidebar. Le voci `soon`
+// atterrano su una pagina placeholder reale — palette e chord g+lettera
+// funzionano comunque, mai un errore.
 export const NAV_GROUPS: NavGroup[] = [
   {
-    id: 'production',
-    title: 'Production / Design',
-    short: 'Production',
+    id: 'operativo',
+    title: 'Operativo',
+    short: 'Operativo',
+    entries: [
+      { id: 'overview', label: 'Overview', tab: 'overview', shortcut: 'o' },
+      { id: 'oggi', label: 'Oggi', tab: 'oggi', shortcut: 'g', soon: true },
+      { id: 'dropx', label: 'Drops', tab: 'dropx', shortcut: 'r' },
+      { id: 'chats', label: 'Chats', tab: 'chats', shortcut: 'h' },
+    ],
+  },
+  {
+    id: 'produzione',
+    title: 'Produzione',
+    short: 'Prod',
     entries: [
       { id: 'design', label: 'Design', tab: 'design', shortcut: 'd' },
       { id: 'techpack', label: 'Tech Pack', tab: 'techpack', shortcut: 't' },
       { id: 'samples', label: 'Campioni', tab: 'samples', shortcut: 'c' },
-      { id: 'inspo', label: 'Inspo', tab: 'archivio', archTab: 'inspo', shortcut: 'i' },
+      { id: 'catalogo', label: 'Catalogo', tab: 'catalogo', shortcut: 'a' },
     ],
   },
   {
-    id: 'gestione',
-    title: 'Gestione / PM',
-    short: 'Gestione',
+    id: 'documenti',
+    title: 'Documenti',
+    short: 'Doc',
+    entries: [
+      { id: 'riunioni', label: 'Riunioni', tab: 'riunioni', shortcut: 'u', soon: true },
+      { id: 'contratti', label: 'Contratti', tab: 'contratti', shortcut: 's', soon: true },
+      { id: 'notes', label: 'Note / Memo', tab: 'notes', shortcut: 'n' },
+    ],
+  },
+  {
+    id: 'pianificazione',
+    title: 'Pianificazione',
+    short: 'Piano',
     entries: [
       { id: 'timeline', label: 'Timeline', tab: 'drops', shortcut: 'l' },
       { id: 'fornitori', label: 'Fornitori', tab: 'fornitori', shortcut: 'f' },
-      { id: 'cal', label: 'Calendario', tab: 'cal', shortcut: 'e' },
-      { id: 'notes', label: 'Note / Memo', tab: 'notes', shortcut: 'n' },
-      { id: 'links', label: 'Link', tab: 'archivio', archTab: 'links', shortcut: 'k' },
     ],
   },
   {
-    id: 'live',
-    title: 'Live Now',
-    short: 'Live',
+    id: 'media-marketing',
+    title: 'Media & Marketing',
+    short: 'Media',
     entries: [
-      { id: 'overview', label: 'Overview', tab: 'overview', shortcut: 'o' },
-      { id: 'dropx', label: 'Drops', tab: 'dropx', shortcut: 'r' },
-      { id: 'catalogo', label: 'Catalogo', tab: 'catalogo', shortcut: 'a' },
       { id: 'media', label: 'Media Studio', tab: 'media', shortcut: 'm' },
-      { id: 'chats', label: 'Chats', tab: 'chats', shortcut: 'h' },
+      { id: 'publish', label: 'Publish', tab: 'publish', shortcut: 'p', soon: true },
     ],
   },
 ]
 
-export const ALL_NAV_ENTRIES: NavEntry[] = NAV_GROUPS.flatMap((g) => g.entries)
+// Utility trasversali fuori dalla sidebar (spec §2: vivono nella top-nav),
+// ma sempre raggiungibili da palette e scorciatoie. Inspo resta una sub-tab
+// dell'Archivio fino alla migrazione in Media Studio (Fase 4).
+export const UTILITY_ENTRIES: NavEntry[] = [
+  { id: 'cal', label: 'Calendario', tab: 'cal', shortcut: 'e' },
+  { id: 'links', label: 'Link', tab: 'archivio', archTab: 'links', shortcut: 'k' },
+  { id: 'inspo', label: 'Inspo', tab: 'archivio', archTab: 'inspo', shortcut: 'i' },
+]
+
+export const ALL_NAV_ENTRIES: NavEntry[] = [...NAV_GROUPS.flatMap((g) => g.entries), ...UTILITY_ENTRIES]
 
 export function isEntryActive(entry: NavEntry, activeTab: TabKey, archTab: ArchTab): boolean {
   if (entry.tab !== activeTab) return false
