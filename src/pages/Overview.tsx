@@ -18,7 +18,7 @@ import { useNav } from '../lib/navigation'
 import { useAuth } from '../auth/useAuth'
 import { useToast } from '../lib/useToast'
 import { useFormDraft } from '../lib/useFormDraft'
-import { fmtDate, todayIso, addDaysIso, daysUntil } from '../lib/format'
+import { fmtDate, todayIso, addDaysIso, daysUntil, localDateIso } from '../lib/format'
 import type { KpiMetrica } from '../lib/database.types'
 import type { TabKey } from '../lib/tabs'
 
@@ -194,12 +194,12 @@ export default function Overview() {
   }
 
   const weekAgoIso = addDaysIso(todayStr, -6)
-  const attivita7g = activityList.filter((a) => a.created_at.slice(0, 10) >= weekAgoIso)
+  const attivita7g = activityList.filter((a) => localDateIso(a.created_at) >= weekAgoIso)
   const giorniBars = Array.from({ length: 7 }, (_, i) => {
     const day = addDaysIso(weekAgoIso, i)
     return {
       label: day.slice(8),
-      value: attivita7g.filter((a) => a.created_at.slice(0, 10) === day).length,
+      value: attivita7g.filter((a) => localDateIso(a.created_at) === day).length,
       color: 'var(--ember)',
     }
   })
