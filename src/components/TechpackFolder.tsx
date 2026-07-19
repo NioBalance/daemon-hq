@@ -85,10 +85,13 @@ export default function TechpackFolder({ techpack, onClose }: { techpack: Techpa
     const items: TechpackFile[] = []
     const prefix = cwd ? cwd + '/' : ''
     for (const f of files) {
-      if (f.percorso === cwd) {
+      // ?? '': finché la migration 0008 non è eseguita la colonna non esiste
+      // e tutto deve comunque comparire in radice, senza crash.
+      const percorso = f.percorso ?? ''
+      if (percorso === cwd) {
         items.push(f)
-      } else if (f.percorso.startsWith(prefix) || cwd === '') {
-        const rest = cwd === '' ? f.percorso : f.percorso.slice(prefix.length)
+      } else if (percorso.startsWith(prefix) || cwd === '') {
+        const rest = cwd === '' ? percorso : percorso.slice(prefix.length)
         if (!rest) continue
         const seg = rest.split('/')[0]
         dirCount.set(seg, (dirCount.get(seg) ?? 0) + 1)
