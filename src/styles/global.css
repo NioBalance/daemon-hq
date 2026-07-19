@@ -477,14 +477,31 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .tp-card.tp-inviato{border-left-color:var(--amber)}
 .tp-card.tp-confermato{border-left-color:var(--ok)}
 .tp-card.tp-in-produzione{border-left-color:var(--ember)}
-.tpf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:14px}
-.tpf-item{position:relative;background:var(--surface2);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden}
-.tpf-preview{display:flex;align-items:center;justify-content:center;height:90px;background:var(--void);text-decoration:none}
-.tpf-preview img{width:100%;height:100%;object-fit:cover;display:block}
-.tpf-icon{font-family:var(--font-m);font-size:16px;letter-spacing:.1em;color:var(--muted)}
-.tpf-name{font-family:var(--font-m);font-size:9px;color:var(--muted);padding:5px 22px 5px 7px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.tpf-item .tx{position:absolute;right:4px;bottom:3px;background:none;border:none;color:var(--steel);cursor:pointer}
-.tpf-item .tx:hover{color:var(--ember)}
+/* Cartella tech pack — albero con breadcrumb (benchmark Techpacker/Linear:
+   righe dense, gerarchia dal font mono, niente chrome superfluo) */
+.tpf-crumbs{display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-bottom:8px;font-family:var(--font-m);font-size:11px}
+.tpf-crumb{background:none;border:none;padding:2px 4px;color:var(--ember);cursor:pointer;font:inherit;letter-spacing:.04em;border-radius:4px}
+.tpf-crumb:hover:not(:disabled){background:var(--surface2)}
+.tpf-crumb:disabled{color:var(--bone);cursor:default}
+.tpf-crumb-sep{color:var(--steel);margin:0 1px}
+.tpf-tree{list-style:none;margin:0 0 12px;padding:0;border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden}
+.tpf-tree li + li{border-top:1px solid var(--line)}
+.tpf-row{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;background:var(--solid-1);text-align:left;border:none;font:inherit;color:inherit;transition:background .15s ease}
+.tpf-row:hover{background:var(--surface2)}
+.tpf-row.sel{background:var(--surface2);box-shadow:inset 2px 0 0 var(--ember)}
+button.tpf-row.tpf-dir{cursor:pointer}
+.tpf-badge{font-family:var(--font-m);font-size:9px;letter-spacing:.08em;color:var(--muted);min-width:34px;text-align:center;background:var(--void);border:1px solid var(--line);border-radius:4px;padding:2px 3px;flex:none}
+.tpf-dir .tpf-badge{color:var(--ember);border-color:transparent;background:none;font-size:12px}
+.tpf-row-name{flex:1;min-width:0;font-size:13px;color:var(--bone);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-decoration:none;text-align:left}
+.tpf-row-name.as-btn{background:none;border:none;padding:0;font:inherit;cursor:pointer;color:var(--bone)}
+.tpf-row-name.as-btn:hover,a.tpf-row-name:hover{color:var(--ember)}
+.tpf-row-meta{font-family:var(--font-m);font-size:10px;color:var(--steel);flex:none}
+.tpf-row-actions{display:flex;gap:2px;flex:none}
+.tpf-row .tx{background:none;border:none;color:var(--steel);cursor:pointer;padding:2px 6px;border-radius:4px;font-size:12px}
+.tpf-row .tx:hover{color:var(--ember);background:var(--void)}
+.tpf-pane{margin:0 0 12px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px;background:var(--solid-1)}
+.tpf-pane-img{display:block;max-width:100%;max-height:420px;margin:0 auto;border-radius:6px}
+.tpf-pane-pdf{display:block;width:100%;height:420px;border:none;border-radius:6px;background:#fff}
 
 /* GADGET — riga orizzontale in Campioni/Catalogo */
 .gadget-row{margin-top:6px}

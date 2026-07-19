@@ -78,6 +78,11 @@ Lo script è idempotente (id fissi + `on conflict do nothing`): rieseguirlo non 
 1. **SQL Editor** → incolla ed esegui [supabase/migrations/0007_storage_privato.sql](supabase/migrations/0007_storage_privato.sql) (dopo 0001-0006). Rende privato il bucket `media`: la lettura passa da URL pubbliche permanenti a **signed URL con scadenza 1h**, generate on-demand dall'app (serve il login). Le vecchie URL pubbliche eventualmente condivise in giro smettono di funzionare.
 2. Nessun dato da migrare: nel database sono salvati solo i path, non le URL.
 
+## Setup Supabase — Tech pack: cartelle ad albero
+
+1. **SQL Editor** → incolla ed esegui [supabase/migrations/0008_techpack_albero.sql](supabase/migrations/0008_techpack_albero.sql) (dopo 0001-0007). Aggiunge `percorso` a `techpack_files` (struttura ad albero), il tipo `file` (formati non anteprimabili), porta il bucket a **50MB** e sposta il filtro formati dalla lista MIME del bucket alla policy di insert: formati base ovunque, formati estesi (`.ai`, `.psd`, `.svg`, `.eps`, …) **solo** sotto `techpacks/`.
+2. Nella cartella di un tech pack ora puoi: caricare **una cartella intera** («+ Cartella», struttura preservata) o **uno .zip** («+ Zip», estratto nel browser, lo zip stesso non viene caricato); navigare con il breadcrumb; aprire l'**anteprima inline** di immagini e PDF; **scaricare** ogni file col nome originale. Ricaricare un file con lo stesso percorso lo aggiorna (niente duplicati). Video e file oltre 50MB restano link Drive.
+
 ## Build
 
 ```bash

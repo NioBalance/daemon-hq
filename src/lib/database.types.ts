@@ -26,7 +26,7 @@ export type MediaTag =
 export type EventTipo = 'meeting' | 'deadline' | 'lancio'
 export type NoteEntityType = 'articoli' | 'gadgets' | 'inspo' | 'media' | 'chats' | 'techpacks'
 export type MemoColore = 'decisione' | 'idea' | 'urgente'
-export type TechpackFileTipo = 'img' | 'pdf' | 'link'
+export type TechpackFileTipo = 'img' | 'pdf' | 'link' | 'file'
 export type KpiMetrica =
   | 'instagram_followers'
   | 'ordini_totali'
@@ -438,6 +438,7 @@ export interface Database {
           tipo: TechpackFileTipo
           path: string | null
           url: string | null
+          percorso: string
           created_at: string
         }
         Insert: {
@@ -447,6 +448,7 @@ export interface Database {
           tipo: TechpackFileTipo
           path?: string | null
           url?: string | null
+          percorso?: string
         }
         Update: Partial<Database['public']['Tables']['techpack_files']['Insert']>
         Relationships: []
