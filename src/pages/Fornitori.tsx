@@ -1,8 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
-import { Loading, ErrorState } from '../components/QueryState'
+import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
 import { useToast } from '../lib/useToast'
 import { useConfirmDelete } from '../lib/confirm-context'
@@ -17,6 +16,7 @@ import {
   useDeleteFornitore,
   type Fornitore,
 } from '../features/fornitori/queries'
+import { useTechpacks } from '../features/techpacks/queries'
 
 const F_RUOLI: { value: FornitoreRuolo; label: string }[] = [
   { value: 'core', label: 'Core line' },
@@ -33,11 +33,12 @@ const F_STATI: { value: FornitoreStato; label: string }[] = [
 
 const RUOLO_ORDER: Record<FornitoreRuolo, number> = { core: 0, capsule: 1, backup: 2 }
 
-const ruoloLabel = (r: FornitoreRuolo | null) => F_RUOLI.find((x) => x.value === r)?.label ?? r ?? '—'
 const statoLabel = (s: FornitoreStato) => F_STATI.find((x) => x.value === s)?.label ?? s
-const ruoloBadgeClass = (r: FornitoreRuolo | null) => (r === 'core' ? 'ember' : r === 'capsule' ? 'amber' : 'steel')
-const statoBadgeClass = (s: FornitoreStato) =>
-  ({ 'da-contattare': 'steel', vetting: 'amber', attivo: 'ok', scartato: 'ember' })[s] ?? 'steel'
+const ruoloDot = (r: FornitoreRuolo | null) =>
+  r === 'core' ? 'var(--ember)' : r === 'capsule' ? 'var(--amber)' : 'var(--dim)'
+const statoDot = (s: FornitoreStato) =>
+  ({ 'da-contattare': 'var(--dim)', vetting: 'var(--amber)', attivo: 'var(--ok)', scartato: 'var(--ember)' })[s] ??
+  'var(--dim)'
 
 const FORNITORE_FIELDS: FieldDef[] = [
   { key: 'nome', label: 'Nome fornitore' },
@@ -86,8 +87,11 @@ function fornitoreToValues(f: Fornitore): FormValues {
   }
 }
 
+const DT_COLS = '2fr 1fr 1.1fr 1.2fr .7fr 40px'
+
 export default function Fornitori() {
   const { data: fornitori, isLoading, isError, error, refetch } = useFornitori()
+  const techpacksQ = useTechpacks()
   const createFornitore = useCreateFornitore()
   const updateFornitore = useUpdateFornitore()
   const deleteFornitore = useDeleteFornitore()
@@ -99,6 +103,9 @@ export default function Fornitori() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [values, setValues] = useState<FormValues>(EMPTY_VALUES)
   const [formError, setFormError] = useState<string | null>(null)
+  // Filtri di sola presentazione (client-side, come da handoff)
+  const [filtro, setFiltro] = useState<'tutti' | FornitoreRuolo>('tutti')
+  const [cerca, setCerca] = useState('')
 
   const saving = createFornitore.isPending || updateFornitore.isPending
   const draft = useFormDraft(`fornitore:${editingId ?? 'new'}`, modalMode !== 'none', values, setValues)
@@ -170,59 +177,146 @@ export default function Fornitori() {
     }, 'Fornitore eliminato')
   }
 
-  const sorted = [...(fornitori ?? [])].sort(
-    (a, b) => (RUOLO_ORDER[a.ruolo ?? 'backup'] ?? 9) - (RUOLO_ORDER[b.ruolo ?? 'backup'] ?? 9),
-  )
+  const tpPerFornitore = new Map<string, number>()
+  for (const t of techpacksQ.data ?? []) {
+    if (t.fornitore_id) tpPerFornitore.set(t.fornitore_id, (tpPerFornitore.get(t.fornitore_id) ?? 0) + 1)
+  }
+
+  const q = cerca.trim().toLowerCase()
+  const sorted = [...(fornitori ?? [])]
+    .filter((f) => filtro === 'tutti' || f.ruolo === filtro)
+    .filter((f) => !q || f.nome.toLowerCase().includes(q) || (f.luogo ?? '').toLowerCase().includes(q))
+    .sort((a, b) => (RUOLO_ORDER[a.ruolo ?? 'backup'] ?? 9) - (RUOLO_ORDER[b.ruolo ?? 'backup'] ?? 9))
 
   return (
     <>
-      <PanelHead
-        title="Fornitori"
-        desc="Dual-supplier: produttore strutturato per la core line (1.000+ pz/mese) + laboratorio per le capsule. Condizioni target: 30% avvio, saldo dopo, preferenza pagamento 60gg, condizioni migliori al crescere degli ordini."
-        actions={
-          <button className="btn" onClick={openCreate}>
-            + Nuovo fornitore
-          </button>
-        }
-      />
+      <div className="pg-head">
+        <div>
+          <h2 className="ov-title">Fornitori</h2>
+          <div className="ov-sub">
+            {(fornitori ?? []).length} CONTROPART{(fornitori ?? []).length === 1 ? 'E' : 'I'} · STRATEGIA DUAL-SUPPLIER
+          </div>
+        </div>
+        <button className="tlink" onClick={openCreate}>
+          + Fornitore
+        </button>
+      </div>
+      <p className="pg-note">
+        Produttore strutturato per la core line (1.000+ pz/mese) + laboratorio per le capsule. Condizioni target: 30%
+        avvio, saldo dopo, preferenza pagamento 60gg, condizioni migliori al crescere degli ordini.
+      </p>
 
-      {isLoading && <Loading label="Caricamento fornitori…" />}
+      {isLoading && (
+        <div aria-busy="true">
+          {Array.from({ length: 5 }, (_, i) => (
+            <div className="skeleton" key={i} style={{ height: 16, marginBottom: 16 }} />
+          ))}
+        </div>
+      )}
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
 
       {!isLoading && !isError && (
-        <div className="grid c3">
-          {sorted.map((f) => (
-            <div className="card" key={f.id}>
-              <div className="row" style={{ justifyContent: 'space-between' }}>
-                <span className={`badge ${ruoloBadgeClass(f.ruolo)}`}>{ruoloLabel(f.ruolo)}</span>
-                <span className={`badge ${statoBadgeClass(f.stato)}`}>{statoLabel(f.stato)}</span>
-              </div>
-              <div className="card-title">{f.nome}</div>
-              <div className="card-meta">
-                {f.luogo}
-                {f.lead_time ? ` · Lead time: ${f.lead_time}` : ''}
-              </div>
-              {f.contatto && <div className="card-meta" style={{ marginTop: 6 }}>☎ {f.contatto}</div>}
-              {f.materiali && <div className="card-meta" style={{ marginTop: 6 }}>{f.materiali}</div>}
-              {f.note && <div className="note">{f.note}</div>}
-              <div className="card-actions">
-                <button className="btn sm ghost" onClick={() => openEdit(f)}>
-                  Modifica
+        <>
+          <div className="dt-tools">
+            <label className="dt-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
+                <circle cx="11" cy="11" r="7" />
+                <line x1="16.5" y1="16.5" x2="21" y2="21" />
+              </svg>
+              <input
+                value={cerca}
+                onChange={(e) => setCerca(e.target.value)}
+                placeholder="Filtra fornitori…"
+                aria-label="Filtra fornitori"
+              />
+            </label>
+            <div className="dt-filters" role="tablist" aria-label="Filtro ruolo">
+              {(
+                [
+                  ['tutti', 'Tutti'],
+                  ['core', 'Core'],
+                  ['capsule', 'Capsule'],
+                  ['backup', 'Backup'],
+                ] as ['tutti' | FornitoreRuolo, string][]
+              ).map(([v, label]) => (
+                <button
+                  key={v}
+                  role="tab"
+                  aria-selected={filtro === v}
+                  className={`dt-filter${filtro === v ? ' active' : ''}`}
+                  onClick={() => setFiltro(v)}
+                >
+                  {label}
                 </button>
-                <button className="btn sm danger" onClick={() => handleDelete(f)}>
-                  Elimina
-                </button>
-              </div>
+              ))}
             </div>
-          ))}
-          {sorted.length === 0 && <EmptyState icon="box" text="Nessun fornitore in scheda." ctaLabel="+ Nuovo fornitore" onCta={openCreate} />}
-        </div>
+          </div>
+
+          {sorted.length ? (
+            <div className="dtable" style={{ '--dt-cols': DT_COLS } as React.CSSProperties}>
+              <div className="dt-headrow" aria-hidden>
+                <span>Fornitore</span>
+                <span>Tipo</span>
+                <span>Stato</span>
+                <span>Lead time</span>
+                <span>Tech pack</span>
+                <span />
+              </div>
+              {sorted.map((f) => (
+                <div
+                  className="dt-row clickable"
+                  key={f.id}
+                  onClick={() => openEdit(f)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      openEdit(f)
+                    }
+                  }}
+                >
+                  <span className="dt-main">
+                    <span className="dt-name">{f.nome}</span>
+                    <span className="dt-under">{f.luogo ?? '—'}</span>
+                  </span>
+                  <span className="dt-tag" style={{ color: ruoloDot(f.ruolo) }}>
+                    <span className="dt-dot" style={{ background: ruoloDot(f.ruolo) }} />
+                    {f.ruolo ?? '—'}
+                  </span>
+                  <span className="dt-tag" style={{ color: 'var(--muted)' }}>
+                    <span className="dt-dot" style={{ background: statoDot(f.stato) }} />
+                    {statoLabel(f.stato)}
+                  </span>
+                  <span className="dt-meta">{f.lead_time ?? '—'}</span>
+                  <span className="dt-num">{tpPerFornitore.get(f.id) ?? 0}</span>
+                  <button
+                    className="dt-x"
+                    aria-label={`Elimina ${f.nome}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleDelete(f)
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon="box"
+              text={q || filtro !== 'tutti' ? 'Nessun fornitore col filtro attivo.' : 'Nessun fornitore in scheda.'}
+              ctaLabel="+ Nuovo fornitore"
+              onCta={openCreate}
+            />
+          )}
+        </>
       )}
 
-      <hr className="divider" />
-      <div className="card">
-        <span className="code">GRIGLIA DI VETTING — le domande che separano chi regge 1.000+ pz/mese</span>
-        <div className="note" style={{ marginTop: 10 }}>
+      <section className="pg-section" aria-label="Griglia di vetting">
+        <h3 className="pg-eyebrow">Griglia di vetting — chi regge 1.000+ pz/mese</h3>
+        <div className="pg-lines">
           1. Capacità mensile massima per categoria (leggings, top, felpe)?
           <br />
           2. Quanti clienti ricorrenti gestite già con questo volume?
@@ -237,7 +331,7 @@ export default function Fornitori() {
           <br />
           7. Condizioni di pagamento: 30% upfront + saldo? Apertura a 60gg?
         </div>
-      </div>
+      </section>
 
       {modalMode !== 'none' && (
         <Modal title={modalMode === 'edit' ? 'Modifica fornitore' : 'Nuovo fornitore'} onClose={closeModal}>

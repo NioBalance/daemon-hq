@@ -226,6 +226,40 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .fw-add button:disabled{color:var(--steel);cursor:default}
 /* Docked: il contenuto riserva la corsia dei widget */
 @media (min-width:1280px){.shell-main.widgets-docked main{padding-right:300px;max-width:none}}
+/* ── De-box v4: primitive condivise ───────────────────────────────────── */
+/* Testata pagina editoriale (pattern Overview/Oggi) */
+.pg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.pg-note{font-size:13px;color:var(--muted);line-height:1.55;max-width:640px;margin:-8px 0 22px}
+/* Tabella hairline (handoff Fornitori): niente box, header mono, righe divise */
+.dt-tools{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-bottom:6px}
+.dt-search{display:flex;align-items:center;gap:8px;flex:1;min-width:180px;max-width:340px;border-bottom:1px solid var(--line);padding:6px 0}
+.dt-search svg{width:14px;height:14px;color:var(--dim);flex:none}
+.dt-search input{flex:1;min-width:0;background:none;border:none;color:var(--bone);font:inherit;font-size:13px;outline:none}
+.dt-search input::placeholder{color:var(--dim)}
+.dt-filters{display:flex;gap:16px}
+.dt-filter{background:none;border:none;padding:4px 0;font:inherit;font-size:12.5px;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s ease}
+.dt-filter:hover{color:var(--bone)}
+.dt-filter.active{color:var(--bone);border-bottom-color:var(--ember)}
+.dtable{width:100%}
+.dt-headrow,.dt-row{display:grid;grid-template-columns:var(--dt-cols);gap:14px;align-items:center;padding:12px 2px;border-bottom:1px solid var(--line)}
+.dt-headrow{font-family:var(--font-m);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);padding:8px 2px}
+.dt-row{font-size:13.5px;color:var(--bone)}
+.dt-row.clickable{cursor:pointer;transition:background .15s ease}
+.dt-row.clickable:hover{background:rgba(234,230,222,.02)}
+.dt-main{min-width:0}
+.dt-name{font-weight:500;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.dt-under{font-family:var(--font-m);font-size:10px;color:var(--dim);margin-top:2px}
+.dt-tag{display:flex;align-items:center;gap:7px;font-family:var(--font-m);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.dt-dot{width:6px;height:6px;border-radius:50%;flex:none}
+.dt-num{font-family:var(--font-m);font-size:13px}
+.dt-meta{font-size:12.5px;color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.dt-x{background:none;border:none;color:var(--steel);cursor:pointer;font-size:13px;padding:4px 6px;border-radius:4px;justify-self:end}
+.dt-x:hover{color:var(--ember)}
+@media (max-width:820px){.dt-headrow{display:none}.dt-row{grid-template-columns:1fr auto;gap:6px;row-gap:4px}.dt-row>*{grid-column:1}.dt-row .dt-x{grid-column:2;grid-row:1}}
+/* Sezione informativa boxless (vetting, legende) */
+.pg-section{margin-top:34px}
+.pg-eyebrow{font-family:var(--font-title);font-weight:600;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.pg-lines{font-size:13px;color:var(--muted);line-height:1.8;border-top:1px solid var(--line);padding-top:12px}
 /* Pagina Oggi — agenda aggregata, gruppi hairline */
 .og-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .og-toggle{display:flex;gap:2px;border:1px solid var(--line);border-radius:var(--radius-pill);padding:2px}
@@ -268,7 +302,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .card-actions{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
 .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .note{font-size:13px;color:var(--muted);margin-top:8px;border-left:2px solid var(--steel);padding-left:10px;white-space:pre-wrap}
-.empty{border:1px dashed var(--line);border-radius:var(--radius-md);padding:36px;text-align:center;color:var(--muted);font-size:14px}
+/* v4: empty state boxless — via il riquadro tratteggiato */
+.empty{padding:36px 12px;text-align:center;color:var(--muted);font-size:14px}
 .divider{border:none;border-top:1px solid var(--line);margin:24px 0}
 
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
