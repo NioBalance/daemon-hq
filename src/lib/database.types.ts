@@ -27,6 +27,9 @@ export type EventTipo = 'meeting' | 'deadline' | 'lancio'
 export type NoteEntityType = 'articoli' | 'gadgets' | 'inspo' | 'media' | 'chats' | 'techpacks'
 export type MemoColore = 'decisione' | 'idea' | 'urgente'
 export type TechpackFileTipo = 'img' | 'pdf' | 'link' | 'file'
+export type MeetingStato = 'pianificata' | 'conclusa'
+export type PublishTipo = 'post' | 'reel' | 'story'
+export type PublishFase = 'idea' | 'in-edit' | 'pronto' | 'programmato' | 'pubblicato'
 export type KpiMetrica =
   | 'instagram_followers'
   | 'ordini_totali'
@@ -545,6 +548,88 @@ export interface Database {
           testo: string
         }
         Update: Partial<Database['public']['Tables']['notes']['Insert']>
+        Relationships: []
+      }
+
+      meetings: {
+        Row: {
+          id: string
+          titolo: string
+          data: string | null
+          partecipanti: string | null
+          note: string | null
+          stato: MeetingStato
+          author_id: string | null
+          author_name: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          titolo: string
+          data?: string | null
+          partecipanti?: string | null
+          note?: string | null
+          stato?: MeetingStato
+          author_id?: string | null
+          author_name?: string
+        }
+        Update: Partial<Database['public']['Tables']['meetings']['Insert']>
+        Relationships: []
+      }
+
+      meeting_actions: {
+        Row: {
+          id: string
+          meeting_id: string
+          testo: string
+          assegnatario: string | null
+          scadenza: string | null
+          done: boolean
+          ordine: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          meeting_id: string
+          testo: string
+          assegnatario?: string | null
+          scadenza?: string | null
+          done?: boolean
+          ordine?: number
+        }
+        Update: Partial<Database['public']['Tables']['meeting_actions']['Insert']>
+        Relationships: []
+      }
+
+      publish_items: {
+        Row: {
+          id: string
+          titolo: string
+          tipo: PublishTipo
+          canale: string | null
+          fase: PublishFase
+          data_programmata: string | null
+          media_id: string | null
+          owner: Owner | null
+          note: string | null
+          ordine: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          titolo: string
+          tipo?: PublishTipo
+          canale?: string | null
+          fase?: PublishFase
+          data_programmata?: string | null
+          media_id?: string | null
+          owner?: Owner | null
+          note?: string | null
+          ordine?: number
+        }
+        Update: Partial<Database['public']['Tables']['publish_items']['Insert']>
         Relationships: []
       }
     }

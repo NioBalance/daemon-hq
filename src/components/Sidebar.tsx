@@ -7,6 +7,7 @@ import { useAuth } from '../auth/useAuth'
 import { useSamples } from '../features/samples/queries'
 import { useTechpacks } from '../features/techpacks/queries'
 import { useOggiItems } from '../features/oggi/aggregate'
+import { useMeetingActions } from '../features/meetings/queries'
 import { ICONS } from './navIcons'
 
 const COLLAPSE_KEY = 'dhq:sidebar-collapsed'
@@ -42,10 +43,13 @@ export default function Sidebar({ activeTab }: { activeTab: TabKey }) {
   const techpacksQ = useTechpacks()
   // Badge Oggi: STESSO hook della pagina — il conteggio coincide per costruzione.
   const oggi = useOggiItems()
+  const meetingActionsQ = useMeetingActions()
   const badges: Record<string, number> = {
     oggi: oggi.count,
     samples: (samplesQ.data ?? []).filter((s) => s.verdetto === 'in-review').length,
     techpack: (techpacksQ.data ?? []).filter((t) => t.stato === 'inviato').length,
+    // Riunioni: action item aperti (done=false) — su dati veri
+    riunioni: (meetingActionsQ.data ?? []).filter((a) => !a.done).length,
   }
 
   return (

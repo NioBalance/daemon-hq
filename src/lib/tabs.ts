@@ -73,7 +73,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: 'Documenti',
     short: 'Doc',
     entries: [
-      { id: 'riunioni', label: 'Riunioni', tab: 'riunioni', shortcut: 'u', soon: true },
+      { id: 'riunioni', label: 'Riunioni', tab: 'riunioni', shortcut: 'u' },
       { id: 'contratti', label: 'Contratti', tab: 'contratti', shortcut: 's', soon: true },
       { id: 'notes', label: 'Note / Memo', tab: 'notes', shortcut: 'n' },
     ],

@@ -14,17 +14,6 @@ function Soon({ eyebrow, title, desc, fase }: { eyebrow: string; title: string; 
   )
 }
 
-export function RiunioniSoon() {
-  return (
-    <Soon
-      eyebrow="Documenti"
-      title="Riunioni"
-      desc="Meeting overview e memo firmati: decisioni evidenziate e ricercabili, action item con owner e scadenza che confluiscono in Oggi e in Overview. La memoria decisionale del brand."
-      fase="FASE 4"
-    />
-  )
-}
-
 export function ContrattiSoon() {
   return (
     <Soon

@@ -37,8 +37,8 @@ const Chats = lazy(() => import('./pages/Chats'))
 const Calendario = lazy(() => import('./pages/Calendario'))
 const Notes = lazy(() => import('./pages/Notes'))
 const Oggi = lazy(() => import('./pages/Oggi'))
+const Meeting = lazy(() => import('./pages/Meeting'))
 // Placeholder v4 (voci soon): un solo chunk, quattro pagine.
-const RiunioniSoon = lazy(() => import('./pages/ComingSoon').then((m) => ({ default: m.RiunioniSoon })))
 const ContrattiSoon = lazy(() => import('./pages/ComingSoon').then((m) => ({ default: m.ContrattiSoon })))
 const PublishSoon = lazy(() => import('./pages/ComingSoon').then((m) => ({ default: m.PublishSoon })))
 // Dettaglio articolo e palette montati a livello App (aperti da qualsiasi pagina).
@@ -61,7 +61,7 @@ const PAGES: Record<TabKey, ComponentType> = {
   cal: Calendario,
   notes: Notes,
   oggi: Oggi,
-  riunioni: RiunioniSoon,
+  riunioni: Meeting,
   contratti: ContrattiSoon,
   publish: PublishSoon,
 }

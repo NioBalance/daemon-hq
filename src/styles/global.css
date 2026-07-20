@@ -270,6 +270,33 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .smp-score.mid b{color:var(--amber)}
 .smp-score.bad b{color:var(--ember)}
 .dt-big{font-family:var(--font-d);font-weight:600;font-size:16px}
+/* Pagina Riunioni — lista + dettaglio, hairline */
+.mtg-cols{display:grid;grid-template-columns:1fr 1.3fr;gap:40px}
+@media (max-width:900px){.mtg-cols{grid-template-columns:1fr;gap:26px}}
+.mtg-list{list-style:none;margin:0;padding:0}
+.mtg-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:11px 2px;border-bottom:1px solid var(--line);background:none;border-left:none;border-right:none;border-top:none;font:inherit;text-align:left;cursor:pointer;transition:background .15s ease}
+.mtg-row:hover{background:rgba(234,230,222,.02)}
+.mtg-row.sel{background:rgba(234,230,222,.03);box-shadow:inset 2px 0 0 var(--ember)}
+.mtg-row-main{min-width:0}
+.mtg-title{display:block;font-weight:500;font-size:14px;color:var(--bone);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mtg-under{display:block;font-family:var(--font-m);font-size:10px;color:var(--dim);margin-top:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mtg-row-meta{display:flex;align-items:center;gap:12px;flex:none}
+.mtg-count{font-family:var(--font-m);font-size:10px;color:var(--muted)}
+.mtg-detail-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.mtg-note{font-size:13px;color:var(--muted);line-height:1.6;white-space:pre-wrap;border-left:2px solid var(--line2);padding-left:12px;margin-top:8px}
+.mtg-act{flex:1;min-width:0;font-size:13px;color:var(--bone)}
+.mtg-act.done{color:var(--dim);text-decoration:line-through}
+.mtg-act-meta{font-family:var(--font-m);font-size:10px;color:var(--dim);margin-left:8px}
+.mtg-add{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.mtg-add input{background:rgba(11,11,13,.6);border:1px solid var(--line2);border-radius:var(--radius-sm);color:var(--bone);font:inherit;font-size:12px;padding:7px 10px}
+.mtg-add input:first-child{flex:1;min-width:140px}
+.mtg-add input::placeholder{color:var(--dim)}
+.mtg-add-who{width:120px}
+.mtg-add-when{width:140px}
+.mtg-live{font-family:var(--font-m);font-size:9px;letter-spacing:.1em;color:var(--ember);border:1px solid var(--line2);border-radius:var(--radius-pill);padding:1px 7px;margin-left:6px;text-transform:uppercase}
+.mtg-spunti{list-style:none;margin:0;padding:0}
+.mtg-spunti li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.mtg-spunto-txt{flex:1;min-width:0}
 /* Pagina Oggi — agenda aggregata, gruppi hairline */
 .og-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .og-toggle{display:flex;gap:2px;border:1px solid var(--line);border-radius:var(--radius-pill);padding:2px}
