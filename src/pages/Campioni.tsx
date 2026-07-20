@@ -6,6 +6,7 @@ import EmptyState from '../components/EmptyState'
 import GadgetRow from '../components/GadgetRow'
 import OwnerBadge from '../components/OwnerBadge'
 import ScoreRadarSvg from '../components/ScoreRadarSvg'
+import NotesList from '../components/NotesList'
 
 const RADAR_LABELS = ['Fit', 'Tess', 'Cuc', 'Col']
 import { useSamples, useCreateSample, useUpdateSample, useDeleteSample, type Sample } from '../features/samples/queries'
@@ -354,6 +355,7 @@ export default function Campioni() {
               </button>
             </div>
           </form>
+          {modalMode === 'edit' && editingId && <NotesList entityType="samples" entityId={editingId} />}
         </Modal>
       )}
     </>

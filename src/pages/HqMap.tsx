@@ -2,11 +2,14 @@ import { lazy, Suspense, useMemo, useState } from 'react'
 import { Loading } from '../components/QueryState'
 import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
-import { useDrops, useDropFasi } from '../features/drops/queries'
+import { useDrops, useDropFasi, useUpdateFase } from '../features/drops/queries'
 import { useArticoli, useArticoloTasks } from '../features/articoli/queries'
 import { useTechpacks, useUpdateTechpack } from '../features/techpacks/queries'
 import { useSamples, useUpdateSample } from '../features/samples/queries'
 import { useFornitori } from '../features/fornitori/queries'
+import { useAddNote } from '../features/notes/queries'
+import { useAuth } from '../auth/useAuth'
+import type { NoteEntityType } from '../lib/database.types'
 import {
   buildHqGraph,
   STATUS_COLOR,
@@ -26,6 +29,51 @@ const TP_STATI: TechpackStato[] = ['bozza', 'inviato', 'confermato', 'in-produzi
 const VERDETTI: SampleVerdetto[] = ['in-review', 'approvato', 'revisione', 'scartato']
 const KIND_FILTERS: (NodeKind | 'tutti')[] = ['tutti', 'articolo', 'techpack', 'fornitore', 'sample']
 
+const NOTE_ENTITY: Record<NodeKind, NoteEntityType> = {
+  drop: 'drops',
+  articolo: 'articoli',
+  techpack: 'techpacks',
+  fornitore: 'fornitori',
+  sample: 'samples',
+}
+
+/** Aggiunta nota firmata dal pannello nodo. Sottocomponente perché useAddNote
+ *  è parametrizzato per entity_type: keyandolo per nodo, l'hook prende il tipo
+ *  giusto e lo stato si azzera al cambio nodo. */
+function NodeNote({ entityType, entityId }: { entityType: NoteEntityType; entityId: string }) {
+  const { profile } = useAuth()
+  const addNote = useAddNote(entityType)
+  const showToast = useToast()
+  const [text, setText] = useState('')
+
+  async function add() {
+    const t = text.trim()
+    if (!t || !profile) return
+    try {
+      await addNote.mutateAsync({
+        entity_type: entityType,
+        entity_id: entityId,
+        author_id: profile.id,
+        author_name: profile.nome,
+        testo: t,
+      })
+      setText('')
+      showToast('success', 'Nota firmata aggiunta.')
+    } catch (e) {
+      showToast('error', e instanceof Error ? e.message : 'Salvataggio non riuscito.')
+    }
+  }
+
+  return (
+    <div className="hq-note">
+      <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Nota firmata…" rows={2} />
+      <button className="btn sm" disabled={!text.trim() || addNote.isPending} onClick={add}>
+        + Nota
+      </button>
+    </div>
+  )
+}
+
 export default function HqMap() {
   const dropsQ = useDrops()
   const fasiQ = useDropFasi()
@@ -36,6 +84,7 @@ export default function HqMap() {
   const fornitoriQ = useFornitori()
   const updateTechpack = useUpdateTechpack()
   const updateSample = useUpdateSample()
+  const updateFase = useUpdateFase()
   const { goTab, openArticolo, openEntity } = useNav()
   const showToast = useToast()
 
@@ -51,6 +100,7 @@ export default function HqMap() {
 
   const [dropId, setDropId] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [panelNode, setPanelNode] = useState<HqNode | null>(null)
   const [filterKind, setFilterKind] = useState<NodeKind | 'tutti'>('tutti')
 
   const currentDropId = dropId ?? activeDropId
@@ -91,6 +141,18 @@ export default function HqMap() {
         openEntity('sample', n.entityId)
         break
     }
+  }
+
+  function selectNode(n: HqNode) {
+    setSelectedId(n.id)
+    setPanelNode(n)
+  }
+
+  function toggleFase(faseId: string, done: boolean) {
+    updateFase.mutate(
+      { id: faseId, patch: { done } },
+      { onSuccess: () => showToast('success', 'Fase aggiornata.'), onError: (e) => showToast('error', e.message) },
+    )
   }
 
   function changeStato(n: HqNode, value: string) {
@@ -157,8 +219,80 @@ export default function HqMap() {
         <div className="hq-cols">
           <div className="hq-canvas">
             <Suspense fallback={<Loading label="Carico il grafo…" />}>
-              <HqMapCanvas nodes={graph.nodes} edges={graph.edges} selectedId={selectedId} onOpen={openNode} onSelect={setSelectedId} />
+              <HqMapCanvas
+                nodes={graph.nodes}
+                edges={graph.edges}
+                selectedId={selectedId}
+                onNodeClick={selectNode}
+                onSelect={setSelectedId}
+                onPaneClick={() => setPanelNode(null)}
+              />
             </Suspense>
+
+            {panelNode && (
+              <div className="hq-panel" role="dialog" aria-label={`Azioni ${panelNode.label}`}>
+                <div className="hq-panel-head">
+                  <span className="hq-panel-kind">{KIND_LABEL[panelNode.kind]}</span>
+                  <button className="tx" onClick={() => setPanelNode(null)} aria-label="Chiudi">
+                    ✕
+                  </button>
+                </div>
+                <div className="hq-panel-title">{panelNode.label}</div>
+
+                {panelNode.kind === 'drop' && (
+                  <div className="hq-panel-sec">
+                    <span className="code">FASI</span>
+                    {(fasiQ.data ?? [])
+                      .filter((f) => f.drop_id === panelNode.entityId)
+                      .sort((a, b) => a.ordine - b.ordine)
+                      .map((f) => (
+                        <label className="hq-fase" key={f.id}>
+                          <input type="checkbox" checked={f.done} onChange={(e) => toggleFase(f.id, e.target.checked)} />
+                          {f.nome}
+                        </label>
+                      ))}
+                  </div>
+                )}
+                {panelNode.kind === 'techpack' && (
+                  <div className="hq-panel-sec">
+                    <span className="code">STATO</span>
+                    <select className="hq-row-stato" value={panelNode.sub} onChange={(e) => changeStato(panelNode, e.target.value)}>
+                      {TP_STATI.map((v) => (
+                        <option key={v} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                {panelNode.kind === 'sample' && (
+                  <div className="hq-panel-sec">
+                    <span className="code">VERDETTO</span>
+                    <select className="hq-row-stato" value={panelNode.sub} onChange={(e) => changeStato(panelNode, e.target.value)}>
+                      {VERDETTI.map((v) => (
+                        <option key={v} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div className="hq-panel-sec">
+                  <span className="code">NOTA FIRMATA</span>
+                  <NodeNote
+                    key={`${panelNode.kind}:${panelNode.entityId}`}
+                    entityType={NOTE_ENTITY[panelNode.kind]}
+                    entityId={panelNode.entityId}
+                  />
+                </div>
+
+                <button className="btn sm ghost" onClick={() => openNode(panelNode)}>
+                  Apri scheda →
+                </button>
+              </div>
+            )}
+
             <div className="hq-legend">
               {(['ok', 'warn', 'bad'] as const).map((st) => (
                 <span key={st}>

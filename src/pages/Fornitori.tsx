@@ -3,6 +3,7 @@ import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
+import NotesList from '../components/NotesList'
 import { useToast } from '../lib/useToast'
 import { useConfirmDelete } from '../lib/confirm-context'
 import { useActivityLogger } from '../features/activity/queries'
@@ -477,6 +478,7 @@ export default function Fornitori() {
               </button>
             </div>
           </form>
+          {modalMode === 'edit' && editingId && <NotesList entityType="fornitori" entityId={editingId} />}
         </Modal>
       )}
     </>

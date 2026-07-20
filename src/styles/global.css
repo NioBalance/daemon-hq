@@ -292,6 +292,19 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .hq-legend{position:absolute;left:12px;bottom:12px;z-index:5;display:flex;gap:14px;background:rgba(15,15,19,.8);backdrop-filter:blur(10px);border:1px solid var(--line2);border-radius:var(--radius-pill);padding:6px 14px;font-family:var(--font-m);font-size:10px;color:var(--muted)}
 .hq-legend span{display:flex;align-items:center;gap:6px}
 .hq-legend i{width:8px;height:8px;border-radius:50%}
+/* pannello contestuale del nodo (edit dal canvas) */
+.hq-panel{position:absolute;top:12px;right:12px;z-index:8;width:236px;max-height:calc(100% - 24px);overflow-y:auto;background:rgba(18,18,22,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line2);border-radius:14px;box-shadow:0 16px 44px rgba(0,0,0,.55);padding:14px}
+.hq-panel-head{display:flex;align-items:center;justify-content:space-between}
+.hq-panel-kind{font-family:var(--font-m);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.hq-panel .tx{background:none;border:none;color:var(--steel);cursor:pointer;font-size:13px}
+.hq-panel .tx:hover{color:var(--ember)}
+.hq-panel-title{font-size:14px;font-weight:500;color:var(--bone);margin:2px 0 12px;word-break:break-word}
+.hq-panel-sec{margin-bottom:12px;display:flex;flex-direction:column;gap:6px}
+.hq-fase{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);cursor:pointer}
+.hq-fase input{accent-color:var(--ember);flex:none}
+.hq-note{display:flex;flex-direction:column;gap:6px}
+.hq-note textarea{background:rgba(11,11,13,.6);border:1px solid var(--line2);border-radius:8px;color:var(--bone);font:inherit;font-size:12px;padding:7px 9px;resize:vertical}
+.hq-note textarea::placeholder{color:var(--dim)}
 /* nodo custom */
 .hqn{display:flex;align-items:center;gap:9px;min-width:150px;max-width:210px;padding:9px 12px;background:rgba(20,20,24,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line2);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.45);cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease}
 .hqn:hover{border-color:var(--muted)}

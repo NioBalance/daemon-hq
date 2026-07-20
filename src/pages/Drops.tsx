@@ -3,6 +3,7 @@ import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
+import NotesList from '../components/NotesList'
 import ArticoloCard from '../components/ArticoloCard'
 import PhaseFlow from '../components/PhaseFlow'
 import { useDrops, useCreateDrop, useUpdateDrop, useDeleteDrop, useDropFasi, type Drop } from '../features/drops/queries'
@@ -256,6 +257,7 @@ export default function Drops() {
               </button>
             </div>
           </form>
+          {dropModal === 'edit' && editingDrop && <NotesList entityType="drops" entityId={editingDrop.id} />}
         </Modal>
       )}
 

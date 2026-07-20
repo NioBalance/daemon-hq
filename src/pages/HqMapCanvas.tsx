@@ -28,14 +28,16 @@ export default function HqMapCanvas({
   nodes,
   edges,
   selectedId,
-  onOpen,
+  onNodeClick,
   onSelect,
+  onPaneClick,
 }: {
   nodes: HqNode[]
   edges: HqEdge[]
   selectedId: string | null
-  onOpen: (node: HqNode) => void
+  onNodeClick: (node: HqNode) => void
   onSelect: (id: string) => void
+  onPaneClick: () => void
 }) {
   const rfNodes: Node<FlowData>[] = useMemo(
     () =>
@@ -71,8 +73,9 @@ export default function HqMapCanvas({
       minZoom={0.2}
       maxZoom={1.6}
       proOptions={{ hideAttribution: true }}
-      onNodeClick={(_e, n) => onOpen((n.data as FlowData).node)}
+      onNodeClick={(_e, n) => onNodeClick((n.data as FlowData).node)}
       onNodeDragStart={(_e, n) => onSelect(n.id)}
+      onPaneClick={onPaneClick}
     >
       <Background color="#33333d" gap={20} size={1} />
       <Controls showInteractive={false} />
