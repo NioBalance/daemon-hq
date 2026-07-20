@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from 'react'
-import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState, SkeletonGrid } from '../components/QueryState'
@@ -87,15 +86,15 @@ export default function Catalogo() {
 
   return (
     <>
-      <PanelHead
-        title="Catalogo"
-        desc="Tutti i capi del brand nel tempo, per categoria e per lancio. La memoria storica del prodotto."
-        actions={
-          <button className="btn" onClick={openCreate}>
-            + Articolo
-          </button>
-        }
-      />
+      <div className="pg-head">
+        <div>
+          <h2 className="ov-title">Catalogo</h2>
+          <div className="ov-sub">{all.length} CAPI · LA MEMORIA STORICA DEL PRODOTTO</div>
+        </div>
+        <button className="tlink" onClick={openCreate}>
+          + Articolo
+        </button>
+      </div>
 
       {isLoading && <SkeletonGrid count={8} height={190} minWidth={180} />}
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
