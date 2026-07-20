@@ -17,6 +17,8 @@ import {
   type Fornitore,
 } from '../features/fornitori/queries'
 import { useTechpacks } from '../features/techpacks/queries'
+import ImageUpload from '../components/ImageUpload'
+import { useSignedUrl } from '../lib/useSignedUrl'
 
 const F_RUOLI: { value: FornitoreRuolo; label: string }[] = [
   { value: 'core', label: 'Core line' },
@@ -58,7 +60,9 @@ const FORNITORE_FIELDS: FieldDef[] = [
     options: F_STATI.map((o) => ({ value: o.value, label: o.label })),
   },
   { key: 'lead_time', label: 'Lead time', half: true },
-  { key: 'contatto', label: 'Contatto (referente, email, telefono)' },
+  { key: 'telefono', label: 'Telefono', half: true },
+  { key: 'chat_url', label: 'Chat diretta (URL completo: https://wa.me/39… o https://instagram.com/…)' },
+  { key: 'contatto', label: 'Contatto (referente, email…)' },
   { key: 'materiali', label: 'Materiali / specializzazione', type: 'textarea' },
   { key: 'note', label: 'Note vetting e condizioni (30% avvio / 70% saldo, pagamento 60gg…)', type: 'textarea' },
 ]
@@ -69,9 +73,12 @@ const EMPTY_VALUES: FormValues = {
   ruolo: 'core',
   stato: 'da-contattare',
   lead_time: '',
+  telefono: '',
+  chat_url: '',
   contatto: '',
   materiali: '',
   note: '',
+  logo_path: '',
 }
 
 function fornitoreToValues(f: Fornitore): FormValues {
@@ -81,10 +88,30 @@ function fornitoreToValues(f: Fornitore): FormValues {
     ruolo: f.ruolo ?? 'core',
     stato: f.stato,
     lead_time: f.lead_time ?? '',
+    telefono: f.telefono ?? '',
+    chat_url: f.chat_url ?? '',
     contatto: f.contatto ?? '',
     materiali: f.materiali ?? '',
     note: f.note ?? '',
+    logo_path: f.logo_path ?? '',
   }
+}
+
+/** Logo fornitore nella riga: thumb rotondo via signed URL, fallback iniziale. */
+function FLogo({ path, nome }: { path: string | null; nome: string }) {
+  const url = useSignedUrl(path)
+  return (
+    <span className="f-logo" aria-hidden>
+      {url ? <img src={url} alt="" loading="lazy" /> : nome.slice(0, 1).toUpperCase()}
+    </span>
+  )
+}
+
+/** Icona chat dal tipo di URL (wa.me / instagram / generico). */
+function chatLabel(url: string): string {
+  if (/wa\.me|whatsapp/i.test(url)) return 'WA'
+  if (/instagram/i.test(url)) return 'IG'
+  return 'CHAT'
 }
 
 const DT_COLS = '2fr 1fr 1.1fr 1.2fr .7fr 40px'
@@ -143,12 +170,20 @@ export default function Fornitori() {
       setFormError('Inserisci il nome del fornitore.')
       return
     }
+    const chatUrl = String(values.chat_url ?? '').trim()
+    if (chatUrl && !chatUrl.startsWith('https://')) {
+      setFormError('La chat diretta deve essere un URL completo https://…')
+      return
+    }
     const patch = {
       nome,
       luogo: String(values.luogo ?? '').trim() || null,
       ruolo: values.ruolo as FornitoreRuolo,
       stato: values.stato as FornitoreStato,
       lead_time: String(values.lead_time ?? '').trim() || null,
+      telefono: String(values.telefono ?? '').trim() || null,
+      chat_url: chatUrl || null,
+      logo_path: String(values.logo_path ?? '') || null,
       contatto: String(values.contatto ?? '').trim() || null,
       materiali: String(values.materiali ?? '').trim() || null,
       note: String(values.note ?? '').trim() || null,
@@ -276,9 +311,29 @@ export default function Fornitori() {
                     }
                   }}
                 >
-                  <span className="dt-main">
-                    <span className="dt-name">{f.nome}</span>
-                    <span className="dt-under">{f.luogo ?? '—'}</span>
+                  <span className="dt-main" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <FLogo path={f.logo_path} nome={f.nome} />
+                    <span style={{ minWidth: 0 }}>
+                      <span className="dt-name">
+                        {f.nome}
+                        {f.chat_url && (
+                          <a
+                            className="f-chat"
+                            href={f.chat_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            title={`Apri chat (${f.chat_url})`}
+                          >
+                            {chatLabel(f.chat_url)} ↗
+                          </a>
+                        )}
+                      </span>
+                      <span className="dt-under">
+                        {f.luogo ?? '—'}
+                        {f.telefono ? ` · ${f.telefono}` : ''}
+                      </span>
+                    </span>
                   </span>
                   <span className="dt-tag" style={{ color: ruoloDot(f.ruolo) }}>
                     <span className="dt-dot" style={{ background: ruoloDot(f.ruolo) }} />
@@ -336,6 +391,17 @@ export default function Fornitori() {
       {modalMode !== 'none' && (
         <Modal title={modalMode === 'edit' ? 'Modifica fornitore' : 'Nuovo fornitore'} onClose={closeModal}>
           <form onSubmit={handleSubmit}>
+            <div className="f-logo-edit">
+              <ImageUpload
+                path={String(values.logo_path ?? '') || null}
+                entityType="fornitori"
+                onUploaded={(p) => setValues((v) => ({ ...v, logo_path: p }))}
+                className="f-logo-upload"
+                fallback="+"
+                title="Tocca per caricare/cambiare il logo"
+              />
+              <span className="code">LOGO (OPZIONALE)</span>
+            </div>
             <FormFields
               fields={FORNITORE_FIELDS}
               values={values}

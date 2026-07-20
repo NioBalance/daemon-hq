@@ -71,6 +71,9 @@ export interface Database {
           materiali: string | null
           stato: FornitoreStato
           note: string | null
+          logo_path: string | null
+          telefono: string | null
+          chat_url: string | null
           created_at: string
           updated_at: string
         }
@@ -84,6 +87,9 @@ export interface Database {
           materiali?: string | null
           stato?: FornitoreStato
           note?: string | null
+          logo_path?: string | null
+          telefono?: string | null
+          chat_url?: string | null
         }
         Update: Partial<Database['public']['Tables']['fornitori']['Insert']>
         Relationships: []

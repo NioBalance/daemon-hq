@@ -724,6 +724,13 @@ button.tpf-row.tpf-dir{cursor:pointer}
 .shortcut-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
 .shortcut-row:last-of-type{border-bottom:none}
 .palette-roadmap{font-size:12px;color:var(--muted);margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+/* fornitori: logo e chat diretta */
+.f-logo{flex:none;width:30px;height:30px;border-radius:50%;background:var(--surface2);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--font-title);font-weight:600;font-size:12px;color:var(--muted)}
+.f-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.f-chat{font-family:var(--font-m);font-size:9px;letter-spacing:.08em;color:var(--ember);text-decoration:none;margin-left:8px}
+.f-chat:hover{text-decoration:underline}
+.f-logo-edit{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.f-logo-upload{width:52px;height:52px;border-radius:50%;background:var(--surface2) center/cover no-repeat;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:18px;cursor:pointer;overflow:hidden}
 /* File viewer inline (tech pack) — glass v4 fullscreen */
 .fv-bg{position:fixed;inset:0;z-index:calc(var(--z-modal) + 1);background:rgba(11,11,13,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;flex-direction:column;outline:none}
 .fv-top{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line2)}
