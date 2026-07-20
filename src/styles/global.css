@@ -320,9 +320,10 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .stat.hot .num{color:var(--ember)}
 
 /* DROPS + ARTICOLI */
-.drop-row{background:var(--solid-1);border:1px solid var(--line);border-radius:var(--radius-md);box-shadow:var(--shadow-elevation);padding:16px;margin-bottom:16px}
+.drop-row{padding:0 0 24px;margin-bottom:28px;border-bottom:1px solid var(--line)}
+.drop-row:last-child{border-bottom:none}
 .drop-row-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-.drop-row-title{font-family:var(--font-b);font-weight:700;font-size:18px;letter-spacing:.1em;text-transform:uppercase}
+.drop-row-title{font-family:var(--font-title);font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase}
 .art-scroll{display:grid;grid-auto-flow:column;grid-auto-columns:190px;gap:10px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
 .art-card{cursor:pointer;position:relative}
 .art-card:hover .art-img,.art-card:focus-visible .art-img{border-radius:6px;transition:filter var(--dur);filter:brightness(1.12)}

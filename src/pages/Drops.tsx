@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from 'react'
-import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
@@ -143,20 +142,24 @@ export default function Drops() {
 
   return (
     <>
-      <PanelHead
-        title="Drops"
-        desc="Una riga per lancio, dentro tutti gli articoli con foto, colori e avanzamento task. Tocca la categoria per vedere tutti i capi di quel tipo nel tempo."
-        actions={
-          <div className="row">
-            <button className="btn ghost" onClick={openCreateDrop}>
-              + Drop
-            </button>
-            <button className="btn" onClick={() => openCreateArticolo()}>
-              + Articolo
-            </button>
-          </div>
-        }
-      />
+      <div className="pg-head">
+        <div>
+          <h2 className="ov-title">Drops</h2>
+          <div className="ov-sub">{(drops ?? []).length} LANCI · {(articoli ?? []).length} ARTICOLI</div>
+        </div>
+        <div className="row" style={{ gap: 20 }}>
+          <button className="tlink" onClick={openCreateDrop}>
+            + Drop
+          </button>
+          <button className="tlink" onClick={() => openCreateArticolo()}>
+            + Articolo
+          </button>
+        </div>
+      </div>
+      <p className="pg-note">
+        Una riga per lancio, dentro tutti gli articoli con foto, colori e avanzamento task. Tocca la categoria per
+        vedere tutti i capi di quel tipo nel tempo.
+      </p>
 
       {isLoading && (
         <div className="drop-row" aria-hidden>
@@ -183,17 +186,17 @@ export default function Drops() {
                       {fmtDate(d.data_lancio)}
                     </span>
                   </div>
-                  <div className="row">
-                    <button className="btn sm ghost" onClick={() => openCreateArticolo(d.id)}>
+                  <div className="row" style={{ gap: 18 }}>
+                    <button className="tlink" onClick={() => openCreateArticolo(d.id)}>
                       + Articolo qui
                     </button>
-                    <button className="btn sm ghost" onClick={() => goTab('drops')}>
+                    <button className="tlink" onClick={() => goTab('drops')}>
                       Timeline →
                     </button>
-                    <button className="btn sm ghost" onClick={() => openEditDrop(d)}>
+                    <button className="tlink" onClick={() => openEditDrop(d)}>
                       Modifica
                     </button>
-                    <button className="btn sm danger" onClick={() => handleDeleteDrop(d)} aria-label="Elimina">✕</button>
+                    <button className="dt-x" onClick={() => handleDeleteDrop(d)} aria-label="Elimina">✕</button>
                   </div>
                 </div>
                 {arts.length ? (
