@@ -270,6 +270,13 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .smp-score.mid b{color:var(--amber)}
 .smp-score.bad b{color:var(--ember)}
 .dt-big{font-family:var(--font-d);font-weight:600;font-size:16px}
+/* Pagina Publish — card contenuto sul kanban boxless */
+.pub-card{display:flex;flex-direction:column;gap:6px}
+.pub-thumb{display:block;width:100%;aspect-ratio:4/5;max-height:150px;border-radius:6px;overflow:hidden;background:linear-gradient(135deg,var(--surface2),var(--surface));margin-bottom:2px}
+.pub-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.pub-meta{font-family:var(--font-m);font-size:10px;color:var(--dim)}
+.pub-type{color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.pub-card.pub-done{opacity:.62}
 /* Pagina Riunioni — lista + dettaglio, hairline */
 .mtg-cols{display:grid;grid-template-columns:1fr 1.3fr;gap:40px}
 @media (max-width:900px){.mtg-cols{grid-template-columns:1fr;gap:26px}}

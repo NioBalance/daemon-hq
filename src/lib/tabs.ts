@@ -93,7 +93,7 @@ export const NAV_GROUPS: NavGroup[] = [
     short: 'Media',
     entries: [
       { id: 'media', label: 'Media Studio', tab: 'media', shortcut: 'm' },
-      { id: 'publish', label: 'Publish', tab: 'publish', shortcut: 'p', soon: true },
+      { id: 'publish', label: 'Publish', tab: 'publish', shortcut: 'p' },
     ],
   },
 ]

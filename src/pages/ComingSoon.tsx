@@ -25,13 +25,3 @@ export function ContrattiSoon() {
   )
 }
 
-export function PublishSoon() {
-  return (
-    <Soon
-      eyebrow="Media & Marketing"
-      title="Publish"
-      desc="La pipeline dei contenuti: Idea, In-Edit, Pronto, Programmato, Pubblicato. Le creative pescano da Media Studio, le scadenze finiscono in agenda."
-      fase="FASE 6"
-    />
-  )
-}
