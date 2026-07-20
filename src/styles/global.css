@@ -594,9 +594,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 /* MEDIA STUDIO — 3 colonne (Sito/Creative/Instagram), righe orizzontali con
    scroll; su mobile le colonne diventano 3 tab. Miniature <img loading=lazy>
    per il lazy-loading nativo per riga. */
-.ms-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:start}
-.ms-col{background:var(--glass-1);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border:var(--glass-border);border-radius:var(--radius-md);box-shadow:var(--shadow-elevation);padding:12px}
-.ms-col-title{font-family:var(--font-b);font-weight:700;font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:var(--bone);text-align:center;margin-bottom:12px;text-shadow:0 0 4px rgba(226,56,42,.5),0 0 18px rgba(226,56,42,.25)}
+.ms-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;align-items:start}
+.ms-col{min-width:0}
+.ms-col-title{font-family:var(--font-title);font-weight:600;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:9px;border-bottom:1px solid var(--line);margin-bottom:12px}
 .ms-untagged{margin-bottom:16px;border-left:3px solid var(--amber)}
 .ms-row{margin-bottom:16px}
 .ms-row:last-child{margin-bottom:4px}
