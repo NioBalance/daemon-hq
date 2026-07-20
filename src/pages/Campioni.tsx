@@ -1,8 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
-import { Loading, ErrorState } from '../components/QueryState'
+import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
 import GadgetRow from '../components/GadgetRow'
 import OwnerBadge from '../components/OwnerBadge'
@@ -25,8 +24,9 @@ const VERDETTI: { value: SampleVerdetto; label: string }[] = [
 ]
 
 const verdettoLabel = (v: SampleVerdetto) => VERDETTI.find((x) => x.value === v)?.label ?? v
-const verdettoBadgeClass = (v: SampleVerdetto) =>
-  ({ 'in-review': 'amber', approvato: 'ok', revisione: 'amber', scartato: 'ember' })[v] ?? 'steel'
+const verdettoDot = (v: SampleVerdetto) =>
+  ({ 'in-review': 'var(--amber)', approvato: 'var(--ok)', revisione: 'var(--amber)', scartato: 'var(--ember)' })[v] ??
+  'var(--dim)'
 const scoreClass = (n: number) => (n >= 4 ? 'good' : n >= 3 ? 'mid' : 'bad')
 
 const EMPTY_VALUES: FormValues = {
@@ -167,72 +167,106 @@ export default function Campioni() {
 
   return (
     <>
-      <PanelHead
-        title="Review Campioni"
-        desc="Ogni sample valutato su 4 assi. Le note diventano il feedback da girare al fornitore."
-        actions={
-          <button className="btn" onClick={openCreate}>
-            + Nuovo campione
-          </button>
-        }
-      />
+      <div className="pg-head">
+        <div>
+          <h2 className="ov-title">Review Campioni</h2>
+          <div className="ov-sub">
+            {(samples ?? []).length} CAMPION{(samples ?? []).length === 1 ? 'E' : 'I'} · 4 ASSI DI VALUTAZIONE
+          </div>
+        </div>
+        <button className="tlink" onClick={openCreate}>
+          + Campione
+        </button>
+      </div>
+      <p className="pg-note">Ogni sample valutato su 4 assi. Le note diventano il feedback da girare al fornitore.</p>
 
-      {isLoading && <Loading label="Caricamento campioni…" />}
+      {isLoading && (
+        <div aria-busy="true">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div className="skeleton" key={i} style={{ height: 16, marginBottom: 16 }} />
+          ))}
+        </div>
+      )}
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
 
       {!isLoading && !isError && (
-        <div className="grid c3">
-          {(samples ?? []).map((s, i) => {
-            const fit = s.fit ?? 3
-            const tessuto = s.tessuto ?? 3
-            const cuciture = s.cuciture ?? 3
-            const colore = s.colore ?? 3
-            const media = ((fit + tessuto + cuciture + colore) / 4).toFixed(1)
-            return (
-              <div className="card" key={s.id}>
-                <div className="row" style={{ justifyContent: 'space-between' }}>
-                  <span className="code">SMP-{String(i + 1).padStart(2, '0')}</span>
-                  <span className={`badge ${verdettoBadgeClass(s.verdetto)}`}>{verdettoLabel(s.verdetto)}</span>
-                </div>
-                <div className="card-title">{s.nome}</div>
-                <div className="card-meta">
-                  {fornNome(s.fornitore_id)} · arrivato {fmtDate(s.data_arrivo)} · media <strong>{media}</strong>
-                </div>
-                <div className="scores">
-                  <div className="score">
-                    <div className={`v ${scoreClass(fit)}`}>{fit}</div>
-                    <div className="l">Fit</div>
-                  </div>
-                  <div className="score">
-                    <div className={`v ${scoreClass(tessuto)}`}>{tessuto}</div>
-                    <div className="l">Tessuto</div>
-                  </div>
-                  <div className="score">
-                    <div className={`v ${scoreClass(cuciture)}`}>{cuciture}</div>
-                    <div className="l">Cuciture</div>
-                  </div>
-                  <div className="score">
-                    <div className={`v ${scoreClass(colore)}`}>{colore}</div>
-                    <div className="l">Colore</div>
-                  </div>
-                </div>
-                <div className="row" style={{ marginTop: 10 }}>
-                  <OwnerBadge owner={s.owner} />
-                </div>
-                {s.note && <div className="note">{s.note}</div>}
-                <div className="card-actions">
-                  <button className="btn sm ghost" onClick={() => openEdit(s)}>
-                    Modifica
-                  </button>
-                  <button className="btn sm danger" onClick={() => handleDelete(s)}>
-                    Elimina
-                  </button>
-                </div>
+        <>
+          {(samples ?? []).length ? (
+            <div className="dtable" style={{ '--dt-cols': '2fr 1.7fr .6fr 1.1fr .9fr 40px' } as React.CSSProperties}>
+              <div className="dt-headrow" aria-hidden>
+                <span>Campione</span>
+                <span>Punteggi</span>
+                <span>Media</span>
+                <span>Verdetto</span>
+                <span>Owner</span>
+                <span />
               </div>
-            )
-          })}
-          {(samples ?? []).length === 0 && <EmptyState icon="star" text="Nessun campione registrato." ctaLabel="+ Nuovo campione" onCta={openCreate} />}
-        </div>
+              {(samples ?? []).map((s, i) => {
+                const fit = s.fit ?? 3
+                const tessuto = s.tessuto ?? 3
+                const cuciture = s.cuciture ?? 3
+                const colore = s.colore ?? 3
+                const media = ((fit + tessuto + cuciture + colore) / 4).toFixed(1)
+                return (
+                  <div
+                    className="dt-row clickable"
+                    key={s.id}
+                    onClick={() => openEdit(s)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        openEdit(s)
+                      }
+                    }}
+                  >
+                    <span className="dt-main">
+                      <span className="dt-name">{s.nome}</span>
+                      <span className="dt-under">
+                        SMP-{String(i + 1).padStart(2, '0')} · {fornNome(s.fornitore_id)} · {fmtDate(s.data_arrivo)}
+                      </span>
+                    </span>
+                    <span className="smp-scores">
+                      {(
+                        [
+                          ['FIT', fit],
+                          ['TES', tessuto],
+                          ['CUC', cuciture],
+                          ['COL', colore],
+                        ] as [string, number][]
+                      ).map(([l, v]) => (
+                        <span className={`smp-score ${scoreClass(v)}`} key={l}>
+                          {l} <b>{v}</b>
+                        </span>
+                      ))}
+                    </span>
+                    <span className="dt-big">{media}</span>
+                    <span className="dt-tag" style={{ color: 'var(--muted)' }}>
+                      <span className="dt-dot" style={{ background: verdettoDot(s.verdetto) }} />
+                      {verdettoLabel(s.verdetto)}
+                    </span>
+                    <span>
+                      <OwnerBadge owner={s.owner} />
+                    </span>
+                    <button
+                      className="dt-x"
+                      aria-label={`Elimina ${s.nome}`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(s)
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <EmptyState icon="star" text="Nessun campione registrato." ctaLabel="+ Nuovo campione" onCta={openCreate} />
+          )}
+        </>
       )}
 
       <hr className="divider" />

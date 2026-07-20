@@ -260,6 +260,13 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .pg-section{margin-top:34px}
 .pg-eyebrow{font-family:var(--font-title);font-weight:600;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 .pg-lines{font-size:13px;color:var(--muted);line-height:1.8;border-top:1px solid var(--line);padding-top:12px}
+/* punteggi campioni inline (de-box) */
+.smp-scores{display:flex;gap:12px;flex-wrap:wrap;font-family:var(--font-m);font-size:10px;letter-spacing:.06em;color:var(--dim)}
+.smp-score b{font-weight:600;font-size:12px;margin-left:2px}
+.smp-score.good b{color:var(--ok)}
+.smp-score.mid b{color:var(--amber)}
+.smp-score.bad b{color:var(--ember)}
+.dt-big{font-family:var(--font-d);font-weight:600;font-size:16px}
 /* Pagina Oggi — agenda aggregata, gruppi hairline */
 .og-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .og-toggle{display:flex;gap:2px;border:1px solid var(--line);border-radius:var(--radius-pill);padding:2px}
