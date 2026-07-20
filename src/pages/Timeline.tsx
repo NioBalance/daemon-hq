@@ -148,6 +148,11 @@ export default function Timeline() {
 
   const sortedDrops = [...(drops ?? [])].sort((a, b) => (a.data_lancio ?? '9999').localeCompare(b.data_lancio ?? '9999'))
 
+  // Drop attivo (colonna micro del Gantt): il più vicino a lanciare, altrimenti
+  // il primo in elenco.
+  const activeDrop =
+    sortedDrops.find((d) => d.data_lancio && daysUntil(d.data_lancio) >= 0) ?? sortedDrops[0] ?? null
+
   function gotoDrop(id: string) {
     setView('drop')
     window.setTimeout(
@@ -173,17 +178,14 @@ export default function Timeline() {
       <div className="pg-head">
         <div>
           <h2 className="ov-title">Timeline Lanci</h2>
-          <div className="ov-sub">PIPELINE PER DROP · BUFFER PRODUZIONE +15GG</div>
+          <div className="ov-sub">{sortedDrops.length} DROP · PIPELINE</div>
         </div>
         <button className="tlink" onClick={openCreateDrop}>
           + Drop
         </button>
       </div>
-      <p className="pg-note">
-        Avanzamento delle fasi di ogni drop nel tempo. Le date mancanti sono stimate dalla data di lancio.
-      </p>
 
-      <div className="chips">
+      <div className="chips center">
         <button className={`chip${view === 'gantt' ? ' active' : ''}`} onClick={() => setView('gantt')}>
           Gantt
         </button>
@@ -209,40 +211,87 @@ export default function Timeline() {
           {sortedDrops.length === 0 ? (
             <EmptyState icon="box" text="Nessun drop. Creane uno per vedere la pipeline." ctaLabel="+ Drop" onCta={openCreateDrop} />
           ) : (
-            <>
-              <div className="legend gantt-legend">
-                <span>
-                  <i style={{ background: 'var(--ok)' }} /> Completata
-                </span>
-                <span>
-                  <i style={{ background: 'var(--amber)' }} /> Da fare
-                </span>
-                <span>
-                  <i style={{ background: 'var(--ember)' }} /> Scaduta
-                </span>
-                <span>
-                  <i className="est" /> Data stimata
-                </span>
+            <div className="tl-cols">
+              <div className="tl-gantt">
+                <div className="legend gantt-legend">
+                  <span>
+                    <i style={{ background: 'var(--ok)' }} /> Completata
+                  </span>
+                  <span>
+                    <i style={{ background: 'var(--amber)' }} /> Da fare
+                  </span>
+                  <span>
+                    <i style={{ background: 'var(--ember)' }} /> Scaduta
+                  </span>
+                  <span>
+                    <i className="est" /> Data stimata
+                  </span>
+                </div>
+                {sortedDrops.map((d) => {
+                  const dropFasi = (fasi ?? []).filter((f) => f.drop_id === d.id)
+                  return (
+                    <section className="gantt-drop" key={d.id}>
+                      <div className="gantt-drop-head">
+                        <h3 className="gantt-drop-title">{d.nome}</h3>
+                        <span className="code">
+                          {d.data_lancio ? `LANCIO ${fmtDate(d.data_lancio)}` : 'SENZA DATA'}
+                        </span>
+                      </div>
+                      {dropFasi.length ? (
+                        <GanttChart drop={d} fasi={dropFasi} />
+                      ) : (
+                        <p className="now-none">Nessuna fase. Aggiungile dalla vista «Drop corrente».</p>
+                      )}
+                    </section>
+                  )
+                })}
               </div>
-              {sortedDrops.map((d) => {
-                const dropFasi = (fasi ?? []).filter((f) => f.drop_id === d.id)
-                return (
-                  <section className="gantt-drop" key={d.id}>
-                    <div className="gantt-drop-head">
-                      <h3 className="gantt-drop-title">{d.nome}</h3>
-                      <span className="code">
-                        {d.data_lancio ? `LANCIO ${fmtDate(d.data_lancio)}` : 'SENZA DATA DI LANCIO'}
-                      </span>
-                    </div>
-                    {dropFasi.length ? (
-                      <GanttChart drop={d} fasi={dropFasi} />
-                    ) : (
-                      <p className="now-none">Nessuna fase. Aggiungile dalla vista «Drop corrente».</p>
-                    )}
-                  </section>
-                )
-              })}
-            </>
+
+              <aside className="tl-current" aria-label="Drop attivo">
+                {activeDrop ? (
+                  (() => {
+                    const af = (fasi ?? [])
+                      .filter((f) => f.drop_id === activeDrop.id)
+                      .sort((a, b) => a.ordine - b.ordine)
+                    const done = af.filter((f) => f.done).length
+                    const days = activeDrop.data_lancio ? daysUntil(activeDrop.data_lancio) : null
+                    return (
+                      <>
+                        <div className="tl-current-head">
+                          <h3 className="ov-col-title" style={{ margin: 0 }}>
+                            {activeDrop.nome}
+                          </h3>
+                          {days !== null && (
+                            <span className="countdown">
+                              {days >= 0 ? `T−${days}g` : `lanciato da ${Math.abs(days)}g`}
+                            </span>
+                          )}
+                        </div>
+                        <div className="progressbar" style={{ margin: '4px 0 14px' }}>
+                          <div className="fill" style={{ width: `${af.length ? Math.round((done / af.length) * 100) : 0}%` }} />
+                        </div>
+                        <div className="phases">
+                          {af.map((f) => (
+                            <div className={`phase${f.done ? ' done' : ''}`} key={f.id}>
+                              <input type="checkbox" checked={f.done} onChange={() => toggleFase(f)} aria-label="Completa fase" />
+                              <span className="pn">{f.nome}</span>
+                              <span className="pd">{fmtDate(f.data)}</span>
+                              <button className="btn sm ghost" onClick={() => openEditFase(activeDrop.id, f)} aria-label="Modifica">✎</button>
+                              <button className="btn sm danger" onClick={() => handleDeleteFase(f)} aria-label="Elimina">✕</button>
+                            </div>
+                          ))}
+                        </div>
+                        <button className="tlink" style={{ marginTop: 12 }} onClick={() => openAddFase(activeDrop.id)}>
+                          + Fase
+                        </button>
+                      </>
+                    )
+                  })()
+                ) : (
+                  <p className="now-none">Nessun drop attivo.</p>
+                )}
+              </aside>
+            </div>
           )}
         </>
       )}

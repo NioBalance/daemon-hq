@@ -287,6 +287,10 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .smp-radar{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
 .smp-radar .code{text-align:center}
 /* Gantt pipeline (Timeline) */
+.tl-cols{display:grid;grid-template-columns:1.5fr 1fr;gap:40px;align-items:start}
+@media (max-width:960px){.tl-cols{grid-template-columns:1fr;gap:30px}}
+.tl-current{position:sticky;top:88px}
+.tl-current-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:2px}
 .gantt-legend{margin-bottom:22px}
 .gantt-legend .est{background:var(--muted);opacity:.35;border:1px dashed var(--muted)}
 .gantt-drop{margin-bottom:38px}
@@ -418,6 +422,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .art-body .cl{font-size:12px;color:var(--muted);margin-top:2px}
 .art-body .tk{font-family:var(--font-m);font-size:10px;color:var(--muted);margin-top:6px}
 .chips{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.chips.center{justify-content:center}
 .chip{background:none;border:none;border-bottom:2px solid transparent;border-radius:0;color:var(--dim);font-family:var(--font-m);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 0;cursor:pointer;position:relative;transition:color var(--dur)}
 .chip:hover{color:var(--bone)}
 .chip.active{color:var(--bone);border-bottom-color:var(--ember)}
