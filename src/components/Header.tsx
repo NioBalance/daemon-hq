@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { TabKey } from '../lib/tabs'
 import { UTILITY_ENTRIES } from '../lib/tabs'
 import { useNav } from '../lib/navigation'
@@ -40,6 +41,12 @@ export default function Header({
   onSearchClick: () => void
 }) {
   const { goEntry, archTab, widgetsOpen, setWidgetsOpen, setActiveSheet } = useNav()
+  // Impulso "notare le icone" solo al primo accesso di questo dispositivo.
+  const [notice] = useState(() => {
+    if (localStorage.getItem('dhq:icons-seen')) return false
+    localStorage.setItem('dhq:icons-seen', '1')
+    return true
+  })
   const unseen = useUnseenActivity()
   const cal = UTILITY_ENTRIES.find((e) => e.id === 'cal')!
   const links = UTILITY_ENTRIES.find((e) => e.id === 'links')!
@@ -63,7 +70,7 @@ export default function Header({
       >
         <img src={starLogo} alt="" />
       </button>
-      <div className="tn-right">
+      <div className={`tn-right${notice ? ' notice' : ''}`}>
         <button
           className={`hicon${widgetsOpen ? ' active' : ''}`}
           title="Notifiche e note del team"

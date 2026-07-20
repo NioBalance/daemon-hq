@@ -147,7 +147,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .lt-sep{width:1px;align-self:stretch;background:var(--line2)}
 .lt-item{display:flex;flex-direction:column;gap:3px}
 .lt-lbl{font-family:var(--font-m);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
-.lt-val{font-family:var(--font-m);font-size:16px;color:var(--bone)}
+.lt-val{font-family:var(--font-m);font-size:16px;color:var(--bone);white-space:nowrap}
 .lt-item.hot .lt-lbl{color:var(--ember)}
 .lt-item.hot .lt-val{color:var(--ember)}
 .lt-cta{margin-left:auto}
@@ -194,6 +194,40 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .act-txt{flex:1;min-width:0}
 .act-time{font-family:var(--font-m);font-size:10px;color:var(--dim);flex:none;margin-top:2px}
 .ov-quick{display:flex;gap:22px;flex-wrap:wrap;padding-top:4px}
+/* ── Overview su telefono (≤768px): compatto, denso, niente scroll infinito ── */
+@media (max-width:768px){
+  .ov-head{margin-bottom:16px}
+  .ov-title{font-size:21px}
+  .ov-sub{font-size:10px}
+  /* Ticker: striscia orizzontale sottile scrollabile, non più ovale gigante */
+  .live-ticker{margin-bottom:22px}
+  .live-ticker-in{gap:16px;flex-wrap:nowrap;overflow-x:auto;padding:9px 14px;scrollbar-width:none}
+  .live-ticker-in::-webkit-scrollbar{display:none}
+  .lt-item{flex:none}
+  .lt-lbl{font-size:8px}
+  .lt-val{font-size:13px}
+  .lt-live{font-size:10px;flex:none}
+  .lt-cta{flex:none;margin-left:8px;white-space:nowrap}
+  /* KPI band: 2 colonne compatte, numeri proporzionati al telefono */
+  .kpi-band{border-top:1px solid var(--line);margin-bottom:24px}
+  .kb-cell{padding:12px 12px 12px;gap:3px}
+  .kb-num{font-size:30px}
+  .kb-lbl{font-size:9px;letter-spacing:.1em}
+  .kb-meta{font-size:11px}
+  .kb-cta{font-size:11px}
+  /* Mini-charts: 2 colonne strette */
+  .chart-band{margin:0 0 24px}
+  .cb-cell{padding:12px}
+  /* Colonne Adesso/Attività già impilate a 900px: più densità */
+  .ov-cols{gap:20px;margin-bottom:20px}
+  .ov-quick{gap:16px}
+  .ov-skel-band{grid-template-columns:repeat(2,1fr)}
+  .ov-skel-cols{grid-template-columns:1fr}
+}
+@media (max-width:400px){
+  .kb-num{font-size:26px}
+  .live-ticker-in{gap:13px}
+}
 /* Widget flottanti Notifiche/Note (handoff §7) — le UNICHE due card glass
    del cockpit: docked ≥1280px (il main riserva il padding), overlay
    1200-1279px, sheet Team sotto i 1200px. */
@@ -601,10 +635,19 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 
 /* HEADER ICONS */
 .hicons{display:flex;gap:6px;align-items:center}
-.hicon{width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--line);border-radius:var(--radius-sm);color:var(--muted);cursor:pointer;padding:0;transition:color var(--dur),border-color var(--dur)}
-.hicon:hover{color:var(--bone);border-color:var(--muted)}
-.hicon.active{border-color:var(--ember);color:var(--ember)}
-.hicon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* Icone top-nav: outlined, niente bg/bordo, rosso neon; bianco acceso on-hover */
+.hicon{width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:var(--radius-sm);color:var(--ember);cursor:pointer;padding:0;filter:drop-shadow(0 0 3px var(--ember-glow));transition:color var(--dur),filter var(--dur)}
+.hicon:hover,.hicon:focus-visible{color:#fff;filter:drop-shadow(0 0 7px rgba(255,255,255,.55))}
+.hicon.active{color:#fff;filter:drop-shadow(0 0 6px rgba(255,255,255,.4))}
+.hicon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* Prima visita: le icone si fanno notare con un impulso a onda, poi basta */
+@keyframes hiconNotice{0%,100%{filter:drop-shadow(0 0 3px var(--ember-glow))}50%{color:#fff;filter:drop-shadow(0 0 11px var(--ember))}}
+.tn-right.notice .hicon{animation:hiconNotice 1.1s ease-in-out 3}
+.tn-right.notice .hicon:nth-child(1){animation-delay:0s}
+.tn-right.notice .hicon:nth-child(2){animation-delay:.12s}
+.tn-right.notice .hicon:nth-child(3){animation-delay:.24s}
+.tn-right.notice .hicon:nth-child(4){animation-delay:.36s}
+@media (prefers-reduced-motion:reduce){.tn-right.notice .hicon{animation:none}}
 
 /* CALENDARIO */
 .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap}
