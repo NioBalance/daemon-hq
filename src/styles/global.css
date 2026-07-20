@@ -251,7 +251,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .dt-row.clickable:hover{background:rgba(234,230,222,.02)}
 .dt-main{min-width:0}
 .dt-name{display:block;font-weight:500;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.dt-under{display:block;font-family:var(--font-m);font-size:10px;color:var(--dim);margin-top:3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.dt-under{display:flex;align-items:center;gap:5px;font-family:var(--font-m);font-size:10px;color:var(--dim);margin-top:3px;overflow:hidden;white-space:nowrap}
 .dt-tag{display:flex;align-items:center;gap:7px;font-family:var(--font-m);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
 .dt-dot{width:6px;height:6px;border-radius:50%;flex:none}
 .dt-num{font-family:var(--font-m);font-size:13px}
@@ -732,7 +732,9 @@ button.tpf-row.tpf-dir{cursor:pointer}
 .f-logo img{width:100%;height:100%;object-fit:cover;display:block}
 .f-main{display:flex;align-items:center;gap:11px}
 .f-idblock{flex:1;min-width:0}
-.f-flag{margin-right:5px}
+.cflag{flex:none;display:block;border-radius:2.5px}
+.cflag-dot{flex:none;width:9px;height:9px;border-radius:50%;background:var(--steel)}
+.f-city{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .f-chat{flex:none;display:inline-flex;align-items:center;gap:6px;margin-left:12px;background:var(--surface2);border:1px solid var(--line2);border-radius:var(--radius-pill);padding:6px 12px;font-family:var(--font-b);font-size:11.5px;font-weight:500;color:var(--bone);text-decoration:none;transition:border-color .18s ease,background .18s ease}
 .f-chat:hover{border-color:var(--muted);background:var(--surface-3)}
 .f-chat svg{width:15px;height:15px;flex:none}

@@ -18,6 +18,7 @@ import {
 } from '../features/fornitori/queries'
 import { useTechpacks } from '../features/techpacks/queries'
 import ImageUpload from '../components/ImageUpload'
+import CountryFlag from '../components/CountryFlag'
 import { useSignedUrl } from '../lib/useSignedUrl'
 
 const F_RUOLI: { value: FornitoreRuolo; label: string }[] = [
@@ -141,27 +142,23 @@ function ChatIcon({ kind }: { kind: ChatKind }) {
   )
 }
 
-/** Bandierina da codice paese (regional indicator). */
-function flagEmoji(cc: string): string {
-  return cc.toUpperCase().replace(/./g, (c) => String.fromCodePoint(127397 + c.charCodeAt(0)))
-}
-
-/** Scinde "Carpi, IT" in città + bandiera. Senza codice esplicito assume IT
- *  (brand italiano, fornitori quasi tutti italiani). */
-function locationParts(luogo: string | null): { city: string; flag: string } {
+/** Scinde "Carpi, IT" in città + codice paese ISO-2. Senza codice esplicito
+ *  assume IT (brand italiano, fornitori quasi tutti italiani); '' se nessuna
+ *  località. */
+function locationParts(luogo: string | null): { city: string; cc: string } {
   const raw = (luogo ?? '').trim()
-  if (!raw) return { city: '—', flag: '' }
+  if (!raw) return { city: '—', cc: '' }
   const parts = raw.split(',').map((p) => p.trim()).filter(Boolean)
   const hasCode = parts.length >= 2 && /^[A-Za-z]{2}$/.test(parts[parts.length - 1])
-  const country = hasCode ? parts[parts.length - 1] : 'IT'
+  const cc = hasCode ? parts[parts.length - 1].toUpperCase() : 'IT'
   const city = (hasCode ? parts.slice(0, -1) : parts).join(', ')
-  return { city: city || '—', flag: flagEmoji(country) }
+  return { city: city || '—', cc }
 }
 
 /** Cella Fornitore: logo, nome (primario), città con bandiera + telefono
  *  (secondari, su riga sotto), badge chat ben distanziato a destra. */
 function FornitoreCell({ f }: { f: Fornitore }) {
-  const { city, flag } = locationParts(f.luogo)
+  const { city, cc } = locationParts(f.luogo)
   const k = f.chat_url ? chatKind(f.chat_url) : null
   return (
     <span className="dt-main f-main">
@@ -169,8 +166,8 @@ function FornitoreCell({ f }: { f: Fornitore }) {
       <span className="f-idblock">
         <span className="dt-name">{f.nome}</span>
         <span className="dt-under">
-          {flag && <span className="f-flag">{flag}</span>}
-          {city}
+          {cc && <CountryFlag cc={cc} size={16} />}
+          <span className="f-city">{city}</span>
           {f.telefono ? ` · ${f.telefono}` : ''}
         </span>
       </span>
