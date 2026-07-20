@@ -386,13 +386,12 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 /* ARCHIVIO */
 .subtabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
 .folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
-.folder-card{background:var(--solid-1);border:1px solid var(--line);border-radius:var(--radius-md);box-shadow:var(--shadow-elevation);overflow:hidden;position:relative;transition:transform var(--dur) var(--ease-out),box-shadow var(--dur)}
-.folder-card:hover,.folder-card:focus-visible{transform:translateY(-2px);box-shadow:var(--shadow-elevation),var(--glow-white)}
-.folder-img{height:160px;background:var(--void) center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:var(--steel);font-family:var(--font-d);font-weight:700;font-size:34px;cursor:pointer}
+.folder-card{position:relative}
+.folder-card:hover .folder-img,.folder-card:focus-visible .folder-img{filter:brightness(1.12)}
+.folder-img{height:160px;border-radius:6px;background:var(--void) center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:var(--steel);font-family:var(--font-d);font-weight:700;font-size:34px;cursor:pointer;transition:filter var(--dur)}
 .folder-img:focus-visible{outline:2px solid var(--ember);outline-offset:-2px}
-.folder-body{padding:12px}
-.link-card{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--solid-1);border:1px solid var(--line);border-radius:var(--radius-md);box-shadow:var(--shadow-elevation);padding:14px 16px;margin-bottom:8px;position:relative;transition:transform var(--dur) var(--ease-out),box-shadow var(--dur)}
-.link-card:hover,.link-card:focus-visible{transform:translateY(-2px);box-shadow:var(--shadow-elevation),var(--glow-white)}
+.folder-body{padding:9px 2px 0}
+.link-card{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line);position:relative}
 .link-card a{color:var(--bone);font-weight:600;text-decoration:none;font-size:15px}
 .link-card a:hover{color:var(--ember)}
 .link-card .url{font-family:var(--font-m);font-size:11px;color:var(--muted);word-break:break-all}
@@ -510,12 +509,12 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
    fedele agli angoli arrotondati dell'elemento. */
 @property --border-angle{syntax:'<angle>';inherits:false;initial-value:0deg}
 @keyframes borderTravel{to{--border-angle:360deg}}
-.card,.folder-card,.link-card,.cal-day,.media-card,.btn{
+.card,.cal-day,.media-card,.btn{
   position:relative;
   --energy-color:var(--ember);
 }
 .btn.ghost{--energy-color:var(--bone)}
-.card::before,.folder-card::before,.link-card::before,
+.card::before,
 .cal-day::before,.media-card::before,.btn::before{
   content:'';position:absolute;inset:0;padding:1px;border-radius:inherit;
   background:conic-gradient(from var(--border-angle,0deg),transparent 0%,var(--energy-color) 14%,transparent 30%);
@@ -526,8 +525,6 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .card:hover::before,.card:focus-visible::before,
 .art-card:hover::before,.art-card:focus-visible::before,
 .kcard:hover::before,.kcard:focus-visible::before,
-.folder-card:hover::before,.folder-card:focus-visible::before,
-.link-card:hover::before,.link-card:focus-visible::before,
 .cal-day:hover::before,.cal-day:focus-visible::before,
 .media-card:hover::before,.media-card:focus-visible::before,
 .chip:hover::before,.chip:focus-visible::before,
@@ -535,7 +532,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
   opacity:1;animation:borderTravel 2.4s linear infinite
 }
 @media (prefers-reduced-motion:reduce){
-  .card::before,.folder-card::before,.link-card::before,
+  .card::before,
   .cal-day::before,.media-card::before,.btn::before{
     background:var(--energy-color);animation:none
   }

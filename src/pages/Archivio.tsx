@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState, type FormEvent } from 'react'
-import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState, SkeletonGrid } from '../components/QueryState'
@@ -154,14 +153,17 @@ export default function Archivio() {
 
   return (
     <>
-      <PanelHead
-        title="Archivio"
-        actions={
-          <button className="btn" onClick={archTab === 'inspo' ? openAddInspo : openCreateLink}>
-            + {archTab === 'inspo' ? 'Inspirazione' : 'Link'}
-          </button>
-        }
-      />
+      <div className="pg-head">
+        <div>
+          <h2 className="ov-title">Archivio</h2>
+          <div className="ov-sub">
+            {(inspo.data?.length ?? 0)} INSPO · {(links.data?.length ?? 0)} LINK
+          </div>
+        </div>
+        <button className="tlink" onClick={archTab === 'inspo' ? openAddInspo : openCreateLink}>
+          + {archTab === 'inspo' ? 'Inspirazione' : 'Link'}
+        </button>
+      </div>
       <div className="subtabs">
         <button className={`chip${archTab === 'inspo' ? ' active' : ''}`} onClick={() => setArchTab('inspo')}>
           Inspirazione ({inspo.data?.length ?? 0})
@@ -178,7 +180,7 @@ export default function Archivio() {
 
       {!activeQuery.isLoading && !activeQuery.isError && archTab === 'inspo' && (
         <>
-          <div className="panel-desc" style={{ marginBottom: 14 }}>
+          <div className="pg-note">
             Screenshot e idee prodotto da tenere d'occhio. Carica lo screen, annota chi l'ha proposto e perché. I
             gadget vivono ora dentro Campioni e Catalogo.
           </div>
@@ -202,7 +204,7 @@ export default function Archivio() {
 
       {!activeQuery.isLoading && !activeQuery.isError && archTab === 'links' && (
         <>
-          <div className="panel-desc" style={{ marginBottom: 14 }}>
+          <div className="pg-note">
             Collegamenti rapidi del brand. Modifica gli URL una volta e restano per tutto il team.
           </div>
           {(links.data ?? []).map((l) => (
