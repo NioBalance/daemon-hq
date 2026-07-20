@@ -45,6 +45,13 @@ export function daysUntil(dateStr: string): number {
   return Math.round((target.getTime() - today.getTime()) / 86400000)
 }
 
+/** Giorni interi (locali) da aIso a bIso; negativo se bIso precede aIso. */
+export function daysBetween(aIso: string, bIso: string): number {
+  const [ay, am, ad] = aIso.split('-').map(Number)
+  const [by, bm, bd] = bIso.split('-').map(Number)
+  return Math.round((new Date(by, bm - 1, bd).getTime() - new Date(ay, am - 1, ad).getTime()) / 86400000)
+}
+
 /** Tempo relativo compatto per log e notifiche: ora, 5m, 3h, 2g. */
 export function timeAgo(iso: string): string {
   const mins = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000))

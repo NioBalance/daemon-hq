@@ -4,6 +4,7 @@ import FormFields, { type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
 import OwnerBadge from '../components/OwnerBadge'
+import GanttChart from '../components/GanttChart'
 import {
   useDrops,
   useCreateDrop,
@@ -37,7 +38,7 @@ export default function Timeline() {
   const confirmDelete = useConfirmDelete()
   const logActivity = useActivityLogger()
 
-  const [view, setView] = useState<'drop' | 'anno'>('drop')
+  const [view, setView] = useState<'drop' | 'gantt' | 'anno'>('drop')
   const [year, setYear] = useState(new Date().getFullYear())
   const [dropModal, setDropModal] = useState<'none' | 'create' | 'edit'>('none')
   const [editingDrop, setEditingDrop] = useState<Drop | null>(null)
@@ -187,6 +188,9 @@ export default function Timeline() {
         <button className={`chip${view === 'drop' ? ' active' : ''}`} onClick={() => setView('drop')}>
           Drop corrente
         </button>
+        <button className={`chip${view === 'gantt' ? ' active' : ''}`} onClick={() => setView('gantt')}>
+          Gantt
+        </button>
         <button className={`chip${view === 'anno' ? ' active' : ''}`} onClick={() => setView('anno')}>
           Anno intero
         </button>
@@ -200,6 +204,23 @@ export default function Timeline() {
         </div>
       )}
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
+
+      {!isLoading && !isError && view === 'gantt' && (
+        <div className="gantt-section">
+          <GanttChart drops={sortedDrops} fasi={fasi ?? []} />
+          <div className="legend" style={{ marginTop: 12 }}>
+            <span>
+              <i style={{ background: 'var(--ok)' }} /> Completata
+            </span>
+            <span>
+              <i style={{ background: 'var(--amber)' }} /> Da fare
+            </span>
+            <span>
+              <i style={{ background: 'var(--ember)' }} /> Scaduta
+            </span>
+          </div>
+        </div>
+      )}
 
       {!isLoading && !isError && view === 'anno' && (
         <div className="year-wrap">

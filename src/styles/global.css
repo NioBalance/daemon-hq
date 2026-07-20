@@ -270,6 +270,13 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .smp-score.mid b{color:var(--amber)}
 .smp-score.bad b{color:var(--ember)}
 .dt-big{font-family:var(--font-d);font-weight:600;font-size:16px}
+/* Gantt pipeline (Timeline) */
+.gantt-section{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 2px}
+.gantt-wrap{overflow-x:hidden}
+.gantt-wrap .recharts-cartesian-axis-line,.gantt-wrap .recharts-cartesian-axis-tick-line{stroke:var(--line)}
+.gantt-tip{background:rgba(18,18,22,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line2);border-radius:10px;padding:8px 11px;box-shadow:0 12px 32px rgba(0,0,0,.5)}
+.gantt-tip-t{font-size:12px;color:var(--bone);font-weight:500;margin-bottom:3px}
+.gantt-tip-d{font-family:var(--font-m);font-size:10px;color:var(--muted)}
 /* Riunione online: Entra + scelta piattaforma + crea stanza */
 .mtg-enter{display:inline-flex;align-items:center;gap:8px;margin:10px 0 4px;background:none;border:1px solid var(--ember);border-radius:var(--radius-pill);color:var(--ember);font-size:13px;font-weight:500;padding:8px 16px;text-decoration:none;transition:background .18s ease,color .18s ease,box-shadow .18s ease}
 .mtg-enter:hover{background:var(--ember);color:var(--bone);box-shadow:0 0 16px var(--ember-glow)}
