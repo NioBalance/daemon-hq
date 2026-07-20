@@ -44,7 +44,8 @@ const statoDot = (s: FornitoreStato) =>
 
 const FORNITORE_FIELDS: FieldDef[] = [
   { key: 'nome', label: 'Nome fornitore' },
-  { key: 'luogo', label: 'Località', half: true },
+  { key: 'main_products', label: 'Prodotti principali (es. Leggings, Top)' },
+  { key: 'luogo', label: 'Località (es. Carpi, IT)', half: true },
   {
     key: 'ruolo',
     label: 'Ruolo',
@@ -69,6 +70,7 @@ const FORNITORE_FIELDS: FieldDef[] = [
 
 const EMPTY_VALUES: FormValues = {
   nome: '',
+  main_products: '',
   luogo: '',
   ruolo: 'core',
   stato: 'da-contattare',
@@ -84,6 +86,7 @@ const EMPTY_VALUES: FormValues = {
 function fornitoreToValues(f: Fornitore): FormValues {
   return {
     nome: f.nome,
+    main_products: f.main_products ?? '',
     luogo: f.luogo ?? '',
     ruolo: f.ruolo ?? 'core',
     stato: f.stato,
@@ -107,14 +110,88 @@ function FLogo({ path, nome }: { path: string | null; nome: string }) {
   )
 }
 
-/** Icona chat dal tipo di URL (wa.me / instagram / generico). */
-function chatLabel(url: string): string {
-  if (/wa\.me|whatsapp/i.test(url)) return 'WA'
-  if (/instagram/i.test(url)) return 'IG'
-  return 'CHAT'
+type ChatKind = 'wa' | 'ig' | 'other'
+function chatKind(url: string): ChatKind {
+  if (/wa\.me|whatsapp/i.test(url)) return 'wa'
+  if (/instagram/i.test(url)) return 'ig'
+  return 'other'
+}
+const chatText = (k: ChatKind) => (k === 'wa' ? 'WhatsApp' : k === 'ig' ? 'Instagram' : 'Chat')
+
+function ChatIcon({ kind }: { kind: ChatKind }) {
+  if (kind === 'wa')
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M3.5 20.5l1.4-3.8A7.5 7.5 0 1 1 7.8 19z" />
+        <path d="M9 9.2c0 2.8 2.3 5.1 5.1 5.1.5 0 .9-.5.9-1l-.1-.8-1.6-.5-.8.8c-.8-.4-1.5-1.1-1.9-1.9l.8-.8-.5-1.6-.8-.1c-.5 0-1 .4-1 .9z" />
+      </svg>
+    )
+  if (kind === 'ig')
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+        <rect x="4" y="4" width="16" height="16" rx="4.5" />
+        <circle cx="12" cy="12" r="3.6" />
+        <circle cx="16.7" cy="7.3" r="1.1" fill="currentColor" stroke="none" />
+      </svg>
+    )
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
+      <path d="M20 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 14-5z" />
+    </svg>
+  )
 }
 
-const DT_COLS = '2fr 1fr 1.1fr 1.2fr .7fr 40px'
+/** Bandierina da codice paese (regional indicator). */
+function flagEmoji(cc: string): string {
+  return cc.toUpperCase().replace(/./g, (c) => String.fromCodePoint(127397 + c.charCodeAt(0)))
+}
+
+/** Scinde "Carpi, IT" in città + bandiera. Senza codice esplicito assume IT
+ *  (brand italiano, fornitori quasi tutti italiani). */
+function locationParts(luogo: string | null): { city: string; flag: string } {
+  const raw = (luogo ?? '').trim()
+  if (!raw) return { city: '—', flag: '' }
+  const parts = raw.split(',').map((p) => p.trim()).filter(Boolean)
+  const hasCode = parts.length >= 2 && /^[A-Za-z]{2}$/.test(parts[parts.length - 1])
+  const country = hasCode ? parts[parts.length - 1] : 'IT'
+  const city = (hasCode ? parts.slice(0, -1) : parts).join(', ')
+  return { city: city || '—', flag: flagEmoji(country) }
+}
+
+/** Cella Fornitore: logo, nome (primario), città con bandiera + telefono
+ *  (secondari, su riga sotto), badge chat ben distanziato a destra. */
+function FornitoreCell({ f }: { f: Fornitore }) {
+  const { city, flag } = locationParts(f.luogo)
+  const k = f.chat_url ? chatKind(f.chat_url) : null
+  return (
+    <span className="dt-main f-main">
+      <FLogo path={f.logo_path} nome={f.nome} />
+      <span className="f-idblock">
+        <span className="dt-name">{f.nome}</span>
+        <span className="dt-under">
+          {flag && <span className="f-flag">{flag}</span>}
+          {city}
+          {f.telefono ? ` · ${f.telefono}` : ''}
+        </span>
+      </span>
+      {f.chat_url && k && (
+        <a
+          className={`f-chat f-chat-${k}`}
+          href={f.chat_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          title={`Apri chat (${f.chat_url})`}
+        >
+          <ChatIcon kind={k} />
+          {chatText(k)}
+        </a>
+      )}
+    </span>
+  )
+}
+
+const DT_COLS = '2.4fr 1.2fr .9fr 1fr .9fr .55fr 40px'
 
 export default function Fornitori() {
   const { data: fornitori, isLoading, isError, error, refetch } = useFornitori()
@@ -177,6 +254,7 @@ export default function Fornitori() {
     }
     const patch = {
       nome,
+      main_products: String(values.main_products ?? '').trim() || null,
       luogo: String(values.luogo ?? '').trim() || null,
       ruolo: values.ruolo as FornitoreRuolo,
       stato: values.stato as FornitoreStato,
@@ -220,7 +298,13 @@ export default function Fornitori() {
   const q = cerca.trim().toLowerCase()
   const sorted = [...(fornitori ?? [])]
     .filter((f) => filtro === 'tutti' || f.ruolo === filtro)
-    .filter((f) => !q || f.nome.toLowerCase().includes(q) || (f.luogo ?? '').toLowerCase().includes(q))
+    .filter(
+      (f) =>
+        !q ||
+        f.nome.toLowerCase().includes(q) ||
+        (f.luogo ?? '').toLowerCase().includes(q) ||
+        (f.main_products ?? '').toLowerCase().includes(q),
+    )
     .sort((a, b) => (RUOLO_ORDER[a.ruolo ?? 'backup'] ?? 9) - (RUOLO_ORDER[b.ruolo ?? 'backup'] ?? 9))
 
   return (
@@ -232,7 +316,7 @@ export default function Fornitori() {
             {(fornitori ?? []).length} CONTROPART{(fornitori ?? []).length === 1 ? 'E' : 'I'} · STRATEGIA DUAL-SUPPLIER
           </div>
         </div>
-        <button className="tlink" onClick={openCreate}>
+        <button className="pg-add" onClick={openCreate}>
           + Fornitore
         </button>
       </div>
@@ -291,6 +375,7 @@ export default function Fornitori() {
             <div className="dtable" style={{ '--dt-cols': DT_COLS } as React.CSSProperties}>
               <div className="dt-headrow" aria-hidden>
                 <span>Fornitore</span>
+                <span>Main products</span>
                 <span>Tipo</span>
                 <span>Stato</span>
                 <span>Lead time</span>
@@ -311,30 +396,8 @@ export default function Fornitori() {
                     }
                   }}
                 >
-                  <span className="dt-main" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <FLogo path={f.logo_path} nome={f.nome} />
-                    <span style={{ minWidth: 0 }}>
-                      <span className="dt-name">
-                        {f.nome}
-                        {f.chat_url && (
-                          <a
-                            className="f-chat"
-                            href={f.chat_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            title={`Apri chat (${f.chat_url})`}
-                          >
-                            {chatLabel(f.chat_url)} ↗
-                          </a>
-                        )}
-                      </span>
-                      <span className="dt-under">
-                        {f.luogo ?? '—'}
-                        {f.telefono ? ` · ${f.telefono}` : ''}
-                      </span>
-                    </span>
-                  </span>
+                  <FornitoreCell f={f} />
+                  <span className="dt-meta">{f.main_products || '—'}</span>
                   <span className="dt-tag" style={{ color: ruoloDot(f.ruolo) }}>
                     <span className="dt-dot" style={{ background: ruoloDot(f.ruolo) }} />
                     {f.ruolo ?? '—'}

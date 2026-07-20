@@ -74,6 +74,7 @@ export interface Database {
           logo_path: string | null
           telefono: string | null
           chat_url: string | null
+          main_products: string | null
           created_at: string
           updated_at: string
         }
@@ -90,6 +91,7 @@ export interface Database {
           logo_path?: string | null
           telefono?: string | null
           chat_url?: string | null
+          main_products?: string | null
         }
         Update: Partial<Database['public']['Tables']['fornitori']['Insert']>
         Relationships: []
