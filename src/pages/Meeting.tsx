@@ -22,7 +22,7 @@ import { useActivityLogger } from '../features/activity/queries'
 import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import { fmtDate, todayIso } from '../lib/format'
-import type { MeetingStato } from '../lib/database.types'
+import type { MeetingStato, MeetingPiattaforma } from '../lib/database.types'
 
 const MEETING_FIELDS: FieldDef[] = [
   { key: 'titolo', label: 'Titolo riunione' },
@@ -41,9 +41,36 @@ const MEETING_FIELDS: FieldDef[] = [
   { key: 'note', label: 'Verbale / appunti', type: 'textarea' },
 ]
 
-const EMPTY: FormValues = { titolo: '', data: todayIso(), stato: 'pianificata', partecipanti: '', note: '' }
+const EMPTY: FormValues = {
+  titolo: '',
+  data: todayIso(),
+  stato: 'pianificata',
+  partecipanti: '',
+  note: '',
+  piattaforma: 'meet',
+  link_riunione: '',
+}
 
 const statoDot = (s: MeetingStato) => (s === 'conclusa' ? 'var(--ok)' : 'var(--amber)')
+
+// Piattaforme videochiamata: il servizio crea la stanza, l'utente incolla il
+// link (la generazione via API resta backlog avanzato).
+const PLATFORMS: { key: MeetingPiattaforma; label: string; create: string | null; color: string }[] = [
+  { key: 'meet', label: 'Meet', create: 'https://meet.new', color: '#00ac47' },
+  { key: 'zoom', label: 'Zoom', create: 'https://zoom.us/start', color: '#2d8cff' },
+  { key: 'teams', label: 'Teams', create: 'https://teams.microsoft.com/l/meeting/new', color: '#6264a7' },
+  { key: 'altro', label: 'Altro', create: null, color: 'var(--muted)' },
+]
+const platformOf = (k: MeetingPiattaforma | null) => PLATFORMS.find((p) => p.key === k) ?? null
+
+function CamIcon({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="3" y="6.5" width="12" height="11" rx="2" />
+      <path d="M15 10.5l5-2.5v8l-5-2.5z" />
+    </svg>
+  )
+}
 
 export default function Meeting() {
   const meetingsQ = useMeetings()
@@ -93,6 +120,8 @@ export default function Meeting() {
       stato: m.stato,
       partecipanti: m.partecipanti ?? '',
       note: m.note ?? '',
+      piattaforma: m.piattaforma ?? 'meet',
+      link_riunione: m.link_riunione ?? '',
     })
     setFormError(null)
     setEditingId(m.id)
@@ -106,12 +135,19 @@ export default function Meeting() {
       setFormError('Inserisci il titolo della riunione.')
       return
     }
+    const link = String(values.link_riunione ?? '').trim()
+    if (link && !link.startsWith('https://')) {
+      setFormError('Il link della riunione deve essere un URL completo https://…')
+      return
+    }
     const patch = {
       titolo,
       data: String(values.data ?? '') || null,
       stato: values.stato as MeetingStato,
       partecipanti: String(values.partecipanti ?? '').trim() || null,
       note: String(values.note ?? '').trim() || null,
+      piattaforma: values.piattaforma as MeetingPiattaforma,
+      link_riunione: link || null,
     }
     try {
       if (modalMode === 'edit' && editingId) {
@@ -232,6 +268,27 @@ export default function Meeting() {
                           </span>
                         </span>
                         <span className="mtg-row-meta">
+                          {m.link_riunione && (
+                            <span
+                              className="mtg-row-cam"
+                              title={`Entra${platformOf(m.piattaforma) ? ` su ${platformOf(m.piattaforma)!.label}` : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                window.open(m.link_riunione!, '_blank', 'noopener,noreferrer')
+                              }}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  window.open(m.link_riunione!, '_blank', 'noopener,noreferrer')
+                                }
+                              }}
+                            >
+                              <CamIcon color={platformOf(m.piattaforma)?.color ?? 'var(--bone)'} />
+                            </span>
+                          )}
                           <span className="dt-tag" style={{ color: 'var(--muted)' }}>
                             <span className="dt-dot" style={{ background: statoDot(m.stato) }} />
                             {m.stato}
@@ -268,6 +325,18 @@ export default function Meeting() {
                     </button>
                   </div>
                 </div>
+                {openMeeting.link_riunione && (
+                  <a
+                    className="mtg-enter"
+                    href={openMeeting.link_riunione}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={openMeeting.link_riunione}
+                  >
+                    <CamIcon color={platformOf(openMeeting.piattaforma)?.color ?? 'var(--bone)'} />
+                    Entra{platformOf(openMeeting.piattaforma) ? ` su ${platformOf(openMeeting.piattaforma)!.label}` : ''} →
+                  </a>
+                )}
                 {openMeeting.note && <p className="mtg-note">{openMeeting.note}</p>}
 
                 <h4 className="pg-eyebrow" style={{ marginTop: 20 }}>
@@ -363,6 +432,45 @@ export default function Meeting() {
         <Modal title={modalMode === 'edit' ? 'Modifica riunione' : 'Nuova riunione'} onClose={() => setModalMode('none')}>
           <form onSubmit={handleSubmit}>
             <FormFields fields={MEETING_FIELDS} values={values} onChange={(k, v) => setValues((s) => ({ ...s, [k]: v }))} />
+
+            <div className="mtg-online">
+              <span className="mtg-online-lbl">Riunione online</span>
+              <div className="mtg-plat">
+                {PLATFORMS.map((p) => (
+                  <button
+                    type="button"
+                    key={p.key}
+                    className={`mtg-plat-btn${values.piattaforma === p.key ? ' active' : ''}`}
+                    onClick={() => setValues((s) => ({ ...s, piattaforma: p.key }))}
+                  >
+                    <CamIcon color={values.piattaforma === p.key ? p.color : 'var(--dim)'} />
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+              <div className="mtg-linkrow">
+                <input
+                  value={String(values.link_riunione ?? '')}
+                  onChange={(e) => setValues((s) => ({ ...s, link_riunione: e.target.value }))}
+                  placeholder="Incolla qui il link della stanza (https://…)"
+                  aria-label="Link riunione"
+                />
+                {platformOf(values.piattaforma as MeetingPiattaforma)?.create && (
+                  <a
+                    className="btn sm ghost"
+                    href={platformOf(values.piattaforma as MeetingPiattaforma)!.create!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Crea stanza →
+                  </a>
+                )}
+              </div>
+              <span className="mtg-online-hint">
+                Crea la stanza sul servizio, copia il link e incollalo qui.
+              </span>
+            </div>
+
             {formError && <p className="auth-msg err">{formError}</p>}
             <div className="modal-actions">
               <button className="btn ghost" type="button" onClick={() => setModalMode('none')}>

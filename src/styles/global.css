@@ -270,6 +270,26 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .smp-score.mid b{color:var(--amber)}
 .smp-score.bad b{color:var(--ember)}
 .dt-big{font-family:var(--font-d);font-weight:600;font-size:16px}
+/* Riunione online: Entra + scelta piattaforma + crea stanza */
+.mtg-enter{display:inline-flex;align-items:center;gap:8px;margin:10px 0 4px;background:none;border:1px solid var(--ember);border-radius:var(--radius-pill);color:var(--ember);font-size:13px;font-weight:500;padding:8px 16px;text-decoration:none;transition:background .18s ease,color .18s ease,box-shadow .18s ease}
+.mtg-enter:hover{background:var(--ember);color:var(--bone);box-shadow:0 0 16px var(--ember-glow)}
+.mtg-enter svg{width:16px;height:16px}
+.mtg-enter:hover svg{stroke:var(--bone)}
+.mtg-row-cam{flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;cursor:pointer;transition:background .15s ease}
+.mtg-row-cam:hover{background:var(--surface2)}
+.mtg-row-cam svg{width:16px;height:16px}
+.mtg-online{margin-top:4px;padding:14px;border:1px solid var(--line2);border-radius:var(--radius-md);background:rgba(11,11,13,.35)}
+.mtg-online-lbl{display:block;font-family:var(--font-m);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+.mtg-plat{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.mtg-plat-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--line2);border-radius:var(--radius-pill);color:var(--dim);font:inherit;font-size:12px;padding:6px 12px;cursor:pointer;transition:border-color .15s ease,color .15s ease}
+.mtg-plat-btn:hover{color:var(--bone)}
+.mtg-plat-btn.active{color:var(--bone);border-color:var(--muted);background:var(--surface2)}
+.mtg-plat-btn svg{width:15px;height:15px}
+.mtg-linkrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mtg-linkrow input{flex:1;min-width:180px;background:rgba(11,11,13,.6);border:1px solid var(--line2);border-radius:var(--radius-sm);color:var(--bone);font:inherit;font-size:13px;padding:9px 11px}
+.mtg-linkrow input::placeholder{color:var(--dim)}
+.mtg-linkrow .btn{flex:none;text-decoration:none}
+.mtg-online-hint{display:block;font-size:11px;color:var(--dim);margin-top:8px}
 /* Pagina Publish — card contenuto sul kanban boxless */
 .pub-card{display:flex;flex-direction:column;gap:6px}
 .pub-thumb{display:block;width:100%;aspect-ratio:4/5;max-height:150px;border-radius:6px;overflow:hidden;background:linear-gradient(135deg,var(--surface2),var(--surface));margin-bottom:2px}

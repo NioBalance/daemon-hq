@@ -28,6 +28,7 @@ export type NoteEntityType = 'articoli' | 'gadgets' | 'inspo' | 'media' | 'chats
 export type MemoColore = 'decisione' | 'idea' | 'urgente'
 export type TechpackFileTipo = 'img' | 'pdf' | 'link' | 'file'
 export type MeetingStato = 'pianificata' | 'conclusa'
+export type MeetingPiattaforma = 'meet' | 'zoom' | 'teams' | 'altro'
 export type PublishTipo = 'post' | 'reel' | 'story'
 export type PublishFase = 'idea' | 'in-edit' | 'pronto' | 'programmato' | 'pubblicato'
 export type KpiMetrica =
@@ -559,6 +560,8 @@ export interface Database {
           partecipanti: string | null
           note: string | null
           stato: MeetingStato
+          link_riunione: string | null
+          piattaforma: MeetingPiattaforma | null
           author_id: string | null
           author_name: string
           created_at: string
@@ -571,6 +574,8 @@ export interface Database {
           partecipanti?: string | null
           note?: string | null
           stato?: MeetingStato
+          link_riunione?: string | null
+          piattaforma?: MeetingPiattaforma | null
           author_id?: string | null
           author_name?: string
         }
