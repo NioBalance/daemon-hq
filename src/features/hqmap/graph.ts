@@ -66,9 +66,9 @@ function sampleStatus(s: Sample): NodeStatus {
   return 'warn'
 }
 
-const R1 = 210 // articoli
-const R2 = 400 // tech pack
-const R3 = 580 // fornitori + campioni
+const R1 = 220 // articoli
+const R2 = 440 // tech pack
+const R3 = 660 // fornitori + campioni
 const polar = (r: number, a: number) => ({ x: Math.round(r * Math.cos(a)), y: Math.round(r * Math.sin(a)) })
 
 export interface HqData {
@@ -104,15 +104,38 @@ export function buildHqGraph(data: HqData): { nodes: HqNode[]; edges: HqEdge[] }
   })
 
   const arts = articoli.filter((a) => a.drop_id === drop.id)
-  const fornPlaced = new Map<string, string>() // fornitore_id → node id
+
+  // Carico per fornitore (sub "N lavori"): tech pack + campioni che lo citano.
   const fornWorkload = new Map<string, number>()
   for (const t of techpacks) if (t.fornitore_id) fornWorkload.set(t.fornitore_id, (fornWorkload.get(t.fornitore_id) ?? 0) + 1)
   for (const s of samples) if (s.fornitore_id) fornWorkload.set(s.fornitore_id, (fornWorkload.get(s.fornitore_id) ?? 0) + 1)
 
-  const nArt = Math.max(1, arts.length)
-  arts.forEach((a, i) => {
-    const angle = -Math.PI / 2 + ((i + 0.5) / nArt) * 2 * Math.PI
-    const pa = polar(R1, angle)
+  const tpsByArt = new Map<string, Techpack[]>()
+  for (const a of arts) tpsByArt.set(a.id, techpacks.filter((t) => t.articolo_id === a.id))
+  const spsOf = (tid: string) => samples.filter((s) => s.techpack_id === tid)
+
+  // Un fornitore = un solo nodo, "posseduto" dal primo tech pack che lo cita.
+  const fornOwnerTp = new Map<string, string>()
+  for (const a of arts) for (const t of tpsByArt.get(a.id) ?? []) {
+    if (t.fornitore_id && !fornOwnerTp.has(t.fornitore_id)) fornOwnerTp.set(t.fornitore_id, t.id)
+  }
+  const ownsForn = (t: Techpack) => !!t.fornitore_id && fornOwnerTp.get(t.fornitore_id) === t.id
+
+  // Peso = n° foglie sotto il nodo → ogni ramo riceve spazio angolare
+  // proporzionale al contenuto (raggiera 360°, meno sovrapposizioni).
+  const tpWeight = (t: Techpack) => Math.max(1, spsOf(t.id).length + (ownsForn(t) ? 1 : 0))
+  const artWeight = (a: Articolo) => {
+    const tps = tpsByArt.get(a.id) ?? []
+    return tps.length ? tps.reduce((sum, t) => sum + tpWeight(t), 0) : 1
+  }
+  const totalW = arts.reduce((s, a) => s + artWeight(a), 0) || 1
+
+  let cursor = -Math.PI / 2 // parte dall'alto e gira in tondo
+  for (const a of arts) {
+    const w = artWeight(a)
+    const span = (w / totalW) * 2 * Math.PI
+    const mid = cursor + span / 2
+    const pa = polar(R1, mid)
     const aTasks = tasks.filter((t) => t.articolo_id === a.id)
     const aStatus = articoloStatus(aTasks)
     const aId = `articolo:${a.id}`
@@ -128,70 +151,57 @@ export function buildHqGraph(data: HqData): { nodes: HqNode[]; edges: HqEdge[] }
     })
     edges.push({ id: `e:${drop.id}-${a.id}`, source: `drop:${drop.id}`, target: aId, status: aStatus })
 
-    const tps = techpacks.filter((t) => t.articolo_id === a.id)
-    const spread = (2 * Math.PI) / nArt * 0.6
-    tps.forEach((t, j) => {
-      const tAngle = angle + (tps.length > 1 ? (j / (tps.length - 1) - 0.5) * spread : 0)
-      const pt = polar(R2, tAngle)
+    const tps = tpsByArt.get(a.id) ?? []
+    let tCursor = cursor
+    for (const t of tps) {
+      const tspan = (tpWeight(t) / w) * span
+      const tmid = tCursor + tspan / 2
+      const pt = polar(R2, tmid)
       const tStatus = techpackStatus(t)
       const tId = `techpack:${t.id}`
-      nodes.push({
-        id: tId,
-        kind: 'techpack',
-        label: t.nome,
-        sub: t.stato,
-        status: tStatus,
-        entityId: t.id,
-        x: pt.x,
-        y: pt.y,
-      })
+      nodes.push({ id: tId, kind: 'techpack', label: t.nome, sub: t.stato, status: tStatus, entityId: t.id, x: pt.x, y: pt.y })
       edges.push({ id: `e:${a.id}-${t.id}`, source: aId, target: tId, status: tStatus })
 
-      // fornitore (una volta per fornitore, vicino al primo tech pack)
-      if (t.fornitore_id) {
+      const sps = spsOf(t.id)
+      const nKids = Math.max(1, sps.length + (ownsForn(t) ? 1 : 0))
+      const kspan = tspan / nKids
+      let kCursor = tCursor
+
+      if (ownsForn(t)) {
         const forn = fornitori.find((f) => f.id === t.fornitore_id)
         if (forn) {
-          let fId = fornPlaced.get(forn.id)
-          if (!fId) {
-            fId = `fornitore:${forn.id}`
-            const pf = polar(R3, tAngle - 0.1)
-            nodes.push({
-              id: fId,
-              kind: 'fornitore',
-              label: forn.nome,
-              sub: `${fornWorkload.get(forn.id) ?? 0} lavori`,
-              status: 'neutral',
-              entityId: forn.id,
-              x: pf.x,
-              y: pf.y,
-            })
-            fornPlaced.set(forn.id, fId)
-          }
+          const pf = polar(R3, kCursor + kspan / 2)
+          const fId = `fornitore:${forn.id}`
+          nodes.push({
+            id: fId,
+            kind: 'fornitore',
+            label: forn.nome,
+            sub: `${fornWorkload.get(forn.id) ?? 0} lavori`,
+            status: 'neutral',
+            entityId: forn.id,
+            x: pf.x,
+            y: pf.y,
+          })
           edges.push({ id: `e:${t.id}-forn-${forn.id}`, source: tId, target: fId, status: 'neutral' })
+          kCursor += kspan
         }
+      } else if (t.fornitore_id) {
+        // fornitore già come nodo altrove: solo l'arco
+        edges.push({ id: `e:${t.id}-forn-${t.fornitore_id}`, source: tId, target: `fornitore:${t.fornitore_id}`, status: 'neutral' })
       }
 
-      // campioni del tech pack
-      const sps = samples.filter((s) => s.techpack_id === t.id)
-      sps.forEach((s, k) => {
-        const sAngle = tAngle + (k + 1) * 0.06
-        const ps = polar(R3, sAngle)
+      for (const s of sps) {
+        const ps = polar(R3, kCursor + kspan / 2)
         const sStatus = sampleStatus(s)
         const sId = `sample:${s.id}`
-        nodes.push({
-          id: sId,
-          kind: 'sample',
-          label: s.nome,
-          sub: s.verdetto,
-          status: sStatus,
-          entityId: s.id,
-          x: ps.x,
-          y: ps.y,
-        })
+        nodes.push({ id: sId, kind: 'sample', label: s.nome, sub: s.verdetto, status: sStatus, entityId: s.id, x: ps.x, y: ps.y })
         edges.push({ id: `e:${t.id}-${s.id}`, source: tId, target: sId, status: sStatus })
-      })
-    })
-  })
+        kCursor += kspan
+      }
+      tCursor += tspan
+    }
+    cursor += span
+  }
 
   return { nodes, edges }
 }

@@ -54,8 +54,9 @@ export default function HqMapCanvas({
         id: e.id,
         source: e.source,
         target: e.target,
+        type: 'smoothstep',
         animated: e.status === 'bad',
-        style: { stroke: STATUS_COLOR[e.status], strokeWidth: 1.5, opacity: 0.7 },
+        style: { stroke: STATUS_COLOR[e.status], strokeWidth: 1.5, opacity: 0.65 },
       })),
     [edges],
   )
@@ -73,7 +74,7 @@ export default function HqMapCanvas({
       onNodeClick={(_e, n) => onOpen((n.data as FlowData).node)}
       onNodeDragStart={(_e, n) => onSelect(n.id)}
     >
-      <Background color="#27272f" gap={22} size={1} />
+      <Background color="#33333d" gap={20} size={1} />
       <Controls showInteractive={false} />
     </ReactFlow>
   )
