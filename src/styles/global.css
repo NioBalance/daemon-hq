@@ -462,8 +462,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 
 /* CHATS */
 .chan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:20px}
-.chan-card{background:var(--solid-1);border:1px solid var(--line);border-radius:var(--radius-md);box-shadow:var(--shadow-elevation);padding:14px;display:flex;justify-content:space-between;align-items:center;gap:8px;position:relative;transition:transform var(--dur) var(--ease-out),box-shadow var(--dur)}
-.chan-card:hover,.chan-card:focus-visible{transform:translateY(-2px);box-shadow:var(--shadow-elevation),var(--glow-white)}
+.chan-card{padding:12px 2px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px;position:relative}
+.chan-card.chan-add{border-bottom:none;justify-content:flex-start}
 .chan-card a{color:var(--bone);font-weight:600;text-decoration:none}
 .chan-card a:hover{color:var(--ember)}
 .conv{border-left:3px solid var(--amber)}
@@ -510,13 +510,13 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
    fedele agli angoli arrotondati dell'elemento. */
 @property --border-angle{syntax:'<angle>';inherits:false;initial-value:0deg}
 @keyframes borderTravel{to{--border-angle:360deg}}
-.card,.folder-card,.link-card,.cal-day,.media-card,.chan-card,.btn{
+.card,.folder-card,.link-card,.cal-day,.media-card,.btn{
   position:relative;
   --energy-color:var(--ember);
 }
 .btn.ghost{--energy-color:var(--bone)}
 .card::before,.folder-card::before,.link-card::before,
-.cal-day::before,.media-card::before,.chan-card::before,.btn::before{
+.cal-day::before,.media-card::before,.btn::before{
   content:'';position:absolute;inset:0;padding:1px;border-radius:inherit;
   background:conic-gradient(from var(--border-angle,0deg),transparent 0%,var(--energy-color) 14%,transparent 30%);
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
@@ -530,14 +530,13 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .link-card:hover::before,.link-card:focus-visible::before,
 .cal-day:hover::before,.cal-day:focus-visible::before,
 .media-card:hover::before,.media-card:focus-visible::before,
-.chan-card:hover::before,.chan-card:focus-visible::before,
 .chip:hover::before,.chip:focus-visible::before,
 .btn:hover::before,.btn:focus-visible::before{
   opacity:1;animation:borderTravel 2.4s linear infinite
 }
 @media (prefers-reduced-motion:reduce){
   .card::before,.folder-card::before,.link-card::before,
-  .cal-day::before,.media-card::before,.chan-card::before,.btn::before{
+  .cal-day::before,.media-card::before,.btn::before{
     background:var(--energy-color);animation:none
   }
 }
@@ -697,7 +696,7 @@ button.tpf-row.tpf-dir{cursor:pointer}
 .cal-embed{width:100%;height:min(72vh,760px);border:none;border-radius:var(--radius-sm);background:var(--bone)}
 
 /* CHATS — bottoni canale grandi */
-.chan-card.chan-big{padding:16px}
+.chan-card.chan-big{padding:14px 2px}
 .chan-card.chan-big a{font-size:16px}
 .chan-icon{width:44px;height:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--line);border-radius:var(--radius-md);color:var(--ember)}
 .chan-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
@@ -728,3 +727,6 @@ button.tpf-row.tpf-dir{cursor:pointer}
 .shortcut-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
 .shortcut-row:last-of-type{border-bottom:none}
 .palette-roadmap{font-size:12px;color:var(--muted);margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+/* conversazioni customer care — righe hairline (de-box) */
+.conv-row{padding:12px 2px 14px;border-bottom:1px solid var(--line)}
+.conv-name{font-weight:600;font-size:14.5px}

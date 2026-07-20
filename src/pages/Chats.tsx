@@ -1,8 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
-import { Loading, ErrorState } from '../components/QueryState'
+import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
 import OwnerBadge from '../components/OwnerBadge'
 import NotesList from '../components/NotesList'
@@ -35,7 +34,7 @@ const CH_STATI: { value: ChatStato; label: string }[] = [
 
 const canaleLabel = (c: ChatCanale) => CH_CANALI.find((x) => x.value === c)?.label ?? c
 const statoLabel = (s: ChatStato) => CH_STATI.find((x) => x.value === s)?.label ?? s
-const statoBadgeClass = (s: ChatStato) => (s === 'aperta' ? 'ember' : s === 'chiusa' ? 'ok' : 'amber')
+const statoDot = (s: ChatStato) => (s === 'aperta' ? 'var(--ember)' : s === 'chiusa' ? 'var(--ok)' : 'var(--amber)')
 
 const CHAT_FIELDS: FieldDef[] = [
   { key: 'cliente', label: 'Cliente / conversazione' },
@@ -210,19 +209,20 @@ export default function Chats() {
   const closed = (chats ?? []).filter((c) => c.stato === 'chiusa')
 
   const chatCard = (c: Chat) => (
-    <div className={`card conv ${c.stato}`} style={{ marginBottom: 10 }} key={c.id}>
+    <div className="conv-row" key={c.id}>
       <div className="row" style={{ justifyContent: 'space-between' }}>
-        <div className="row">
-          <span className="card-title" style={{ margin: 0 }}>
-            {c.cliente}
+        <div className="row" style={{ gap: 14, flexWrap: 'wrap' }}>
+          <span className="conv-name">{c.cliente}</span>
+          <span className="dt-tag" style={{ color: 'var(--dim)' }}>{canaleLabel(c.canale)}</span>
+          <span className="dt-tag" style={{ color: 'var(--muted)' }}>
+            <span className="dt-dot" style={{ background: statoDot(c.stato) }} />
+            {statoLabel(c.stato)}
           </span>
-          <span className="badge">{canaleLabel(c.canale)}</span>
-          <span className={`badge ${statoBadgeClass(c.stato)}`}>{statoLabel(c.stato)}</span>
           <OwnerBadge owner={c.owner} />
         </div>
-        <div className="row">
-          <button className="btn sm ghost" onClick={() => openEdit(c)} aria-label="Modifica">✎</button>
-          <button className="btn sm danger" onClick={() => handleDelete(c)} aria-label="Elimina">✕</button>
+        <div className="row" style={{ gap: 14 }}>
+          <button className="tlink" onClick={() => openEdit(c)} aria-label={`Modifica ${c.cliente}`}>✎</button>
+          <button className="dt-x" onClick={() => handleDelete(c)} aria-label={`Elimina ${c.cliente}`}>✕</button>
         </div>
       </div>
       <NotesList entityType="chats" entityId={c.id} />
@@ -231,17 +231,26 @@ export default function Chats() {
 
   return (
     <>
-      <PanelHead
-        title="Chats — Customer Care"
-        desc="Accesso rapido a ManyChat, WhatsApp e Direct + il registro delle conversazioni da seguire, con note firmate."
-        actions={
-          <button className="btn" onClick={openCreate}>
-            + Conversazione
-          </button>
-        }
-      />
+      <div className="pg-head">
+        <div>
+          <h2 className="ov-title">Chats — Customer Care</h2>
+          <div className="ov-sub">{open.length} DA SEGUIRE · {closed.length} CHIUSE</div>
+        </div>
+        <button className="tlink" onClick={openCreate}>
+          + Conversazione
+        </button>
+      </div>
+      <p className="pg-note">
+        Accesso rapido a ManyChat, WhatsApp e Direct + il registro delle conversazioni da seguire, con note firmate.
+      </p>
 
-      {isLoading && <Loading label="Caricamento conversazioni…" />}
+      {isLoading && (
+        <div aria-busy="true">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div className="skeleton" key={i} style={{ height: 16, marginBottom: 16 }} />
+          ))}
+        </div>
+      )}
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
 
       {!isLoading && !isError && (
@@ -264,29 +273,27 @@ export default function Chats() {
                     {c.url || 'URL non impostato'}
                   </div>
                 </div>
-                <div className="row">
-                  <button className="btn sm ghost" onClick={() => openEditChannel(c)} aria-label="Modifica">✎</button>
-                  <button className="btn sm danger" onClick={() => handleDeleteChannel(c)} aria-label="Elimina">✕</button>
+                <div className="row" style={{ gap: 12 }}>
+                  <button className="tlink" onClick={() => openEditChannel(c)} aria-label="Modifica">✎</button>
+                  <button className="dt-x" onClick={() => handleDeleteChannel(c)} aria-label="Elimina">✕</button>
                 </div>
               </div>
             ))}
-            <div className="chan-card">
-              <span style={{ color: 'var(--muted)' }}>Nuovo canale</span>
-              <button className="btn sm ghost" onClick={openCreateChannel}>
+            <div className="chan-card chan-add">
+              <button className="tlink" onClick={openCreateChannel}>
                 + Canale
               </button>
             </div>
           </div>
 
-          <span className="code">DA SEGUIRE ({open.length})</span>
+          <h3 className="pg-eyebrow" style={{ marginTop: 26 }}>Da seguire · {open.length}</h3>
           <div style={{ marginTop: 10 }}>
             {open.length ? open.map(chatCard) : <EmptyState icon="chat" text="Nessuna conversazione aperta." ctaLabel="+ Conversazione" onCta={openCreate} />}
           </div>
 
           {closed.length > 0 && (
             <>
-              <hr className="divider" />
-              <span className="code">CHIUSE ({closed.length})</span>
+              <h3 className="pg-eyebrow" style={{ marginTop: 26 }}>Chiuse · {closed.length}</h3>
               <div style={{ marginTop: 10 }}>{closed.map(chatCard)}</div>
             </>
           )}
