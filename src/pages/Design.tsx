@@ -1,8 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
-import { Loading, ErrorState } from '../components/QueryState'
+import { ErrorState } from '../components/QueryState'
 import OwnerBadge from '../components/OwnerBadge'
 import { useDesigns, useCreateDesign, useUpdateDesign, useDeleteDesign, type Design } from '../features/designs/queries'
 import { OWNER_OPTS } from '../lib/tabs'
@@ -13,12 +12,13 @@ import { useFormDraft } from '../lib/useFormDraft'
 import { useRegisterNewAction } from '../lib/navigation'
 import type { DesignFase } from '../lib/database.types'
 
-const FASI: { key: DesignFase; label: string }[] = [
-  { key: 'idea', label: 'Idea' },
-  { key: 'sketch', label: 'Sketch' },
-  { key: 'techpack', label: 'Tech Pack' },
-  { key: 'campione', label: 'Campione' },
-  { key: 'approvato', label: 'Approvato' },
+// Dot di colonna: vocabolario stati coerente cross-sezione (handoff §Publish)
+const FASI: { key: DesignFase; label: string; dot: string }[] = [
+  { key: 'idea', label: 'Idea', dot: 'var(--dim)' },
+  { key: 'sketch', label: 'Sketch', dot: 'var(--amber)' },
+  { key: 'techpack', label: 'Tech Pack', dot: 'var(--info)' },
+  { key: 'campione', label: 'Campione', dot: 'var(--ember)' },
+  { key: 'approvato', label: 'Approvato', dot: 'var(--ok)' },
 ]
 
 const DESIGN_FIELDS: FieldDef[] = [
@@ -133,17 +133,26 @@ export default function DesignPage() {
 
   return (
     <>
-      <PanelHead
-        title="Pipeline Design"
-        desc="Ogni capo attraversa 5 fasi. Quando arriva a «Tech Pack», crea la scheda nella tab dedicata."
-        actions={
-          <button className="btn" onClick={openCreate}>
-            + Nuovo design
-          </button>
-        }
-      />
+      <div className="pg-head">
+        <div>
+          <h2 className="ov-title">Pipeline Design</h2>
+          <div className="ov-sub">{(designs ?? []).length} CAPI · 5 FASI</div>
+        </div>
+        <button className="tlink" onClick={openCreate}>
+          + Design
+        </button>
+      </div>
+      <p className="pg-note">
+        Ogni capo attraversa 5 fasi. Quando arriva a «Tech Pack», crea la scheda nella tab dedicata.
+      </p>
 
-      {isLoading && <Loading label="Caricamento pipeline…" />}
+      {isLoading && (
+        <div aria-busy="true">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div className="skeleton" key={i} style={{ height: 16, marginBottom: 16 }} />
+          ))}
+        </div>
+      )}
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
 
       {!isLoading && !isError && (
@@ -163,8 +172,11 @@ export default function DesignPage() {
                 }}
               >
                 <div className="kcol-head">
-                  <span>{f.label}</span>
-                  <span>{items.length}</span>
+                  <span className="kcol-name">
+                    <span className="dt-dot" style={{ background: f.dot }} />
+                    {f.label}
+                  </span>
+                  <span className="kcol-count">{items.length}</span>
                 </div>
                 {items.map((d) => (
                   <div
