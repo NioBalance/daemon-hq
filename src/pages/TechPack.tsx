@@ -1,8 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
-import { Loading, ErrorState } from '../components/QueryState'
+import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
 import OwnerBadge from '../components/OwnerBadge'
 import TechpackFolder from '../components/TechpackFolder'
@@ -33,8 +32,9 @@ const TP_STATI: { value: TechpackStato; label: string }[] = [
 ]
 
 const statoLabel = (s: TechpackStato) => TP_STATI.find((x) => x.value === s)?.label ?? s
-const statoBadgeClass = (s: TechpackStato) =>
-  ({ bozza: 'steel', inviato: 'amber', confermato: 'ok', 'in-produzione': 'ember' })[s] ?? 'steel'
+const statoDot = (v: TechpackStato) =>
+  ({ bozza: 'var(--dim)', inviato: 'var(--amber)', confermato: 'var(--ok)', 'in-produzione': 'var(--ember)' })[v] ??
+  'var(--dim)'
 
 const EMPTY_VALUES: FormValues = {
   nome: '',
@@ -190,57 +190,98 @@ export default function TechPack() {
 
   return (
     <>
-      <PanelHead
-        title="Tech Pack"
-        desc="La scheda tecnica è il contratto col fornitore: materiali, colorway, taglie e stato di conferma."
-        actions={
-          <button className="btn" onClick={openCreate}>
-            + Nuovo tech pack
-          </button>
-        }
-      />
+      <div className="pg-head">
+        <div>
+          <h2 className="ov-title">Tech Pack</h2>
+          <div className="ov-sub">{(techpacks ?? []).length} SCHEDE · IL CONTRATTO COL FORNITORE</div>
+        </div>
+        <button className="tlink" onClick={openCreate}>
+          + Tech pack
+        </button>
+      </div>
+      <p className="pg-note">
+        La scheda tecnica è il contratto col fornitore: materiali, colorway, taglie e stato di conferma.
+      </p>
 
-      {isLoading && <Loading label="Caricamento tech pack…" />}
+      {isLoading && (
+        <div aria-busy="true">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div className="skeleton" key={i} style={{ height: 16, marginBottom: 16 }} />
+          ))}
+        </div>
+      )}
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
 
       {!isLoading && !isError && (
-        <div className="grid c3">
-          {(techpacks ?? []).map((t, i) => {
-            const fileCount = (tpFiles ?? []).filter((f) => f.techpack_id === t.id).length
-            return (
-            <div className={`card tp-card tp-${t.stato}`} key={t.id}>
-              <div className="row" style={{ justifyContent: 'space-between' }}>
-                <span className="code">TP-{String(i + 1).padStart(2, '0')}</span>
-                <span className={`badge ${statoBadgeClass(t.stato)}`}>{statoLabel(t.stato)}</span>
+        <>
+          {(techpacks ?? []).length ? (
+            <div className="dtable" style={{ '--dt-cols': '2.2fr 1.1fr 1.2fr .8fr .9fr 40px' } as React.CSSProperties}>
+              <div className="dt-headrow" aria-hidden>
+                <span>Tech pack</span>
+                <span>Stato</span>
+                <span>Fornitore</span>
+                <span>Owner</span>
+                <span>Cartella</span>
+                <span />
               </div>
-              <div className="card-title">{t.nome}</div>
-              <div className="card-meta">
-                {t.categoria} · {t.colorway || '—'} · {t.taglie || '—'}
-              </div>
-              {t.materiali && <div className="card-meta" style={{ marginTop: 6 }}>{t.materiali}</div>}
-              <div className="row" style={{ marginTop: 10 }}>
-                <span className="badge">Fornitore: {fornNome(t.fornitore_id)}</span>
-                <OwnerBadge owner={t.owner} />
-              </div>
-              {t.note && <div className="note">{t.note}</div>}
-              <div className="card-actions">
-                <button className="btn sm" onClick={() => setFolderId(t.id)}>
-                  Cartella ({fileCount})
-                </button>
-                <button className="btn sm ghost" onClick={() => openEdit(t)}>
-                  Modifica
-                </button>
-                <button className="btn sm danger" onClick={() => handleDelete(t)}>
-                  Elimina
-                </button>
-              </div>
+              {(techpacks ?? []).map((t, i) => {
+                const fileCount = (tpFiles ?? []).filter((x) => x.techpack_id === t.id).length
+                return (
+                  <div
+                    className="dt-row clickable"
+                    key={t.id}
+                    onClick={() => openEdit(t)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        openEdit(t)
+                      }
+                    }}
+                  >
+                    <span className="dt-main">
+                      <span className="dt-name">{t.nome}</span>
+                      <span className="dt-under">
+                        TP-{String(i + 1).padStart(2, '0')} · {t.categoria ?? '—'} · {t.colorway || '—'} ·{' '}
+                        {t.taglie || '—'}
+                      </span>
+                    </span>
+                    <span className="dt-tag" style={{ color: 'var(--muted)' }}>
+                      <span className="dt-dot" style={{ background: statoDot(t.stato) }} />
+                      {statoLabel(t.stato)}
+                    </span>
+                    <span className="dt-meta">{fornNome(t.fornitore_id)}</span>
+                    <span>
+                      <OwnerBadge owner={t.owner} />
+                    </span>
+                    <button
+                      className="tlink"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setFolderId(t.id)
+                      }}
+                    >
+                      {fileCount} file →
+                    </button>
+                    <button
+                      className="dt-x"
+                      aria-label={`Elimina ${t.nome}`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(t)
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )
+              })}
             </div>
-            )
-          })}
-          {(techpacks ?? []).length === 0 && (
+          ) : (
             <EmptyState icon="note" text="Nessun tech pack. Creane uno dal design approvato." ctaLabel="+ Nuovo tech pack" onCta={openCreate} />
           )}
-        </div>
+        </>
       )}
 
       {folderId && (techpacks ?? []).some((t) => t.id === folderId) && (
