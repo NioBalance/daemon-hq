@@ -24,6 +24,10 @@ export interface NavContextValue {
   pendingEntity: { kind: string; id: string } | null
   openEntity: (kind: string, id: string) => void
   clearPendingEntity: () => void
+  /** Widget flottanti Notifiche/Note (Fase 2 v4): docked ≥1280px, overlay
+   *  sotto; toggle dalla campanella in top-nav, stato ricordato. */
+  widgetsOpen: boolean
+  setWidgetsOpen: (open: boolean) => void
 }
 
 export const NavContext = createContext<NavContextValue | null>(null)

@@ -2,6 +2,8 @@ import type { TabKey } from '../lib/tabs'
 import { UTILITY_ENTRIES } from '../lib/tabs'
 import { useNav } from '../lib/navigation'
 import { ICONS } from './navIcons'
+import { BellIcon } from './WidgetsPanel'
+import { useUnseenActivity } from '../features/activity/queries'
 import starLogo from '../assets/star-logo.png'
 
 function AiIcon() {
@@ -37,9 +39,19 @@ export default function Header({
   onMeClick: () => void
   onSearchClick: () => void
 }) {
-  const { goEntry, archTab } = useNav()
+  const { goEntry, archTab, widgetsOpen, setWidgetsOpen, setActiveSheet } = useNav()
+  const unseen = useUnseenActivity()
   const cal = UTILITY_ENTRIES.find((e) => e.id === 'cal')!
   const links = UTILITY_ENTRIES.find((e) => e.id === 'links')!
+
+  function toggleWidgets() {
+    // Sotto il breakpoint della bottom-nav i widget vivono nello sheet Team.
+    if (window.matchMedia('(max-width: 1199px)').matches) {
+      setActiveSheet('widgets')
+    } else {
+      setWidgetsOpen(!widgetsOpen)
+    }
+  }
 
   return (
     <header className="topnav">
@@ -52,6 +64,16 @@ export default function Header({
         <img src={starLogo} alt="" />
       </button>
       <div className="tn-right">
+        <button
+          className={`hicon${widgetsOpen ? ' active' : ''}`}
+          title="Notifiche e note del team"
+          aria-label="Notifiche e note del team"
+          onClick={toggleWidgets}
+          style={{ position: 'relative' }}
+        >
+          <BellIcon />
+          {unseen > 0 && <span className="widgets-badge">{unseen > 9 ? '9+' : unseen}</span>}
+        </button>
         <button
           className={`hicon${activeTab === 'cal' ? ' active' : ''}`}
           title="Calendario (g poi e)"

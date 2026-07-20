@@ -2,12 +2,7 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { useNav } from '../lib/navigation'
 import { useAuth } from '../auth/useAuth'
-import {
-  useActivity,
-  useUnseenActivity,
-  markActivitySeen,
-  type ActivityRow,
-} from '../features/activity/queries'
+import { useActivity, markActivitySeen, type ActivityRow } from '../features/activity/queries'
 import { useMemos, useCreateMemo } from '../features/memos/queries'
 import { useToast } from '../lib/useToast'
 import { timeAgo } from '../lib/format'
@@ -22,18 +17,60 @@ export function BellIcon() {
   )
 }
 
-/** Contenuto condiviso dei due widget (§7.1 + §7.2): notifiche ultimi change
- *  e note pinnate con aggiunta rapida. Usato dal pannello desktop e dallo
- *  sheet mobile. */
-function WidgetsBody({ onNavigate }: { onNavigate: (tab: TabKey) => void }) {
-  const { profile } = useAuth()
+/** Card Notifiche (handoff §7): righe con dot ember, testo e tempo mono. */
+function NotificheCard({ onNavigate }: { onNavigate: (tab: TabKey) => void }) {
   const { data: activity } = useActivity()
+  const latest = (activity ?? []).slice(0, 8)
+
+  return (
+    <section className="fw-card" aria-label="Notifiche">
+      <div className="fw-head">
+        <span className="fw-title">Notifiche</span>
+        <span className="fw-count">{latest.length}</span>
+      </div>
+      {latest.length ? (
+        latest.map((a: ActivityRow) => {
+          const clickable = !!a.tab
+          return (
+            <div
+              key={a.id}
+              className={`fwn-row${clickable ? ' clickable' : ''}`}
+              onClick={clickable ? () => onNavigate(a.tab as TabKey) : undefined}
+              role={clickable ? 'button' : undefined}
+              tabIndex={clickable ? 0 : undefined}
+              onKeyDown={
+                clickable
+                  ? (e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        onNavigate(a.tab as TabKey)
+                      }
+                    }
+                  : undefined
+              }
+            >
+              <span className="fwn-dot" aria-hidden />
+              <span className="fwn-txt">
+                <strong>{a.author_name}</strong> {a.azione} {a.oggetto}
+              </span>
+              <span className="fwn-time">{timeAgo(a.created_at)}</span>
+            </div>
+          )
+        })
+      ) : (
+        <p className="fw-empty">Nessuna attività ancora — comparirà qui man mano che il team lavora.</p>
+      )}
+    </section>
+  )
+}
+
+/** Card Note per il team (handoff §7): pin ◆ amber + nota rapida underline. */
+function NoteCard({ onNavigate }: { onNavigate: (tab: TabKey) => void }) {
+  const { profile } = useAuth()
   const { data: memos } = useMemos()
   const createMemo = useCreateMemo()
   const showToast = useToast()
   const [quickNote, setQuickNote] = useState('')
-
-  const latest = (activity ?? []).slice(0, 10)
   const pinned = (memos ?? []).filter((memo) => memo.pin)
 
   async function handleQuickAdd() {
@@ -53,54 +90,19 @@ function WidgetsBody({ onNavigate }: { onNavigate: (tab: TabKey) => void }) {
     }
   }
 
-  function activityRow(a: ActivityRow) {
-    const clickable = !!a.tab
-    return (
-      <div
-        key={a.id}
-        className={`activity-row${clickable ? ' clickable' : ''}`}
-        onClick={clickable ? () => onNavigate(a.tab as TabKey) : undefined}
-        role={clickable ? 'button' : undefined}
-        tabIndex={clickable ? 0 : undefined}
-        onKeyDown={
-          clickable
-            ? (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  onNavigate(a.tab as TabKey)
-                }
-              }
-            : undefined
-        }
-      >
-        <span className="activity-meta">
-          <span className="activity-author">{a.author_name}</span>
-          <span className="activity-time">{timeAgo(a.created_at)}</span>
-        </span>
-        <span className="activity-text">
-          {a.azione} {a.oggetto}
-        </span>
-      </div>
-    )
-  }
-
   return (
-    <>
-      <p className="widgets-section-title">Notifiche — ultimi change</p>
-      {latest.length ? (
-        latest.map(activityRow)
-      ) : (
-        <p className="widgets-empty">
-          Ancora nessuna attività registrata — comparirà qui man mano che il team lavora.
-        </p>
-      )}
-
-      <p className="widgets-section-title" style={{ marginTop: 18 }}>
-        Note per il team
-      </p>
+    <section className="fw-card" aria-label="Note per il team">
+      <div className="fw-head">
+        <span className="fw-title">Note per il team</span>
+      </div>
       {pinned.length ? (
         pinned.map((memo) => (
-          <div className="widget-memo" key={memo.id} onClick={() => onNavigate('notes')} role="button" tabIndex={0}
+          <div
+            className="fwm-row"
+            key={memo.id}
+            onClick={() => onNavigate('notes')}
+            role="button"
+            tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
@@ -108,85 +110,60 @@ function WidgetsBody({ onNavigate }: { onNavigate: (tab: TabKey) => void }) {
               }
             }}
           >
-            <span className="activity-author">{memo.author_name}</span>
-            <span className="widget-memo-text">{memo.testo}</span>
+            <span className="fwm-pin" aria-hidden>
+              ◆
+            </span>
+            <span className="fwm-body">
+              <span className="fwm-txt">{memo.testo}</span>
+              <span className="fwm-meta">
+                {memo.author_name} · {timeAgo(memo.created_at)}
+              </span>
+            </span>
           </div>
         ))
       ) : (
-        <p className="widgets-empty">Nessuna nota pinnata — pinna dalla bacheca o aggiungine una qui.</p>
+        <p className="fw-empty">Nessuna nota pinnata.</p>
       )}
-      <div className="noteadd">
+      <div className="fw-add">
         <input
           value={quickNote}
           onChange={(e) => setQuickNote(e.target.value)}
-          placeholder="Nota rapida per il team…"
+          placeholder="Nota rapida…"
+          aria-label="Nota rapida per il team"
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleQuickAdd()
           }}
         />
-        <button className="btn sm" onClick={handleQuickAdd} disabled={createMemo.isPending}>
+        <button onClick={handleQuickAdd} disabled={createMemo.isPending} aria-label="Aggiungi nota">
           +
         </button>
       </div>
-    </>
+    </section>
   )
 }
 
-/** Widget persistenti (§7): pannello laterale destro collassabile su desktop,
- *  bottom-sheet su mobile agganciato allo slot unico activeSheet ("widgets"),
- *  lo stesso usato dagli sheet della nav — mai due sheet insieme. */
+/** Widget flottanti persistenti (handoff §7): le UNICHE due card glass del
+ *  cockpit. ≥1280px docked in alto a destra (il main riserva il padding);
+ *  1200-1279px overlay sopra il contenuto; <1200px bottom-sheet «Team»
+ *  sullo slot unico activeSheet. Toggle dalla campanella in top-nav. */
 export default function WidgetsPanel() {
   const { profile } = useAuth()
-  const { goTab, activeSheet, setActiveSheet } = useNav()
+  const { goTab, activeSheet, setActiveSheet, widgetsOpen } = useNav()
   const reduceMotion = useReducedMotion()
-  const unseen = useUnseenActivity()
-  const [open, setOpen] = useState(() => localStorage.getItem('daemon:widgets-open') === '1')
-
-  function setOpenPersist(next: boolean) {
-    setOpen(next)
-    localStorage.setItem('daemon:widgets-open', next ? '1' : '0')
-    if (next && profile) markActivitySeen(profile.id)
-  }
-
-  function navigateDesktop(tab: TabKey) {
-    goTab(tab)
-  }
-
-  function navigateMobile(tab: TabKey) {
-    goTab(tab) // goTab chiude anche lo sheet
-  }
 
   const sheetOpen = activeSheet === 'widgets'
 
   useEffect(() => {
-    if (sheetOpen && profile) markActivitySeen(profile.id)
-  }, [sheetOpen, profile])
+    if ((sheetOpen || widgetsOpen) && profile) markActivitySeen(profile.id)
+  }, [sheetOpen, widgetsOpen, profile])
 
   return (
     <>
-      {/* Desktop: rail collassata / pannello espanso */}
-      {!open && (
-        <button
-          className="widgets-rail"
-          onClick={() => setOpenPersist(true)}
-          title="Notifiche e note del team"
-          aria-label="Apri widget team"
-        >
-          <BellIcon />
-          {unseen > 0 && <span className="widgets-badge">{unseen > 9 ? '9+' : unseen}</span>}
-        </button>
-      )}
-      {open && (
-        <aside className="widgets-panel" aria-label="Widget team">
-          <div className="widgets-head">
-            <span className="widgets-title">Team</span>
-            <button className="toast-close" onClick={() => setOpenPersist(false)} aria-label="Chiudi pannello">
-              ✕
-            </button>
-          </div>
-          <div className="widgets-scroll">
-            <WidgetsBody onNavigate={navigateDesktop} />
-          </div>
+      {/* Desktop: stack flottante docked/overlay */}
+      {widgetsOpen && (
+        <aside className="fw-stack" aria-label="Widget team">
+          <NotificheCard onNavigate={goTab} />
+          <NoteCard onNavigate={goTab} />
         </aside>
       )}
 
@@ -217,7 +194,8 @@ export default function WidgetsPanel() {
             <div className="sheet-handle" />
             <div className="sheet-title">Team</div>
             <div className="widgets-sheet-scroll">
-              <WidgetsBody onNavigate={navigateMobile} />
+              <NotificheCard onNavigate={goTab} />
+              <NoteCard onNavigate={goTab} />
             </div>
           </m.div>
         )}

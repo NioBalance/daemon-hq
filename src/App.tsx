@@ -76,11 +76,16 @@ function AppShell() {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [activeSheet, setActiveSheet] = useState<string | null>(null)
+  const [widgetsOpen, setWidgetsOpenState] = useState(() => localStorage.getItem('daemon:widgets-open') === '1')
   const [pendingEntity, setPendingEntity] = useState<{ kind: string; id: string } | null>(null)
   const newActionRef = useRef<(() => void) | null>(null)
   const reduceMotion = useReducedMotion()
 
   const openEntity = useCallback((kind: string, id: string) => setPendingEntity({ kind, id }), [])
+  const setWidgetsOpen = useCallback((open: boolean) => {
+    setWidgetsOpenState(open)
+    localStorage.setItem('daemon:widgets-open', open ? '1' : '0')
+  }, [])
   const clearPendingEntity = useCallback(() => setPendingEntity(null), [])
 
   const goTab = useCallback((tab: TabKey) => {
@@ -173,11 +178,13 @@ function AppShell() {
         pendingEntity,
         openEntity,
         clearPendingEntity,
+        widgetsOpen,
+        setWidgetsOpen,
       }}
     >
       <div className="shell">
         <Sidebar activeTab={activeTab} />
-        <div className="shell-main">
+        <div className={`shell-main${widgetsOpen ? ' widgets-docked' : ''}`}>
           <Header
             activeTab={activeTab}
             onTabChange={goTab}
