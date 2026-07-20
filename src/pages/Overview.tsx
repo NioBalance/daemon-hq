@@ -2,10 +2,9 @@ import { useState, type FormEvent } from 'react'
 import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
-import { Loading, ErrorState } from '../components/QueryState'
-import EmptyState from '../components/EmptyState'
+import { ErrorState } from '../components/QueryState'
 import { ProgressRing, Sparkline, MiniBars } from '../components/ChartBits'
-import { useDrops, useDropFasi } from '../features/drops/queries'
+import { useDrops, useDropFasi, useUpdateFase } from '../features/drops/queries'
 import { useArticoli, useArticoloTasks } from '../features/articoli/queries'
 import { useDesigns } from '../features/designs/queries'
 import { useTechpacks } from '../features/techpacks/queries'
@@ -18,15 +17,18 @@ import { useNav } from '../lib/navigation'
 import { useAuth } from '../auth/useAuth'
 import { useToast } from '../lib/useToast'
 import { useFormDraft } from '../lib/useFormDraft'
-import { fmtDate, todayIso, addDaysIso, daysUntil, localDateIso } from '../lib/format'
+import { fmtDate, todayIso, addDaysIso, daysUntil, localDateIso, timeAgo } from '../lib/format'
 import type { KpiMetrica } from '../lib/database.types'
 import type { TabKey } from '../lib/tabs'
 
-interface Alert {
-  red: boolean
-  code: string
+interface NowItem {
+  key: string
+  urgent: boolean
+  tag: string
   txt: string
   tab: TabKey
+  /** presente solo per le fasi drop: abilita il check che completa alla fonte */
+  faseId?: string
 }
 
 function CountNum({ value, decimals = 0, suffix = '' }: { value: number; decimals?: number; suffix?: string }) {
@@ -67,6 +69,7 @@ export default function Overview() {
   const kpiQ = useKpiSnapshots()
   const activityQ = useActivity()
   const upsertKpi = useUpsertKpi()
+  const updateFase = useUpdateFase()
 
   const [kpiOpen, setKpiOpen] = useState(false)
   const [kpiValues, setKpiValues] = useState<FormValues>({
@@ -113,10 +116,30 @@ export default function Overview() {
 
   if (isLoading) {
     return (
-      <>
-        <PanelHead title="Overview" desc="Cruscotto di produzione: KPI, avanzamento e alert." />
-        <Loading label="Caricamento overview…" />
-      </>
+      <div aria-busy="true" aria-label="Caricamento overview">
+        <div className="ov-head">
+          <h2 className="ov-title">Overview</h2>
+          <div className="skeleton" style={{ width: 260, height: 12 }} />
+        </div>
+        <div className="skeleton" style={{ height: 58, borderRadius: 999, marginBottom: 34 }} />
+        <div className="ov-skel-band">
+          {Array.from({ length: 5 }, (_, i) => (
+            <div className="skeleton" key={i} style={{ height: 90 }} />
+          ))}
+        </div>
+        <div className="ov-skel-cols">
+          <div>
+            {Array.from({ length: 4 }, (_, i) => (
+              <div className="skeleton" key={i} style={{ height: 14, marginBottom: 14 }} />
+            ))}
+          </div>
+          <div>
+            {Array.from({ length: 4 }, (_, i) => (
+              <div className="skeleton" key={i} style={{ height: 14, marginBottom: 14 }} />
+            ))}
+          </div>
+        </div>
+      </div>
     )
   }
 
@@ -208,29 +231,49 @@ export default function Overview() {
   const fornitoriAttivi = fornitoriList.filter((f) => f.stato === 'attivo')
   const fornitoriBackup = fornitoriList.filter((f) => f.ruolo === 'backup' && f.stato === 'attivo').length
 
-  // --- Alert (cliccabili: saltano alla sezione interessata) ---
-  const alerts: Alert[] = []
+  // --- Adesso: le urgenze cross-fonte (handoff §3.2). Check diretto solo
+  // dove la fonte ha un flag done (fasi drop); il resto naviga alla sezione.
+  const nowItems: NowItem[] = []
   fasiList.forEach((f) => {
     if (f.done || !f.data) return
     const drop = dropList.find((d) => d.id === f.drop_id)
     if (!drop) return
     if (f.data < todayStr) {
-      alerts.push({ red: true, code: 'SCADUTA', txt: `${drop.nome} → «${f.nome}» era prevista per il ${fmtDate(f.data)}`, tab: 'drops' })
+      nowItems.push({ key: 'f' + f.id, urgent: true, tag: drop.nome, txt: `«${f.nome}» era prevista per il ${fmtDate(f.data)}`, tab: 'drops', faseId: f.id })
     } else if (f.data <= soonStr) {
-      alerts.push({ red: false, code: '7 GIORNI', txt: `${drop.nome} → «${f.nome}» in scadenza il ${fmtDate(f.data)}`, tab: 'drops' })
+      nowItems.push({ key: 'f' + f.id, urgent: false, tag: drop.nome, txt: `«${f.nome}» in scadenza il ${fmtDate(f.data)}`, tab: 'drops', faseId: f.id })
     }
   })
   techpacksList
     .filter((t) => t.stato === 'inviato')
     .forEach((t) => {
       const fornNome = fornitoriList.find((f) => f.id === t.fornitore_id)?.nome ?? '—'
-      alerts.push({ red: false, code: 'ATTESA', txt: `Tech pack «${t.nome}» inviato a ${fornNome} — in attesa di conferma`, tab: 'techpack' })
+      nowItems.push({ key: 't' + t.id, urgent: false, tag: 'Tech Pack', txt: `«${t.nome}» in attesa di conferma da ${fornNome}`, tab: 'techpack' })
     })
   samplesList
-    .filter((s) => s.verdetto === 'in-review')
-    .forEach((s) => {
-      alerts.push({ red: false, code: 'REVIEW', txt: `Campione «${s.nome}» da valutare`, tab: 'samples' })
+    .filter((sm) => sm.verdetto === 'in-review')
+    .forEach((sm) => {
+      nowItems.push({ key: 's' + sm.id, urgent: false, tag: 'Campione', txt: `«${sm.nome}» da valutare`, tab: 'samples' })
     })
+  nowItems.sort((a, b) => Number(b.urgent) - Number(a.urgent))
+  const nowTop = nowItems.slice(0, 5)
+
+  const isEmptyDb =
+    !dropList.length && !techpacksList.length && !samplesList.length && !fornitoriList.length && !tasksList.length
+
+  function completaFase(item: NowItem) {
+    if (!item.faseId) return
+    updateFase.mutate(
+      { id: item.faseId, patch: { done: true } },
+      {
+        onSuccess: () => {
+          showToast('success', 'Fase completata.')
+          logActivity('ha completato la fase', item.txt.split('»')[0].slice(1), 'drops')
+        },
+        onError: (err) => showToast('error', err instanceof Error ? err.message : 'Salvataggio non riuscito.'),
+      },
+    )
+  }
 
   return (
     <>
@@ -367,29 +410,76 @@ export default function Overview() {
         </div>
       </div>
 
-      <PanelHead title="Da fare adesso" desc="Alert automatici, cliccabili: fasi in scadenza, tech pack in attesa, campioni da valutare." />
-      {alerts.length ? (
-        alerts.map((a, i) => (
-          <div
-            className={`alert-item clickable${a.red ? ' red' : ''}`}
-            key={i}
-            onClick={() => goTab(a.tab)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                goTab(a.tab)
-              }
-            }}
-          >
-            <span className="code">{a.code}</span>
-            <span>{a.txt}</span>
-            <span className="alert-go">→</span>
+      {isEmptyDb ? (
+        <div className="ov-empty">
+          <div className="ov-empty-title">Il tuo cockpit è pronto</div>
+          <p className="ov-empty-desc">
+            Appena il team inserisce drop, articoli e campioni, qui compaiono urgenze, avanzamento e attività.
+          </p>
+          <div className="ov-quick">
+            <button className="tlink" onClick={() => goTab('dropx')}>+ Primo articolo</button>
+            <button className="tlink" onClick={() => openKpi()}>Aggiorna KPI</button>
           </div>
-        ))
+        </div>
       ) : (
-        <EmptyState icon="star" text="Nessun alert. Tutto sotto controllo." />
+        <>
+          <div className="ov-cols">
+            <section aria-label="Adesso">
+              <h3 className="ov-col-title">Adesso</h3>
+              {nowTop.length ? (
+                <ul className="now-list">
+                  {nowTop.map((item) => (
+                    <li className="now-row" key={item.key}>
+                      {item.faseId ? (
+                        <input
+                          type="checkbox"
+                          className="now-check"
+                          aria-label={`Completa: ${item.txt}`}
+                          disabled={updateFase.isPending}
+                          onChange={() => completaFase(item)}
+                        />
+                      ) : (
+                        <span className={`now-dot${item.urgent ? ' urgent' : ''}`} aria-hidden />
+                      )}
+                      <button className="now-txt" onClick={() => goTab(item.tab)}>
+                        <span className="now-tag">{item.tag}</span>
+                        {item.txt}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="now-none">Niente di urgente. Tutto sotto controllo.</p>
+              )}
+            </section>
+            <section aria-label="Ultima attività">
+              <h3 className="ov-col-title">Ultima attività</h3>
+              {activityQ.isError ? (
+                <p className="now-none">Log non attivo — esegui la migration 0006_fase5.sql.</p>
+              ) : activityList.length ? (
+                <ul className="act-list">
+                  {activityList.slice(0, 5).map((a) => (
+                    <li className="act-row" key={a.id}>
+                      <span className="act-dot" aria-hidden />
+                      <span className="act-txt">
+                        <strong>{a.author_name}</strong> {a.azione} «{a.oggetto}»
+                      </span>
+                      <span className="act-time">{timeAgo(a.created_at)}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="now-none">Ancora nessuna attività registrata.</p>
+              )}
+            </section>
+          </div>
+          <div className="ov-quick">
+            <button className="tlink" onClick={() => goTab('dropx')}>+ Articolo</button>
+            <button className="tlink" onClick={() => goTab('notes')}>+ Nota / Memo</button>
+            <button className="tlink" onClick={() => goTab('media')}>+ Upload media</button>
+            <button className="tlink" onClick={() => openKpi()}>Aggiorna KPI</button>
+          </div>
+        </>
       )}
 
       {kpiOpen && (

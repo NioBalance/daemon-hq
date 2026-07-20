@@ -10,6 +10,7 @@ import {
 } from '../features/activity/queries'
 import { useMemos, useCreateMemo } from '../features/memos/queries'
 import { useToast } from '../lib/useToast'
+import { timeAgo } from '../lib/format'
 import type { TabKey } from '../lib/tabs'
 
 export function BellIcon() {
@@ -19,15 +20,6 @@ export function BellIcon() {
       <path d="M10 19.5a2.2 2.2 0 0 0 4 0" />
     </svg>
   )
-}
-
-function timeAgo(iso: string): string {
-  const mins = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000))
-  if (mins < 1) return 'ora'
-  if (mins < 60) return `${mins}m`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h`
-  return `${Math.floor(hours / 24)}g`
 }
 
 /** Contenuto condiviso dei due widget (§7.1 + §7.2): notifiche ultimi change
