@@ -1,5 +1,17 @@
 import { m, useReducedMotion } from 'framer-motion'
-import { LineChart, Line, BarChart, Bar, Cell, ResponsiveContainer } from 'recharts'
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  Cell,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  ResponsiveContainer,
+} from 'recharts'
 
 /** Anello di progresso SVG che si riempie al mount (pathLength via Framer). */
 export function ProgressRing({
@@ -70,6 +82,41 @@ export function Sparkline({
             animationEasing="ease-out"
           />
         </LineChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+/** Radar dei 4 assi di valutazione campione (fit/tessuto/cuciture/colore),
+ *  scala fissa 1-5. Draw-in al mount, fermo con reduced-motion. */
+export function ScoreRadar({
+  scores,
+  size = 200,
+}: {
+  scores: { asse: string; valore: number }[]
+  size?: number
+}) {
+  const reduceMotion = useReducedMotion()
+  return (
+    <div style={{ width: '100%', height: size }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <RadarChart data={scores} outerRadius="72%">
+          <PolarGrid stroke="var(--line)" />
+          <PolarAngleAxis
+            dataKey="asse"
+            tick={{ fill: 'var(--muted)', fontSize: 10, fontFamily: 'var(--font-m)' }}
+          />
+          <PolarRadiusAxis domain={[0, 5]} tickCount={6} tick={false} axisLine={false} />
+          <Radar
+            dataKey="valore"
+            stroke="var(--ember)"
+            fill="var(--ember)"
+            fillOpacity={0.22}
+            isAnimationActive={!reduceMotion}
+            animationDuration={900}
+            animationEasing="ease-out"
+          />
+        </RadarChart>
       </ResponsiveContainer>
     </div>
   )

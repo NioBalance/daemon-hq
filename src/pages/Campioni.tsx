@@ -5,6 +5,7 @@ import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
 import GadgetRow from '../components/GadgetRow'
 import OwnerBadge from '../components/OwnerBadge'
+import { ScoreRadar } from '../components/ChartBits'
 import { useSamples, useCreateSample, useUpdateSample, useDeleteSample, type Sample } from '../features/samples/queries'
 import ImageUpload from '../components/ImageUpload'
 import { useSignedUrl } from '../lib/useSignedUrl'
@@ -303,6 +304,18 @@ export default function Campioni() {
                 title="Tocca per caricare/cambiare la foto del campione"
               />
               <span className="code">FOTO CAMPIONE (OPZIONALE)</span>
+            </div>
+            <div className="smp-radar">
+              <ScoreRadar
+                scores={[
+                  { asse: 'Fit', valore: clampScore(values.fit) },
+                  { asse: 'Tessuto', valore: clampScore(values.tessuto) },
+                  { asse: 'Cuciture', valore: clampScore(values.cuciture) },
+                  { asse: 'Colore', valore: clampScore(values.colore) },
+                ]}
+                size={190}
+              />
+              <span className="code">VALUTAZIONE — SI AGGIORNA MENTRE MODIFICHI I PUNTEGGI</span>
             </div>
             <FormFields
               fields={SMP_FIELDS}
