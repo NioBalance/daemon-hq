@@ -724,6 +724,15 @@ button.tpf-row.tpf-dir{cursor:pointer}
 .shortcut-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
 .shortcut-row:last-of-type{border-bottom:none}
 .palette-roadmap{font-size:12px;color:var(--muted);margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+/* tech pack: striscia mini-anteprime sotto la riga */
+.tp-block{border-bottom:1px solid var(--line)}
+.dt-row.no-line{border-bottom:none}
+.tp-thumbs{display:flex;gap:8px;padding:0 2px 12px;overflow-x:auto}
+.tp-thumb{width:46px;height:46px;flex:none;border-radius:6px;border:1px solid var(--line2);background:var(--void);display:flex;align-items:center;justify-content:center;overflow:hidden;text-decoration:none;cursor:pointer;transition:filter var(--dur),border-color var(--dur)}
+.tp-thumb:hover{filter:brightness(1.15);border-color:var(--muted)}
+.tp-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.tp-thumb-ext{font-family:var(--font-m);font-size:8px;letter-spacing:.08em;color:var(--muted)}
+.tp-thumb-more{font-family:var(--font-m);font-size:11px;color:var(--ember);background:none;border:1px solid var(--line2)}
 /* conversazioni customer care — righe hairline (de-box) */
 .conv-row{padding:12px 2px 14px;border-bottom:1px solid var(--line)}
 .conv-name{font-weight:600;font-size:14.5px}

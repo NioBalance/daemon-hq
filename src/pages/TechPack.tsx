@@ -13,7 +13,8 @@ import {
   type Techpack,
 } from '../features/techpacks/queries'
 import { useFornitori } from '../features/fornitori/queries'
-import { useTechpackFiles } from '../features/techpackFiles/queries'
+import { useTechpackFiles, type TechpackFile } from '../features/techpackFiles/queries'
+import { useSignedUrl } from '../lib/useSignedUrl'
 import { useAddNote } from '../features/notes/queries'
 import { useAuth } from '../auth/useAuth'
 import { OWNER_OPTS } from '../lib/tabs'
@@ -60,6 +61,61 @@ function techpackToValues(t: Techpack): FormValues {
     owner: t.owner ?? 'design',
     note: t.note ?? '',
   }
+}
+
+/** Mini-anteprima di un file della cartella: immagini via signed URL,
+ *  icona per PDF e formati non-immagine; click apre il file. */
+function TpThumb({ file }: { file: TechpackFile }) {
+  const url = useSignedUrl(file.path)
+  const isImg = file.tipo === 'img'
+  return (
+    <a
+      className="tp-thumb"
+      href={url ?? undefined}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={file.nome}
+      aria-label={`Apri ${file.nome}`}
+      onClick={(e) => {
+        e.stopPropagation()
+        if (!url) e.preventDefault()
+      }}
+    >
+      {isImg && url ? (
+        <img src={url} alt="" loading="lazy" />
+      ) : (
+        <span className="tp-thumb-ext">{file.tipo === 'pdf' ? 'PDF' : (file.nome.split('.').pop() ?? '?').toUpperCase().slice(0, 4)}</span>
+      )}
+    </a>
+  )
+}
+
+const TP_THUMBS_MAX = 6
+
+/** Striscia anteprime sotto la riga: primi file della cartella + overflow. */
+function TpThumbStrip({ files, onOpenFolder }: { files: TechpackFile[]; onOpenFolder: () => void }) {
+  const anteprime = files.filter((x) => x.tipo !== 'link').slice(0, TP_THUMBS_MAX)
+  if (!anteprime.length) return null
+  const resto = files.filter((x) => x.tipo !== 'link').length - anteprime.length
+  return (
+    <div className="tp-thumbs">
+      {anteprime.map((x) => (
+        <TpThumb key={x.id} file={x} />
+      ))}
+      {resto > 0 && (
+        <button
+          className="tp-thumb tp-thumb-more"
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpenFolder()
+          }}
+          aria-label={`Altri ${resto} file — apri la cartella`}
+        >
+          +{resto}
+        </button>
+      )}
+    </div>
+  )
 }
 
 export default function TechPack() {
@@ -225,11 +281,12 @@ export default function TechPack() {
                 <span />
               </div>
               {(techpacks ?? []).map((t, i) => {
-                const fileCount = (tpFiles ?? []).filter((x) => x.techpack_id === t.id).length
+                const files = (tpFiles ?? []).filter((x) => x.techpack_id === t.id)
+                const fileCount = files.length
                 return (
+                  <div className="tp-block" key={t.id}>
                   <div
-                    className="dt-row clickable"
-                    key={t.id}
+                    className="dt-row clickable no-line"
                     onClick={() => openEdit(t)}
                     role="button"
                     tabIndex={0}
@@ -274,6 +331,8 @@ export default function TechPack() {
                     >
                       ✕
                     </button>
+                  </div>
+                  <TpThumbStrip files={files} onOpenFolder={() => setFolderId(t.id)} />
                   </div>
                 )
               })}
