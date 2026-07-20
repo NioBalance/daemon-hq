@@ -12,6 +12,7 @@ import { useSamples, useCreateSample, useUpdateSample, useDeleteSample, type Sam
 import ImageUpload from '../components/ImageUpload'
 import { useSignedUrl } from '../lib/useSignedUrl'
 import { useFornitori } from '../features/fornitori/queries'
+import { useTechpacks } from '../features/techpacks/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { fmtDate } from '../lib/format'
 import { useToast } from '../lib/useToast'
@@ -43,6 +44,7 @@ const EMPTY_VALUES: FormValues = {
   cuciture: 3,
   colore: 3,
   verdetto: 'in-review',
+  techpack_id: '',
   owner: 'design',
   note: '',
   img_path: '',
@@ -58,6 +60,7 @@ function sampleToValues(s: Sample): FormValues {
     cuciture: s.cuciture ?? 3,
     colore: s.colore ?? 3,
     verdetto: s.verdetto,
+    techpack_id: s.techpack_id ?? '',
     owner: s.owner ?? 'design',
     note: s.note ?? '',
     img_path: s.img_path ?? '',
@@ -77,6 +80,7 @@ function SmpThumb({ path }: { path: string | null }) {
 export default function Campioni() {
   const { data: samples, isLoading, isError, error, refetch } = useSamples()
   const { data: fornitori } = useFornitori()
+  const { data: techpacks } = useTechpacks()
   const createSample = useCreateSample()
   const updateSample = useUpdateSample()
   const deleteSample = useDeleteSample()
@@ -114,6 +118,12 @@ export default function Campioni() {
     { key: 'cuciture', label: 'Cuciture (1–5)', type: 'number', half: true, min: 1, max: 5 },
     { key: 'colore', label: 'Colore / stampa (1–5)', type: 'number', half: true, min: 1, max: 5 },
     { key: 'verdetto', label: 'Verdetto', type: 'select', half: true, options: VERDETTI.map((o) => ({ value: o.value, label: o.label })) },
+    {
+      key: 'techpack_id',
+      label: 'Tech pack collegato (per la HQ Map)',
+      type: 'select',
+      options: [{ value: '', label: '—' }, ...(techpacks ?? []).map((t) => ({ value: t.id, label: t.nome }))],
+    },
     { key: 'owner', label: 'Owner', type: 'select', half: true, options: OWNER_OPTS.map((o) => ({ value: o.v, label: o.l })) },
     { key: 'note', label: 'Note review (cosa correggere per il fornitore)', type: 'textarea' },
   ]
@@ -153,6 +163,7 @@ export default function Campioni() {
       cuciture: clampScore(values.cuciture),
       colore: clampScore(values.colore),
       verdetto: values.verdetto as SampleVerdetto,
+      techpack_id: String(values.techpack_id ?? '') || null,
       owner: values.owner as Sample['owner'],
       note: String(values.note ?? '').trim() || null,
       img_path: String(values.img_path ?? '') || null,

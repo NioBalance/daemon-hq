@@ -14,6 +14,7 @@ import {
   type Techpack,
 } from '../features/techpacks/queries'
 import { useFornitori } from '../features/fornitori/queries'
+import { useArticoli } from '../features/articoli/queries'
 import { useTechpackFiles, type TechpackFile } from '../features/techpackFiles/queries'
 import { useSignedUrl } from '../lib/useSignedUrl'
 import { useInView } from '../lib/useInView'
@@ -48,6 +49,7 @@ const EMPTY_VALUES: FormValues = {
   taglie: '',
   stato: 'bozza',
   fornitore_id: '',
+  articolo_id: '',
   owner: 'design',
   note: '',
 }
@@ -61,6 +63,7 @@ function techpackToValues(t: Techpack): FormValues {
     taglie: t.taglie ?? '',
     stato: t.stato,
     fornitore_id: t.fornitore_id ?? '',
+    articolo_id: t.articolo_id ?? '',
     owner: t.owner ?? 'design',
     note: t.note ?? '',
   }
@@ -155,6 +158,7 @@ function TpThumbStrip({
 export default function TechPack() {
   const { data: techpacks, isLoading, isError, error, refetch } = useTechpacks()
   const { data: fornitori } = useFornitori()
+  const { data: articoli } = useArticoli()
   const { data: tpFiles } = useTechpackFiles()
   const createTechpack = useCreateTechpack()
   const updateTechpack = useUpdateTechpack()
@@ -196,6 +200,12 @@ export default function TechPack() {
       half: true,
       options: [{ value: '', label: '—' }, ...(fornitori ?? []).map((f) => ({ value: f.id, label: f.nome }))],
     },
+    {
+      key: 'articolo_id',
+      label: 'Articolo collegato (per la HQ Map)',
+      type: 'select',
+      options: [{ value: '', label: '—' }, ...(articoli ?? []).map((a) => ({ value: a.id, label: a.nome }))],
+    },
     { key: 'owner', label: 'Owner', type: 'select', half: true, options: OWNER_OPTS.map((o) => ({ value: o.v, label: o.l })) },
     { key: 'note', label: 'Note (misure chiave, dettagli costruzione, link file)', type: 'textarea' },
   ]
@@ -229,6 +239,7 @@ export default function TechPack() {
       taglie: String(values.taglie ?? '').trim() || null,
       stato: values.stato as TechpackStato,
       fornitore_id: String(values.fornitore_id ?? '') || null,
+      articolo_id: String(values.articolo_id ?? '') || null,
       owner: values.owner as Techpack['owner'],
       note: String(values.note ?? '').trim() || null,
     }

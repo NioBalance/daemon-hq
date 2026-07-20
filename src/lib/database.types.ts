@@ -219,6 +219,7 @@ export interface Database {
           materiali: string | null
           taglie: string | null
           fornitore_id: string | null
+          articolo_id: string | null
           stato: TechpackStato
           owner: Owner | null
           note: string | null
@@ -233,6 +234,7 @@ export interface Database {
           materiali?: string | null
           taglie?: string | null
           fornitore_id?: string | null
+          articolo_id?: string | null
           stato?: TechpackStato
           owner?: Owner | null
           note?: string | null
@@ -246,6 +248,7 @@ export interface Database {
           id: string
           nome: string
           fornitore_id: string | null
+          techpack_id: string | null
           data_arrivo: string | null
           fit: number | null
           tessuto: number | null
@@ -262,6 +265,7 @@ export interface Database {
           id?: string
           nome: string
           fornitore_id?: string | null
+          techpack_id?: string | null
           data_arrivo?: string | null
           fit?: number | null
           tessuto?: number | null
