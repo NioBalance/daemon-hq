@@ -6,6 +6,8 @@ import EmptyState from '../components/EmptyState'
 import GadgetRow from '../components/GadgetRow'
 import OwnerBadge from '../components/OwnerBadge'
 import { useSamples, useCreateSample, useUpdateSample, useDeleteSample, type Sample } from '../features/samples/queries'
+import ImageUpload from '../components/ImageUpload'
+import { useSignedUrl } from '../lib/useSignedUrl'
 import { useFornitori } from '../features/fornitori/queries'
 import { OWNER_OPTS } from '../lib/tabs'
 import { fmtDate } from '../lib/format'
@@ -40,6 +42,7 @@ const EMPTY_VALUES: FormValues = {
   verdetto: 'in-review',
   owner: 'design',
   note: '',
+  img_path: '',
 }
 
 function sampleToValues(s: Sample): FormValues {
@@ -54,7 +57,18 @@ function sampleToValues(s: Sample): FormValues {
     verdetto: s.verdetto,
     owner: s.owner ?? 'design',
     note: s.note ?? '',
+    img_path: s.img_path ?? '',
   }
+}
+
+/** Foto campione nella riga: thumb quadrato via signed URL, fallback ★. */
+function SmpThumb({ path }: { path: string | null }) {
+  const url = useSignedUrl(path)
+  return (
+    <span className="smp-thumb" aria-hidden>
+      {url ? <img src={url} alt="" loading="lazy" /> : '★'}
+    </span>
+  )
 }
 
 export default function Campioni() {
@@ -138,6 +152,7 @@ export default function Campioni() {
       verdetto: values.verdetto as SampleVerdetto,
       owner: values.owner as Sample['owner'],
       note: String(values.note ?? '').trim() || null,
+      img_path: String(values.img_path ?? '') || null,
     }
     try {
       if (modalMode === 'edit' && editingId) {
@@ -221,10 +236,13 @@ export default function Campioni() {
                       }
                     }}
                   >
-                    <span className="dt-main">
-                      <span className="dt-name">{s.nome}</span>
-                      <span className="dt-under">
-                        SMP-{String(i + 1).padStart(2, '0')} · {fornNome(s.fornitore_id)} · {fmtDate(s.data_arrivo)}
+                    <span className="dt-main" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <SmpThumb path={s.img_path} />
+                      <span style={{ minWidth: 0 }}>
+                        <span className="dt-name">{s.nome}</span>
+                        <span className="dt-under">
+                          SMP-{String(i + 1).padStart(2, '0')} · {fornNome(s.fornitore_id)} · {fmtDate(s.data_arrivo)}
+                        </span>
                       </span>
                     </span>
                     <span className="smp-scores">
@@ -275,6 +293,17 @@ export default function Campioni() {
       {modalMode !== 'none' && (
         <Modal title={modalMode === 'edit' ? 'Modifica campione' : 'Nuovo campione'} onClose={() => setModalMode('none')}>
           <form onSubmit={handleSubmit}>
+            <div className="f-logo-edit">
+              <ImageUpload
+                path={String(values.img_path ?? '') || null}
+                entityType="samples"
+                onUploaded={(p) => setValues((v) => ({ ...v, img_path: p }))}
+                className="smp-photo-upload"
+                fallback="+"
+                title="Tocca per caricare/cambiare la foto del campione"
+              />
+              <span className="code">FOTO CAMPIONE (OPZIONALE)</span>
+            </div>
             <FormFields
               fields={SMP_FIELDS}
               values={values}

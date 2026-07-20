@@ -248,6 +248,7 @@ export interface Database {
           verdetto: SampleVerdetto
           owner: Owner | null
           note: string | null
+          img_path: string | null
           created_at: string
           updated_at: string
         }
@@ -263,6 +264,7 @@ export interface Database {
           verdetto?: SampleVerdetto
           owner?: Owner | null
           note?: string | null
+          img_path?: string | null
         }
         Update: Partial<Database['public']['Tables']['samples']['Insert']>
         Relationships: []

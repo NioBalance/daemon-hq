@@ -731,6 +731,10 @@ button.tpf-row.tpf-dir{cursor:pointer}
 .f-chat:hover{text-decoration:underline}
 .f-logo-edit{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .f-logo-upload{width:52px;height:52px;border-radius:50%;background:var(--surface2) center/cover no-repeat;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:18px;cursor:pointer;overflow:hidden}
+/* campioni: foto del sample */
+.smp-thumb{flex:none;width:38px;height:38px;border-radius:6px;background:var(--surface2);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--steel);font-size:13px}
+.smp-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.smp-photo-upload{width:64px;height:64px;border-radius:8px;background:var(--surface2) center/cover no-repeat;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:18px;cursor:pointer;overflow:hidden}
 /* File viewer inline (tech pack) — glass v4 fullscreen */
 .fv-bg{position:fixed;inset:0;z-index:calc(var(--z-modal) + 1);background:rgba(11,11,13,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;flex-direction:column;outline:none}
 .fv-top{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line2)}
