@@ -5,7 +5,9 @@ import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
 import GadgetRow from '../components/GadgetRow'
 import OwnerBadge from '../components/OwnerBadge'
-import { ScoreRadar } from '../components/ChartBits'
+import ScoreRadarSvg from '../components/ScoreRadarSvg'
+
+const RADAR_LABELS = ['Fit', 'Tess', 'Cuc', 'Col']
 import { useSamples, useCreateSample, useUpdateSample, useDeleteSample, type Sample } from '../features/samples/queries'
 import ImageUpload from '../components/ImageUpload'
 import { useSignedUrl } from '../lib/useSignedUrl'
@@ -225,7 +227,7 @@ export default function Campioni() {
                 const media = ((fit + tessuto + cuciture + colore) / 4).toFixed(1)
                 return (
                   <div
-                    className="dt-row clickable"
+                    className="dt-row clickable smp-row"
                     key={s.id}
                     onClick={() => openEdit(s)}
                     role="button"
@@ -237,6 +239,9 @@ export default function Campioni() {
                       }
                     }}
                   >
+                    <span className="smp-hover" aria-hidden>
+                      <ScoreRadarSvg scores={[fit, tessuto, cuciture, colore]} labels={RADAR_LABELS} size={132} />
+                    </span>
                     <span className="dt-main" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <SmpThumb path={s.img_path} />
                       <span style={{ minWidth: 0 }}>
@@ -306,16 +311,22 @@ export default function Campioni() {
               <span className="code">FOTO CAMPIONE (OPZIONALE)</span>
             </div>
             <div className="smp-radar">
-              <ScoreRadar
+              <ScoreRadarSvg
                 scores={[
-                  { asse: 'Fit', valore: clampScore(values.fit) },
-                  { asse: 'Tessuto', valore: clampScore(values.tessuto) },
-                  { asse: 'Cuciture', valore: clampScore(values.cuciture) },
-                  { asse: 'Colore', valore: clampScore(values.colore) },
+                  clampScore(values.fit),
+                  clampScore(values.tessuto),
+                  clampScore(values.cuciture),
+                  clampScore(values.colore),
                 ]}
-                size={190}
+                labels={RADAR_LABELS}
+                size={210}
+                editable
+                onChange={(idx, v) => {
+                  const key = (['fit', 'tessuto', 'cuciture', 'colore'] as const)[idx]
+                  setValues((s) => ({ ...s, [key]: v }))
+                }}
               />
-              <span className="code">VALUTAZIONE — SI AGGIORNA MENTRE MODIFICHI I PUNTEGGI</span>
+              <span className="code">TRASCINA I VERTICI O USA I CAMPI SOTTO — SALVA CON «SALVA»</span>
             </div>
             <FormFields
               fields={SMP_FIELDS}

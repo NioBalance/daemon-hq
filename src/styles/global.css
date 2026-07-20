@@ -283,6 +283,17 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .pflow-step.current .pflow-label{color:var(--bone)}
 .pflow-link{flex:1;min-width:16px;height:1px;background:var(--line2);margin-top:13px;transform-origin:left center}
 .pflow-link.done{background:var(--ok)}
+/* Radar SVG campione (custom, read-only + editabile) */
+.radar-svg{display:block}
+.radar-svg .radar-lbl{font-family:var(--font-m);font-size:5.5px;fill:var(--muted)}
+.radar-handle{fill:var(--ember);stroke:var(--void);stroke-width:1}
+.radar-svg.editable .radar-handle{filter:drop-shadow(0 0 3px var(--ember-glow))}
+/* Anteprima radar on-hover sulla riga campione (solo desktop) */
+.smp-row{position:relative}
+.smp-hover{position:absolute;right:44px;bottom:calc(100% - 12px);width:150px;padding:10px;background:rgba(18,18,22,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line2);border-radius:12px;box-shadow:0 14px 36px rgba(0,0,0,.55);opacity:0;transform:translateY(5px);pointer-events:none;transition:opacity .15s ease,transform .15s ease;z-index:20}
+.smp-hover .radar-svg{width:100%;height:auto}
+@media (hover:hover) and (pointer:fine){.smp-row:hover .smp-hover{opacity:1;transform:none}}
+@media (hover:none){.smp-hover{display:none}}
 /* Radar valutazione campione (nel modal) */
 .smp-radar{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
 .smp-radar .code{text-align:center}
