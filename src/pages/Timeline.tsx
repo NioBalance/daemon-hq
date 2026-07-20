@@ -1,8 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FormValues } from '../components/FormFields'
-import { Loading, ErrorState } from '../components/QueryState'
+import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
 import OwnerBadge from '../components/OwnerBadge'
 import {
@@ -170,15 +169,19 @@ export default function Timeline() {
 
   return (
     <>
-      <PanelHead
-        title="Timeline Lanci"
-        desc="Pipeline operativa per drop: sample → payout 30% → contenuti → store → pre-launch → drop live → saldo 70% e bulk. Buffer produzione +15gg sempre."
-        actions={
-          <button className="btn" onClick={openCreateDrop}>
-            + Nuovo drop
-          </button>
-        }
-      />
+      <div className="pg-head">
+        <div>
+          <h2 className="ov-title">Timeline Lanci</h2>
+          <div className="ov-sub">PIPELINE PER DROP · BUFFER PRODUZIONE +15GG</div>
+        </div>
+        <button className="tlink" onClick={openCreateDrop}>
+          + Drop
+        </button>
+      </div>
+      <p className="pg-note">
+        Pipeline operativa per drop: sample → payout 30% → contenuti → store → pre-launch → drop live → saldo 70% e
+        bulk.
+      </p>
 
       <div className="chips">
         <button className={`chip${view === 'drop' ? ' active' : ''}`} onClick={() => setView('drop')}>
@@ -189,7 +192,13 @@ export default function Timeline() {
         </button>
       </div>
 
-      {isLoading && <Loading label="Caricamento timeline…" />}
+      {isLoading && (
+        <div aria-busy="true">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div className="skeleton" key={i} style={{ height: 16, marginBottom: 16 }} />
+          ))}
+        </div>
+      )}
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
 
       {!isLoading && !isError && view === 'anno' && (

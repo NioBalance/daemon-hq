@@ -366,7 +366,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .score .l{font-family:var(--font-m);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 
 /* TIMELINE */
-.drop-card{background:var(--solid-1);border:1px solid var(--line);border-radius:var(--radius-md);box-shadow:var(--shadow-elevation);padding:20px;margin-bottom:14px}
+.drop-card{padding:0 0 26px;margin-bottom:30px;border-bottom:1px solid var(--line)}
+.drop-card:last-child{border-bottom:none}
 .phases{margin-top:14px}
 .phase{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
 .phase:last-child{border-bottom:none}
@@ -646,7 +647,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .badge.memo-tag.urgente,.chip.memo-tag.urgente.active{border-color:var(--ember);color:var(--ember)}
 
 /* TIMELINE — vista anno intero */
-.year-wrap{background:var(--glass-1);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border:var(--glass-border);border-radius:var(--radius-md);box-shadow:var(--shadow-elevation);padding:16px}
+.year-wrap{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 2px}
 .year-months{display:grid;grid-template-columns:repeat(12,1fr);margin-bottom:6px}
 .year-month{font-family:var(--font-m);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center;border-left:1px dashed var(--line);padding:4px 0}
 .year-row{position:relative;height:36px;border-bottom:1px dashed var(--line)}
