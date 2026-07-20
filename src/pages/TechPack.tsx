@@ -5,6 +5,7 @@ import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
 import OwnerBadge from '../components/OwnerBadge'
 import TechpackFolder from '../components/TechpackFolder'
+import FileViewer from '../components/FileViewer'
 import {
   useTechpacks,
   useCreateTechpack,
@@ -167,6 +168,7 @@ export default function TechPack() {
   const [modalMode, setModalMode] = useState<'none' | 'create' | 'edit'>('none')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [folderId, setFolderId] = useState<string | null>(null)
+  const [viewer, setViewer] = useState<{ files: TechpackFile[]; index: number } | null>(null)
   const [values, setValues] = useState<FormValues>(EMPTY_VALUES)
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -365,7 +367,7 @@ export default function TechPack() {
                       ✕
                     </button>
                   </div>
-                  <TpThumbStrip files={files} onOpenFolder={() => setFolderId(t.id)} onOpenFile={() => setFolderId(t.id)} />
+                  <TpThumbStrip files={files} onOpenFolder={() => setFolderId(t.id)} onOpenFile={(idx) => setViewer({ files: files.filter((x) => x.tipo !== 'link'), index: idx })} />
                   </div>
                 )
               })}
@@ -375,6 +377,8 @@ export default function TechPack() {
           )}
         </>
       )}
+
+      {viewer && <FileViewer files={viewer.files} startIndex={viewer.index} onClose={() => setViewer(null)} />}
 
       {folderId && (techpacks ?? []).some((t) => t.id === folderId) && (
         <TechpackFolder

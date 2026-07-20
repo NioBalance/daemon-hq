@@ -724,6 +724,23 @@ button.tpf-row.tpf-dir{cursor:pointer}
 .shortcut-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
 .shortcut-row:last-of-type{border-bottom:none}
 .palette-roadmap{font-size:12px;color:var(--muted);margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+/* File viewer inline (tech pack) — glass v4 fullscreen */
+.fv-bg{position:fixed;inset:0;z-index:calc(var(--z-modal) + 1);background:rgba(11,11,13,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;flex-direction:column;outline:none}
+.fv-top{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line2)}
+.fv-name{font-family:var(--font-m);font-size:12px;color:var(--bone);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.fv-idx{color:var(--dim)}
+.fv-actions{display:flex;align-items:center;gap:12px;flex:none}
+.fv-pages{display:flex;align-items:center;gap:6px;font-family:var(--font-m);font-size:11px;color:var(--muted)}
+.fv-btn{background:none;border:1px solid var(--line2);border-radius:8px;color:var(--bone);font:inherit;font-size:12px;padding:5px 10px;cursor:pointer;transition:border-color var(--dur),color var(--dur)}
+.fv-btn:hover:not(:disabled){border-color:var(--muted)}
+.fv-btn:disabled{color:var(--steel);cursor:default}
+.fv-body{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:18px}
+.fv-img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;box-shadow:0 16px 44px rgba(0,0,0,.5)}
+.fv-none{font-family:var(--font-m);font-size:12px;color:var(--dim)}
+.fv-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(20,20,24,.72);backdrop-filter:blur(16px);border:1px solid var(--line2);border-radius:50%;width:44px;height:44px;color:var(--bone);font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color var(--dur)}
+.fv-arrow:hover{border-color:var(--muted)}
+.fv-arrow.left{left:18px}
+.fv-arrow.right{right:18px}
 /* tech pack: striscia mini-anteprime sotto la riga */
 .tp-block{border-bottom:1px solid var(--line)}
 .dt-row.no-line{border-bottom:none}
