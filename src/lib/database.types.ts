@@ -40,6 +40,7 @@ export type MeetingStato = 'pianificata' | 'conclusa'
 export type MeetingPiattaforma = 'meet' | 'zoom' | 'teams' | 'altro'
 export type PublishTipo = 'post' | 'reel' | 'story'
 export type PublishFase = 'idea' | 'in-edit' | 'pronto' | 'programmato' | 'pubblicato'
+export type CanvasForma = 'rect' | 'pill' | 'ellisse'
 export type KpiMetrica =
   | 'instagram_followers'
   | 'ordini_totali'
@@ -648,6 +649,57 @@ export interface Database {
           ordine?: number
         }
         Update: Partial<Database['public']['Tables']['publish_items']['Insert']>
+        Relationships: []
+      }
+
+      canvas_nodes: {
+        Row: {
+          id: string
+          testo: string
+          colore: string
+          forma: CanvasForma
+          x: number
+          y: number
+          w: number
+          h: number
+          ref_kind: string | null
+          ref_id: string | null
+          ref_label: string | null
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          testo?: string
+          colore?: string
+          forma?: CanvasForma
+          x?: number
+          y?: number
+          w?: number
+          h?: number
+          ref_kind?: string | null
+          ref_id?: string | null
+          ref_label?: string | null
+          created_by?: string
+        }
+        Update: Partial<Database['public']['Tables']['canvas_nodes']['Insert']>
+        Relationships: []
+      }
+
+      canvas_edges: {
+        Row: {
+          id: string
+          source: string
+          target: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          source: string
+          target: string
+        }
+        Update: Partial<Database['public']['Tables']['canvas_edges']['Insert']>
         Relationships: []
       }
     }

@@ -40,6 +40,7 @@ const Oggi = lazy(() => import('./pages/Oggi'))
 const Meeting = lazy(() => import('./pages/Meeting'))
 const Publish = lazy(() => import('./pages/Publish'))
 const HqMap = lazy(() => import('./pages/HqMap'))
+const Lavagna = lazy(() => import('./pages/Lavagna'))
 // Placeholder v4 (voci soon): un solo chunk, quattro pagine.
 const ContrattiSoon = lazy(() => import('./pages/ComingSoon').then((m) => ({ default: m.ContrattiSoon })))
 // Dettaglio articolo e palette montati a livello App (aperti da qualsiasi pagina).
@@ -66,6 +67,7 @@ const PAGES: Record<TabKey, ComponentType> = {
   contratti: ContrattiSoon,
   publish: Publish,
   hqmap: HqMap,
+  lavagna: Lavagna,
 }
 
 function AppShell() {

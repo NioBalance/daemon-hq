@@ -18,6 +18,7 @@ export type TabKey =
   | 'contratti'
   | 'publish'
   | 'hqmap'
+  | 'lavagna'
 
 // I gadget non sono più una sezione autonoma dell'Archivio (§5.1): vivono
 // come riga orizzontale dentro Campioni e Catalogo.
@@ -87,6 +88,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { id: 'timeline', label: 'Timeline', tab: 'drops', shortcut: 'l' },
       { id: 'fornitori', label: 'Fornitori', tab: 'fornitori', shortcut: 'f' },
       { id: 'hqmap', label: 'HQ Map', tab: 'hqmap', shortcut: 'q' },
+      { id: 'lavagna', label: 'Lavagna', tab: 'lavagna', shortcut: 'w' },
     ],
   },
   {

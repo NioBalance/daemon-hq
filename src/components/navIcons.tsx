@@ -26,6 +26,7 @@ export const ICONS: Record<string, ReactNode> = {
   cal: ic(<><rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M8 3v4M16 3v4M3.5 10.5h17" /></>),
   links: ic(<><path d="M10 14a4.5 4.5 0 0 0 6.4.4l2.4-2.4a4.5 4.5 0 0 0-6.4-6.4L11 7" /><path d="M14 10a4.5 4.5 0 0 0-6.4-.4L5.2 12a4.5 4.5 0 0 0 6.4 6.4L13 17" /></>),
   inspo: ic(<><path d="M9 18h6M10 21h4" /><path d="M12 3a6.5 6.5 0 0 0-4 11.6c.8.7 1.3 1.5 1.5 2.4h5c.2-.9.7-1.7 1.5-2.4A6.5 6.5 0 0 0 12 3z" /></>),
+  lavagna: ic(<><rect x="3.5" y="4.5" width="17" height="13" rx="2"/><path d="M7 20l2-2.5M17 20l-2-2.5M8 8.5h6M8 12h4"/></>),
   hqmap: ic(<><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="7" r="2.4"/><circle cx="12" cy="17" r="2.4"/><path d="M7.8 7.2l2.6 8M16.6 8.6l-3 6.6M8 6.4h8"/></>),
   menu: ic(<><path d="M4 7h16M4 12h16M4 17h16" /></>),
 }
