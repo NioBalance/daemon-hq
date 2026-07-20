@@ -4,7 +4,8 @@ import FormFields, { type FieldDef, type FormValues } from '../components/FormFi
 import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/EmptyState'
 import ArticoloCard from '../components/ArticoloCard'
-import { useDrops, useCreateDrop, useUpdateDrop, useDeleteDrop, type Drop } from '../features/drops/queries'
+import PhaseFlow from '../components/PhaseFlow'
+import { useDrops, useCreateDrop, useUpdateDrop, useDeleteDrop, useDropFasi, type Drop } from '../features/drops/queries'
 import { dropFields, DROP_EMPTY_VALUES } from '../features/drops/formFields'
 import { useArticoli, useCreateArticolo } from '../features/articoli/queries'
 import { fmtDate } from '../lib/format'
@@ -30,6 +31,7 @@ export default function Drops() {
   const { goTab, openArticolo } = useNav()
   const { data: drops, isLoading, isError, error, refetch } = useDrops()
   const { data: articoli } = useArticoli()
+  const { data: fasi } = useDropFasi()
   const createDrop = useCreateDrop()
   const updateDrop = useUpdateDrop()
   const deleteDrop = useDeleteDrop()
@@ -177,6 +179,9 @@ export default function Drops() {
         <>
           {sortedDrops.map((d) => {
             const arts = (articoli ?? []).filter((a) => a.drop_id === d.id)
+            const dropFasi = (fasi ?? [])
+              .filter((f) => f.drop_id === d.id)
+              .sort((a, b) => (a.data ?? '9999').localeCompare(b.data ?? '9999'))
             return (
               <div className="drop-row" key={d.id}>
                 <div className="drop-row-head">
@@ -199,6 +204,7 @@ export default function Drops() {
                     <button className="dt-x" onClick={() => handleDeleteDrop(d)} aria-label="Elimina">✕</button>
                   </div>
                 </div>
+                {dropFasi.length > 0 && <PhaseFlow fasi={dropFasi} />}
                 {arts.length ? (
                   <div className="art-scroll">
                     {arts.map((a) => (
