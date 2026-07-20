@@ -14,24 +14,13 @@ function Soon({ eyebrow, title, desc, fase }: { eyebrow: string; title: string; 
   )
 }
 
-export function OggiSoon() {
-  return (
-    <Soon
-      eyebrow="Operativo"
-      title="Oggi / Settimana"
-      desc="L'agenda operativa unificata: task articolo, fasi drop, campioni in review e action item delle riunioni, insieme, ordinati per scadenza. Il check qui completa l'item alla fonte."
-      fase="FASE 2"
-    />
-  )
-}
-
 export function RiunioniSoon() {
   return (
     <Soon
       eyebrow="Documenti"
       title="Riunioni"
       desc="Meeting overview e memo firmati: decisioni evidenziate e ricercabili, action item con owner e scadenza che confluiscono in Oggi e in Overview. La memoria decisionale del brand."
-      fase="FASE 3"
+      fase="FASE 4"
     />
   )
 }
@@ -42,7 +31,7 @@ export function ContrattiSoon() {
       eyebrow="Documenti"
       title="Contratti & Accordi"
       desc="Il registro di condizioni, collaborazioni e listini: controparte, stato, PDF su Storage e scadenze che avvisano l'Overview prima che scadano loro."
-      fase="FASE 4"
+      fase="FASE 5"
     />
   )
 }
@@ -53,7 +42,7 @@ export function PublishSoon() {
       eyebrow="Media & Marketing"
       title="Publish"
       desc="La pipeline dei contenuti: Idea, In-Edit, Pronto, Programmato, Pubblicato. Le creative pescano da Media Studio, le scadenze finiscono in agenda."
-      fase="FASE 5"
+      fase="FASE 6"
     />
   )
 }

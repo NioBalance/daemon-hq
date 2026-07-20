@@ -36,8 +36,8 @@ const Media = lazy(() => import('./pages/Media'))
 const Chats = lazy(() => import('./pages/Chats'))
 const Calendario = lazy(() => import('./pages/Calendario'))
 const Notes = lazy(() => import('./pages/Notes'))
+const Oggi = lazy(() => import('./pages/Oggi'))
 // Placeholder v4 (voci soon): un solo chunk, quattro pagine.
-const OggiSoon = lazy(() => import('./pages/ComingSoon').then((m) => ({ default: m.OggiSoon })))
 const RiunioniSoon = lazy(() => import('./pages/ComingSoon').then((m) => ({ default: m.RiunioniSoon })))
 const ContrattiSoon = lazy(() => import('./pages/ComingSoon').then((m) => ({ default: m.ContrattiSoon })))
 const PublishSoon = lazy(() => import('./pages/ComingSoon').then((m) => ({ default: m.PublishSoon })))
@@ -60,7 +60,7 @@ const PAGES: Record<TabKey, ComponentType> = {
   chats: Chats,
   cal: Calendario,
   notes: Notes,
-  oggi: OggiSoon,
+  oggi: Oggi,
   riunioni: RiunioniSoon,
   contratti: ContrattiSoon,
   publish: PublishSoon,

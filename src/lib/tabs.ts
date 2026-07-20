@@ -52,7 +52,7 @@ export const NAV_GROUPS: NavGroup[] = [
     short: 'Operativo',
     entries: [
       { id: 'overview', label: 'Overview', tab: 'overview', shortcut: 'o' },
-      { id: 'oggi', label: 'Oggi', tab: 'oggi', shortcut: 'g', soon: true },
+      { id: 'oggi', label: 'Oggi', tab: 'oggi', shortcut: 'g' },
       { id: 'dropx', label: 'Drops', tab: 'dropx', shortcut: 'r' },
       { id: 'chats', label: 'Chats', tab: 'chats', shortcut: 'h' },
     ],

@@ -226,6 +226,17 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .fw-add button:disabled{color:var(--steel);cursor:default}
 /* Docked: il contenuto riserva la corsia dei widget */
 @media (min-width:1280px){.shell-main.widgets-docked main{padding-right:300px;max-width:none}}
+/* Pagina Oggi — agenda aggregata, gruppi hairline */
+.og-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.og-toggle{display:flex;gap:2px;border:1px solid var(--line);border-radius:var(--radius-pill);padding:2px}
+.og-tab{background:none;border:none;border-radius:var(--radius-pill);padding:5px 14px;font:inherit;font-size:12px;color:var(--dim);cursor:pointer;transition:color .15s ease,background .15s ease}
+.og-tab:hover{color:var(--bone)}
+.og-tab.active{color:var(--bone);background:var(--surface2)}
+.og-group{margin-bottom:30px}
+.og-eyebrow{font-family:var(--font-title);font-weight:600;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.og-eyebrow.hot{color:var(--ember)}
+.og-count{font-family:var(--font-m);font-size:10px;color:var(--dim);margin-left:6px;letter-spacing:0}
+.og-owner{flex:none;margin-top:1px}
 /* Stati cockpit */
 .ov-skel-band{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:34px}
 .ov-skel-cols{display:grid;grid-template-columns:1.4fr 1fr;gap:44px}

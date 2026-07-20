@@ -350,8 +350,8 @@ export default function Overview() {
             <CountNum value={taskAperti} />
           </div>
           <span className="kb-meta">su {tasksList.length} totali, articoli</span>
-          <button className="kb-cta" onClick={() => goTab('dropx')}>
-            Drops →
+          <button className="kb-cta" onClick={() => goTab('oggi')}>
+            Oggi →
           </button>
         </div>
         <div className="kb-cell">
@@ -451,6 +451,9 @@ export default function Overview() {
               ) : (
                 <p className="now-none">Niente di urgente. Tutto sotto controllo.</p>
               )}
+              <button className="tlink" style={{ marginTop: 10 }} onClick={() => goTab('oggi')}>
+                Vedi tutto in Oggi →
+              </button>
             </section>
             <section aria-label="Ultima attività">
               <h3 className="ov-col-title">Ultima attività</h3>
