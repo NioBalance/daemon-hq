@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
@@ -15,6 +15,8 @@ import {
 import { useFornitori } from '../features/fornitori/queries'
 import { useTechpackFiles, type TechpackFile } from '../features/techpackFiles/queries'
 import { useSignedUrl } from '../lib/useSignedUrl'
+import { useInView } from '../lib/useInView'
+import { renderPdfThumb } from '../lib/pdfPreview'
 import { useAddNote } from '../features/notes/queries'
 import { useAuth } from '../auth/useAuth'
 import { OWNER_OPTS } from '../lib/tabs'
@@ -65,42 +67,73 @@ function techpackToValues(t: Techpack): FormValues {
 
 /** Mini-anteprima di un file della cartella: immagini via signed URL,
  *  icona per PDF e formati non-immagine; click apre il file. */
-function TpThumb({ file }: { file: TechpackFile }) {
-  const url = useSignedUrl(file.path)
+function TpThumb({ file, onOpen }: { file: TechpackFile; onOpen: () => void }) {
+  const { ref, inView } = useInView<HTMLButtonElement>()
+  // signed URL solo quando il thumb è (quasi) visibile: niente firme inutili
+  const url = useSignedUrl(inView ? file.path : null)
+  const [pdfThumb, setPdfThumb] = useState<string | null>(null)
+  const [pdfFailed, setPdfFailed] = useState(false)
   const isImg = file.tipo === 'img'
+  const isPdf = file.tipo === 'pdf'
+
+  // PDF: prima pagina renderizzata con pdfjs (chunk async, solo in-view)
+  useEffect(() => {
+    if (!isPdf || !inView || !url || pdfThumb || pdfFailed) return
+    let alive = true
+    renderPdfThumb(file.path ?? file.id, url, 96)
+      .then((d) => {
+        if (alive) setPdfThumb(d)
+      })
+      .catch(() => {
+        if (alive) setPdfFailed(true)
+      })
+    return () => {
+      alive = false
+    }
+  }, [isPdf, inView, url, pdfThumb, pdfFailed, file.path, file.id])
+
+  const imgSrc = isImg ? url : pdfThumb
   return (
-    <a
+    <button
+      ref={ref}
       className="tp-thumb"
-      href={url ?? undefined}
-      target="_blank"
-      rel="noopener noreferrer"
       title={file.nome}
       aria-label={`Apri ${file.nome}`}
       onClick={(e) => {
         e.stopPropagation()
-        if (!url) e.preventDefault()
+        onOpen()
       }}
     >
-      {isImg && url ? (
-        <img src={url} alt="" loading="lazy" />
+      {imgSrc ? (
+        <img src={imgSrc} alt="" loading="lazy" />
       ) : (
-        <span className="tp-thumb-ext">{file.tipo === 'pdf' ? 'PDF' : (file.nome.split('.').pop() ?? '?').toUpperCase().slice(0, 4)}</span>
+        <span className="tp-thumb-ext">
+          {isPdf && !pdfFailed ? '…' : (file.nome.split('.').pop() ?? '?').toUpperCase().slice(0, 4)}
+        </span>
       )}
-    </a>
+    </button>
   )
 }
 
 const TP_THUMBS_MAX = 6
 
 /** Striscia anteprime sotto la riga: primi file della cartella + overflow. */
-function TpThumbStrip({ files, onOpenFolder }: { files: TechpackFile[]; onOpenFolder: () => void }) {
+function TpThumbStrip({
+  files,
+  onOpenFolder,
+  onOpenFile,
+}: {
+  files: TechpackFile[]
+  onOpenFolder: () => void
+  onOpenFile: (index: number) => void
+}) {
   const anteprime = files.filter((x) => x.tipo !== 'link').slice(0, TP_THUMBS_MAX)
   if (!anteprime.length) return null
   const resto = files.filter((x) => x.tipo !== 'link').length - anteprime.length
   return (
     <div className="tp-thumbs">
-      {anteprime.map((x) => (
-        <TpThumb key={x.id} file={x} />
+      {anteprime.map((x, i) => (
+        <TpThumb key={x.id} file={x} onOpen={() => onOpenFile(i)} />
       ))}
       {resto > 0 && (
         <button
@@ -332,7 +365,7 @@ export default function TechPack() {
                       ✕
                     </button>
                   </div>
-                  <TpThumbStrip files={files} onOpenFolder={() => setFolderId(t.id)} />
+                  <TpThumbStrip files={files} onOpenFolder={() => setFolderId(t.id)} onOpenFile={() => setFolderId(t.id)} />
                   </div>
                 )
               })}
