@@ -10,14 +10,17 @@ export type DropFase = Database['public']['Tables']['drop_fasi']['Row']
 const DROPS_KEY = ['drops']
 const FASI_KEY = ['drop_fasi']
 
+// Nomi fase brevi e puliti (i drop creati col template partono così); le
+// vecchie fasi con "Nome — descrizione lunga" restano leggibili perché la UI
+// mostra solo la parte prima del trattino.
 export const PIPELINE_TEMPLATE: string[] = [
-  'Supplier & Sample — sample ricevuti e approvati, prezzi e condizioni chiusi',
-  'Production Ready — primo payout 30% + avvio produzione, tempi confermati',
-  'Content Production — shooting con sample, video verticali, asset finali',
-  'Store Setup — prodotti caricati, checkout testato, shipping/policy pronti',
-  'Pre-Launch — teaser, waitlist, countdown, annuncio data drop',
-  'LAUNCH — drop live, ads on, email blast, customer care attivo',
-  'Post-Launch — analisi best seller, saldo fornitore 70%, bulk/riordino',
+  'Supplier & Sample',
+  'Production Ready',
+  'Content Production',
+  'Store Setup',
+  'Pre-Launch',
+  'Launch',
+  'Post-Launch',
 ]
 
 export function useDrops() {

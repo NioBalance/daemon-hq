@@ -38,7 +38,7 @@ export default function Timeline() {
   const confirmDelete = useConfirmDelete()
   const logActivity = useActivityLogger()
 
-  const [view, setView] = useState<'drop' | 'gantt' | 'anno'>('drop')
+  const [view, setView] = useState<'gantt' | 'drop' | 'anno'>('gantt')
   const [year, setYear] = useState(new Date().getFullYear())
   const [dropModal, setDropModal] = useState<'none' | 'create' | 'edit'>('none')
   const [editingDrop, setEditingDrop] = useState<Drop | null>(null)
@@ -180,16 +180,15 @@ export default function Timeline() {
         </button>
       </div>
       <p className="pg-note">
-        Pipeline operativa per drop: sample → payout 30% → contenuti → store → pre-launch → drop live → saldo 70% e
-        bulk.
+        Avanzamento delle fasi di ogni drop nel tempo. Le date mancanti sono stimate dalla data di lancio.
       </p>
 
       <div className="chips">
-        <button className={`chip${view === 'drop' ? ' active' : ''}`} onClick={() => setView('drop')}>
-          Drop corrente
-        </button>
         <button className={`chip${view === 'gantt' ? ' active' : ''}`} onClick={() => setView('gantt')}>
           Gantt
+        </button>
+        <button className={`chip${view === 'drop' ? ' active' : ''}`} onClick={() => setView('drop')}>
+          Drop corrente
         </button>
         <button className={`chip${view === 'anno' ? ' active' : ''}`} onClick={() => setView('anno')}>
           Anno intero
@@ -206,20 +205,46 @@ export default function Timeline() {
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}
 
       {!isLoading && !isError && view === 'gantt' && (
-        <div className="gantt-section">
-          <GanttChart drops={sortedDrops} fasi={fasi ?? []} />
-          <div className="legend" style={{ marginTop: 12 }}>
-            <span>
-              <i style={{ background: 'var(--ok)' }} /> Completata
-            </span>
-            <span>
-              <i style={{ background: 'var(--amber)' }} /> Da fare
-            </span>
-            <span>
-              <i style={{ background: 'var(--ember)' }} /> Scaduta
-            </span>
-          </div>
-        </div>
+        <>
+          {sortedDrops.length === 0 ? (
+            <EmptyState icon="box" text="Nessun drop. Creane uno per vedere la pipeline." ctaLabel="+ Drop" onCta={openCreateDrop} />
+          ) : (
+            <>
+              <div className="legend gantt-legend">
+                <span>
+                  <i style={{ background: 'var(--ok)' }} /> Completata
+                </span>
+                <span>
+                  <i style={{ background: 'var(--amber)' }} /> Da fare
+                </span>
+                <span>
+                  <i style={{ background: 'var(--ember)' }} /> Scaduta
+                </span>
+                <span>
+                  <i className="est" /> Data stimata
+                </span>
+              </div>
+              {sortedDrops.map((d) => {
+                const dropFasi = (fasi ?? []).filter((f) => f.drop_id === d.id)
+                return (
+                  <section className="gantt-drop" key={d.id}>
+                    <div className="gantt-drop-head">
+                      <h3 className="gantt-drop-title">{d.nome}</h3>
+                      <span className="code">
+                        {d.data_lancio ? `LANCIO ${fmtDate(d.data_lancio)}` : 'SENZA DATA DI LANCIO'}
+                      </span>
+                    </div>
+                    {dropFasi.length ? (
+                      <GanttChart drop={d} fasi={dropFasi} />
+                    ) : (
+                      <p className="now-none">Nessuna fase. Aggiungile dalla vista «Drop corrente».</p>
+                    )}
+                  </section>
+                )
+              })}
+            </>
+          )}
+        </>
       )}
 
       {!isLoading && !isError && view === 'anno' && (
