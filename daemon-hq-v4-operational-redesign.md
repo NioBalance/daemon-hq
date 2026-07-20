@@ -214,7 +214,16 @@ Documentate qui per non perderle; **non ancora in build**. Ogni voce entra nella
 - **Fornitori — identità e contatto diretto**: campo **logo** (upload), **telefono**, e **link chat diretto** cliccabile (WhatsApp `wa.me` / Instagram DM). Migration dedicata (logo_path, telefono, chat_url).
 - **Drops — Registro errori & lezioni**: nuova vista tabellare che traccia gli errori commessi per **ambito** (produzione, logistica, fornitore, design) con **causa**, **azione correttiva** e **stato**. Obiettivo: memoria operativa degli sbagli per non ripeterli — completa la memoria decisionale delle Riunioni (§5). Migration dedicata (`error_log` o simile).
 - **Più viste HQ con diagrammi e spider-map** per orientarsi: valutare pagina per pagina dove un diagramma aggiunge valore reale (es. mappa relazioni drop→articoli→fornitori, timeline visuale del drop). Si aggancia a §11.1; da definire con piano dedicato prima di costruire.
+- **Overview — sezione «Sito web»** *(fattibile a breve)*: due **preview della homepage** (desktop + mobile) via servizio screenshot-on-demand (es. thum.io) dato l'URL del sito — snapshot sempre aggiornato, zero backend. Sotto, due bottoni: **«Vai a Shopify»** (admin) e **«Visita sito»** (storefront). Gli URL sono configurabili e salvati come link (pattern righe fisse di `links` già usato per il Calendario embed).
 
 ### 12.3 Chats — ripensare la pagina (fase avanzata SEPARATA)
 
 Obiettivo: **chat live vere** (WhatsApp / Instagram / ManyChat) al posto del registro manuale attuale. Nota tecnica vincolante: un inbox live richiede integrazione API (Meta Graph / ManyChat) con **backend e webhook** — è un progetto a sé, con superficie di sicurezza propria, NON rientra nel de-boxing estetico né nelle sotto-fasi di §12.2. Da pianificare come fase avanzata autonoma quando il resto del v4 è consolidato.
+
+### 12.4 Backlog avanzato — la «fase API» (progetti a sé: API + backend)
+
+Voci che richiedono integrazioni esterne autenticate e un backend: si pianificano **insieme**, come fase autonoma, quando si decide di collegare Shopify/Meta.
+
+- **Mappamondo 3D ordini/visitatori live**: globo (globe.gl / three.js) con ordini e visitatori in tempo reale — richiede API Shopify realtime + geolocalizzazione, oltre alla libreria 3D (peso bundle da valutare: chunk lazy dedicato).
+- **Inbox chat live** (§12.3) — stessa famiglia: API Meta/ManyChat + webhook.
+- **KPI automatici**: le metriche di `kpi_snapshots` oggi inserite a mano (follower, ordini, revenue) alimentate direttamente dalle API Shopify/Meta.
