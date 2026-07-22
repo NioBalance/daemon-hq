@@ -7,6 +7,7 @@ import { useAuth } from './auth/useAuth'
 import Login from './auth/Login'
 import ProfileForm from './auth/ProfileForm'
 import Header from './components/Header'
+import Footer from './components/Footer'
 import Sidebar from './components/Sidebar'
 import DaemonCore from './components/DaemonCore'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -251,6 +252,7 @@ function AppShell() {
           </ErrorBoundary>
         </m.section>
           </main>
+          <Footer />
         </div>
       </div>
       <MobileNav activeTab={activeTab} />
