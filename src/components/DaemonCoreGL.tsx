@@ -36,6 +36,7 @@ const VERT = /* glsl */ `
   uniform float uExcite;
   uniform float uBreathe;
   uniform float uDpr;
+  uniform float uScale;
   varying float vGlow;
   void main() {
     float t = uTime;
@@ -50,7 +51,7 @@ const VERT = /* glsl */ `
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
     float size = aSize * (1.0 + uExcite * 0.7);
-    gl_PointSize = size * (20.0 / -mv.z) * uDpr;
+    gl_PointSize = size * (uScale / -mv.z) * uDpr;
     // scintillio veloce e marcato
     vGlow = 0.35 + 0.65 * sin(t * (2.5 + aSeed * 4.0) + aSeed * 40.0);
   }
@@ -63,18 +64,19 @@ const COMET_VERT = /* glsl */ `
   uniform float uTime;
   uniform float uExcite;
   uniform float uDpr;
+  uniform float uScale;
   varying float vGlow;
   void main() {
     float speed = 0.35 + aSeed * 0.55 + uExcite * 1.1;
     float ang = uTime * speed + aSeed * 40.0 - aLag * 0.1;
-    float rad = 1.15 + aSeed * 0.75 + 0.08 * sin(uTime * 0.7 + aSeed * 10.0);
+    float rad = 1.1 + aSeed * 0.55 + 0.08 * sin(uTime * 0.7 + aSeed * 10.0);
     vec3 p = vec3(cos(ang) * rad, sin(ang) * rad, 0.0);
     float incl = (aSeed - 0.5) * 1.5;
     p = vec3(p.x, p.y * cos(incl), p.y * sin(incl));
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
     float size = (2.3 - aLag * 0.3) * (1.0 + uExcite * 0.8);
-    gl_PointSize = size * (20.0 / -mv.z) * uDpr;
+    gl_PointSize = size * (uScale / -mv.z) * uDpr;
     vGlow = 1.0 - aLag * 0.16;
   }
 `
@@ -229,7 +231,7 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
 
         scene = new Scene()
         const camera = new PerspectiveCamera(38, 1, 0.1, 10)
-        camera.position.z = 3.4
+        camera.position.z = 5.2
 
         const shared = {
           uTime: { value: 0 },
@@ -238,6 +240,7 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
           uColor: { value: new Color('#E2382A') },
           uColorHot: { value: new Color('#ffc2b3') },
           uDpr: { value: renderer.getPixelRatio() },
+          uScale: { value: size * 0.10 }, // px proporzionali al canvas (tarato a 168)
         }
         const star = makePoints(starPos, 1.2, 1.0, { ...shared, uAlpha: { value: 0.85 } })
         scene.add(star)
