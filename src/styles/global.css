@@ -1113,7 +1113,8 @@ button.tpf-row.tpf-dir{cursor:pointer}
 .conv-name{font-weight:600;font-size:14.5px}
 
 /* Credito in fondo a ogni pagina — sobrio, non un vero footer di sito */
-.app-credit{display:flex;align-items:center;justify-content:center;gap:8px;padding:18px 20px;margin-top:32px;border-top:1px solid var(--line);font-family:var(--font-m);font-size:10px;letter-spacing:.04em;color:var(--dim);text-align:center}
-.app-credit-icon{height:15px;width:auto;flex:none;opacity:.8}
-.app-credit b{color:var(--muted);font-weight:600}
+.app-credit{display:flex;align-items:center;justify-content:center;gap:10px;padding:18px 20px;margin-top:32px;border-top:1px solid var(--line);font-family:var(--font-m);font-size:10px;letter-spacing:.04em;color:var(--dim);text-align:center}
+.app-credit-logo{height:30px;width:auto;flex:none;opacity:.9}
+/* il wordmark è tipografia chiara su trasparente: nel tema chiaro va invertito per restare leggibile */
+[data-theme="light"] .app-credit-logo{filter:invert(1)}
 @media (max-width:1199px){.app-credit{padding-bottom:calc(18px + 88px + env(safe-area-inset-bottom))}}

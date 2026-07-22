@@ -1,12 +1,14 @@
-import arcadiaIcon from '../assets/arcadia-icon.png'
+import arcadiaWordmark from '../assets/arcadia-wordmark.png'
 
 export default function Footer() {
   return (
     <footer className="app-credit">
-      <img src={arcadiaIcon} alt="" className="app-credit-icon" />
-      <span>
-        App realizzata da <b>Arcadia</b> — Strutture Digitali &amp; Online Strategy
-      </span>
+      <span>App realizzata da</span>
+      <img
+        src={arcadiaWordmark}
+        alt="Arcadia — Strutture Digitali & Online Strategy"
+        className="app-credit-logo"
+      />
     </footer>
   )
 }
