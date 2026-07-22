@@ -22,33 +22,39 @@ import { useInView } from '../lib/useInView'
  *  veloce). Il chiamante gestisce i fallback SVG; qui solo l'errore di init. */
 
 // ── taratura ("più vivo, più nitido, più Jarvis") ─────────────────────────
-const STAR_COUNT = 9000 // polvere di luce: più fine e più numerosa (era 5200)
+const STAR_COUNT = 10500 // polvere di luce: ancora più fine e numerosa (era 5200 → 9000)
 const RING1_COUNT = 220
-const RING2_COUNT = 150
+const RING2_COUNT = 170
+const RING3_COUNT = 130 // terzo anello: più profondità, più "Jarvis" (rif. Jarvis esempio.jpg)
 const COMET_COUNT = 14 // comete che si staccano e rientrano
 const COMET_TRAIL = 6 // sprite di scia per cometa
 const STAR_Z_SPREAD = 0.5 // profondità della stella
 
-// dimensioni sprite: più piccole = grana fine, non grumi
+// dimensioni sprite: la stella resta fine (polvere), gli anelli tornano
+// sostanziosi come nella v3 — non erano loro la causa del white-out
 const STAR_SIZE = 0.72
 const STAR_SIZE_JITTER = 0.5
-const RING1_SIZE = 0.95
-const RING1_SIZE_JITTER = 0.55
-const RING2_SIZE = 0.8
-const RING2_SIZE_JITTER = 0.5
+const RING1_SIZE = 1.4
+const RING1_SIZE_JITTER = 0.9
+const RING2_SIZE = 1.1
+const RING2_SIZE_JITTER = 0.8
+const RING3_SIZE = 1.25
+const RING3_SIZE_JITTER = 0.85
 
 // falloff del punto: banda stretta = bordo nitido, alone minimo (non "fiamma")
-const CORE_HARD = 0.3
-const CORE_SOFT = 0.23
-const HALO_OUT = 0.5
-const HALO_IN = 0.32
-const HALO_STRENGTH = 0.14
+const CORE_HARD = 0.28
+const CORE_SOFT = 0.22
+const HALO_OUT = 0.46
+const HALO_IN = 0.3
+const HALO_STRENGTH = 0.1
 
 // drift a riposo (vive anche da fermo) e quanto vira verso il caldo
-const DRIFT_BASE = 0.02
+const DRIFT_BASE = 0.024
 const DRIFT_EXCITE = 0.05
 const HOT_MIX_HOVER = 0.22 // era 0.45: troppo verso il bianco in hover
 const HOT_MIX_GLOW = 0.14
+// comete: visibili anche a riposo (non solo un accenno), scia piena in hover
+const COMET_REST_BOOST = 0.4
 
 const VERT = /* glsl */ `
   attribute float aSeed;
@@ -137,7 +143,7 @@ const COMET_FRAG = /* glsl */ `
     float core = smoothstep(${CORE_HARD}, ${CORE_SOFT}, d);
     float halo = smoothstep(${HALO_OUT}, ${HALO_IN}, d) * ${HALO_STRENGTH};
     vec3 col = mix(uColor, uColorHot, uExcite * 0.5 + vGlow * 0.2);
-    float restBoost = 0.14 + 0.86 * uExcite;
+    float restBoost = ${COMET_REST_BOOST} + ${1 - COMET_REST_BOOST} * uExcite;
     float alpha = (core * 0.95 + halo) * (0.4 + 0.6 * vGlow) * uAlpha * restBoost;
     gl_FragColor = vec4(col * alpha, alpha);
   }
@@ -312,10 +318,12 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
           uDpr: { value: renderer.getPixelRatio() },
           uScale: { value: size * 0.10 }, // px proporzionali al canvas (tarato a 168)
         }
-        const star = makePoints(starPos, STAR_SIZE, STAR_SIZE_JITTER, { ...shared, uAlpha: { value: 0.7 } })
+        const star = makePoints(starPos, STAR_SIZE, STAR_SIZE_JITTER, { ...shared, uAlpha: { value: 0.8 } })
         scene.add(star)
 
-        // anelli inclinati (profondità) e controrotanti
+        // 3 anelli inclinati (profondità) e controrotanti: ognuno a un raggio,
+        // un'inclinazione e una velocità diversi — legge come un sistema 3D
+        // stratificato, non un disco piatto (rif. Jarvis esempio.jpg)
         const ring1 = makePoints(ringPositions(RING1_COUNT, 1.32), RING1_SIZE, RING1_SIZE_JITTER, {
           ...shared,
           uBreathe: { value: 1 },
@@ -326,10 +334,18 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
           uBreathe: { value: 1 },
           uAlpha: { value: 0.7 },
         })
+        const ring3 = makePoints(ringPositions(RING3_COUNT, 1.45), RING3_SIZE, RING3_SIZE_JITTER, {
+          ...shared,
+          uBreathe: { value: 1 },
+          uAlpha: { value: 0.8 },
+        })
         ring1.rotation.x = 0.42
         ring2.rotation.x = -0.55
+        ring3.rotation.x = 0.14
+        ring3.rotation.y = 0.5
         scene.add(ring1)
         scene.add(ring2)
+        scene.add(ring3)
 
         // comete con scia su orbite 3D
         scene.add(makeComets({ ...shared, uAlpha: { value: 0.9 } }))
@@ -359,9 +375,11 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
           shared.uExcite.value += (exciteTarget - shared.uExcite.value) * 0.14
           const ex = shared.uExcite.value
           shared.uBreathe.value = (1 + Math.sin((t * Math.PI * 2) / 6) * 0.03) * (1 + ex * 0.06)
-          // rotazione anelli ben visibile, accelera con l'eccitazione
+          // rotazione anelli ben visibile, accelera con l'eccitazione —
+          // 3 anelli, direzioni alternate (controrotanti) e velocità diverse
           ring1.rotation.z = t * (0.5 + ex * 1.4)
           ring2.rotation.z = -t * (0.34 + ex * 1.1)
+          ring3.rotation.z = t * (0.22 + ex * 0.9)
           renderer!.render(scene!, camera)
         }
         tick()
