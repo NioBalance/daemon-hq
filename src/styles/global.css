@@ -1,3 +1,12 @@
+/* Font self-hosted (niente Google Fonts CDN): woff2 variabili in /public/fonts,
+   nessuna dipendenza esterna per la PWA. Anton solo wordmark/logo; Bricolage
+   Grotesque per titoli e numeri hero; Inter per il body; JetBrains Mono per
+   codici e date. */
+@font-face{font-family:'Anton';src:url('/fonts/anton.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Bricolage Grotesque';src:url('/fonts/bricolage-grotesque.woff2') format('woff2');font-weight:200 800;font-style:normal;font-display:swap}
+@font-face{font-family:'Inter';src:url('/fonts/inter.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:'JetBrains Mono';src:url('/fonts/jetbrains-mono.woff2') format('woff2');font-weight:100 800;font-style:normal;font-display:swap}
+
 :root{
   --void:#0B0B0D; --surface:#141418; --surface2:#1B1B21; --surface-3:#232329; --line:#27272F;
   --bone:#EAE6DE; --muted:#8B8B96; --ember:#E2382A; --ember-dim:#7A241C;
@@ -8,13 +17,13 @@
   --glow-ember:0 0 32px 2px rgba(226,56,42,.32); --glow-white:0 0 22px 2px rgba(234,230,222,.14);
   --ease-out:cubic-bezier(.16,1,.3,1);
   --dur-snap:.12s; --dur:.35s; --dur-lux:.45s;
-  /* §1.1 v4 (rivista): tre famiglie. Anton SOLO sul wordmark/logo; Poppins
-     per titoli e numeri hero; Space Grotesk per il body; monospace di
-     sistema per codici e date (niente IBM Plex Mono). */
+  /* §1.1 v4 (rivista 2): Anton SOLO sul wordmark/logo; Bricolage Grotesque
+     per titoli e numeri hero; Inter per il body; JetBrains Mono per codici
+     e date. Tutti self-hosted (vedi @font-face sopra). */
   --font-logo:'Anton',sans-serif;
-  --font-d:'Poppins',sans-serif; --font-b:'Space Grotesk',sans-serif;
-  --font-m:ui-monospace,'Cascadia Mono','Segoe UI Mono',Consolas,monospace;
-  --font-title:'Poppins',sans-serif;
+  --font-d:'Bricolage Grotesque',sans-serif; --font-b:'Inter',sans-serif;
+  --font-m:'JetBrains Mono',ui-monospace,'Cascadia Mono','Segoe UI Mono',Consolas,monospace;
+  --font-title:'Bricolage Grotesque',sans-serif;
   --glass-blur:18px;
   --glass-1:rgba(20,20,24,.55); --glass-2:rgba(27,27,33,.55); --glass-3:rgba(35,35,41,.7);
   --solid-1:rgba(20,20,24,.9); --solid-2:rgba(27,27,33,.9);
