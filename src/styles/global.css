@@ -61,7 +61,7 @@ header.topnav{position:sticky;top:0;z-index:var(--z-header);height:calc(66px + e
 
 .soon-pill{font-family:var(--font-b);font-weight:500;font-size:8px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line);border-radius:var(--radius-pill);color:var(--muted);padding:1px 6px;margin-left:6px}
 
-main{max-width:1240px;margin:0 auto;padding:24px 20px 90px}
+main{max-width:1200px;margin:0 auto;padding:40px 32px 110px}
 .panel{display:none}
 .panel.active{display:block}
 /* La transizione di pagina è passata a Framer Motion (App.tsx); panelIn resta
@@ -128,14 +128,14 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .sb-foot-sync{display:flex;align-items:center;gap:5px;font-family:var(--font-m);font-size:10px;color:var(--dim)}
 .sb-foot-dot{width:5px;height:5px;border-radius:50%;background:var(--ok)}
 /* ── Overview cockpit v4 (handoff §3) ─────────────────────────────────── */
-.ov-head{margin-bottom:22px}
+.ov-head{margin-bottom:34px}
 .ov-title{font-family:var(--font-title);font-weight:600;font-size:26px;letter-spacing:.01em;margin-bottom:5px}
 .ov-sub{font-family:var(--font-m);font-size:11px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase}
 .ov-sub .ok{color:var(--ok)}
 /* Ticker LIVE — l'UNICO container della pagina: pill glass con bordo
    conic-gradient rotante. Il ring è un pseudo-elemento sovradimensionato
    che ruota sotto il pannello interno. */
-.live-ticker{position:relative;overflow:hidden;border-radius:var(--radius-pill);padding:1px;margin-bottom:40px}
+.live-ticker{position:relative;overflow:hidden;border-radius:var(--radius-pill);padding:1px;margin-bottom:60px}
 .live-ticker::before{content:'';position:absolute;inset:-150%;background:conic-gradient(from 0deg,transparent 0 62%,rgba(226,56,42,.85) 74%,rgba(226,56,42,.15) 86%,transparent 94%);animation:tickspin 7s linear infinite}
 @keyframes tickspin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.live-ticker::before{animation:none}}
@@ -152,9 +152,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .lt-item.hot .lt-val{color:var(--ember)}
 .lt-cta{margin-left:auto}
 /* KPI number band — editoriale: fascia hairline, niente box */
-.kpi-band{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--line);margin-bottom:40px}
+.kpi-band{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--line);margin-bottom:52px}
 @media (max-width:980px){.kpi-band{grid-template-columns:repeat(2,1fr)}.kb-cell:nth-child(n+3){border-top:1px solid var(--line)}}
-.kb-cell{padding:20px 18px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.kb-cell{padding:30px 22px 28px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .kb-cell + .kb-cell{border-left:1px solid var(--line)}
 @media (max-width:980px){.kb-cell:nth-child(3){border-left:none}.kb-cell:nth-child(5){border-left:none}}
 .kb-lbl{font-family:var(--font-m);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
@@ -164,9 +164,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .kb-cta{background:none;border:none;padding:0;font:inherit;font-size:12px;color:var(--ember);cursor:pointer;text-align:left;margin-top:auto}
 .kb-cta:hover{text-decoration:underline}
 /* Mini-charts band — 5 grafici draw-in, niente box */
-.chart-band{display:grid;grid-template-columns:repeat(5,1fr);margin:-40px 0 44px}
+.chart-band{display:grid;grid-template-columns:repeat(5,1fr);margin:0 0 72px}
 @media (max-width:980px){.chart-band{grid-template-columns:repeat(2,1fr)}.cb-cell:nth-child(n+3){border-top:1px solid var(--line)}.cb-cell:nth-child(3){border-left:none}.cb-cell:nth-child(5){border-left:none}}
-.cb-cell{padding:18px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.cb-cell{padding:24px 18px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
 .cb-cell + .cb-cell{border-left:1px solid var(--line)}
 .cb-lbl{font-family:var(--font-m);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
 .cb-val{font-family:var(--font-m);font-size:11px;color:var(--muted)}
@@ -176,7 +176,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .tlink{background:none;border:none;padding:0;font:inherit;font-size:12px;color:var(--ember);cursor:pointer}
 .tlink:hover{text-decoration:underline}
 /* Adesso + Ultima attività — due colonne, righe hairline, zero box */
-.ov-cols{display:grid;grid-template-columns:1.4fr 1fr;gap:44px;margin-bottom:30px}
+.ov-cols{display:grid;grid-template-columns:1.4fr 1fr;gap:64px;margin:8px 0 44px}
 @media (max-width:900px){.ov-cols{grid-template-columns:1fr;gap:26px}}
 .ov-col-title{font-family:var(--font-title);font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 .now-list,.act-list{list-style:none;margin:0;padding:0}
@@ -193,7 +193,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .act-dot{width:5px;height:5px;border-radius:50%;background:var(--steel);margin-top:7px;flex:none}
 .act-txt{flex:1;min-width:0}
 .act-time{font-family:var(--font-m);font-size:10px;color:var(--dim);flex:none;margin-top:2px}
-.ov-quick{display:flex;gap:22px;flex-wrap:wrap;padding-top:4px}
+.ov-quick{display:flex;gap:28px;flex-wrap:wrap;padding-top:10px}
 /* ── Overview su telefono (≤768px): compatto, denso, niente scroll infinito ── */
 @media (max-width:768px){
   .ov-head{margin-bottom:16px}
@@ -262,8 +262,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 @media (min-width:1280px){.shell-main.widgets-docked main{padding-right:300px;max-width:none}}
 /* ── De-box v4: primitive condivise ───────────────────────────────────── */
 /* Testata pagina editoriale (pattern Overview/Oggi) */
-.pg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
-.pg-note{font-size:13px;color:var(--muted);line-height:1.55;max-width:640px;margin:-8px 0 22px}
+.pg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:34px}
+.pg-note{font-size:13px;color:var(--muted);line-height:1.6;max-width:600px;margin:-6px 0 34px}
 .pg-add{display:inline-flex;align-items:center;gap:6px;flex:none;background:none;border:1px solid var(--ember);border-radius:var(--radius-pill);color:var(--ember);font:inherit;font-size:13px;font-weight:500;padding:8px 16px;cursor:pointer;transition:background .18s ease,color .18s ease,box-shadow .18s ease}
 .pg-add:hover{background:var(--ember);color:var(--bone);box-shadow:0 0 16px var(--ember-glow)}
 .pg-add:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
@@ -278,7 +278,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .dt-filter:hover{color:var(--bone)}
 .dt-filter.active{color:var(--bone);border-bottom-color:var(--ember)}
 .dtable{width:100%}
-.dt-headrow,.dt-row{display:grid;grid-template-columns:var(--dt-cols);gap:14px;align-items:center;padding:12px 2px;border-bottom:1px solid var(--line)}
+.dt-headrow,.dt-row{display:grid;grid-template-columns:var(--dt-cols);gap:14px;align-items:center;padding:15px 2px;border-bottom:1px solid var(--line)}
 .dt-headrow{font-family:var(--font-m);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);padding:8px 2px}
 .dt-row{font-size:13.5px;color:var(--bone)}
 .dt-row.clickable{cursor:pointer;transition:background .15s ease}
@@ -294,7 +294,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .dt-x:hover{color:var(--ember)}
 @media (max-width:820px){.dt-headrow{display:none}.dt-row{grid-template-columns:1fr auto;gap:6px;row-gap:4px}.dt-row>*{grid-column:1}.dt-row .dt-x{grid-column:2;grid-row:1}}
 /* Sezione informativa boxless (vetting, legende) */
-.pg-section{margin-top:34px}
+.pg-section{margin-top:56px}
 .pg-eyebrow{font-family:var(--font-title);font-weight:600;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 .pg-lines{font-size:13px;color:var(--muted);line-height:1.8;border-top:1px solid var(--line);padding-top:12px}
 /* punteggi campioni inline (de-box) */
@@ -415,7 +415,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .tl-current-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:2px}
 .gantt-legend{margin-bottom:22px}
 .gantt-legend .est{background:var(--muted);opacity:.35;border:1px dashed var(--muted)}
-.gantt-drop{margin-bottom:38px}
+.gantt-drop{margin-bottom:56px}
 .gantt-drop-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:10px;margin-bottom:8px;border-bottom:1px solid var(--line)}
 .gantt-drop-title{font-family:var(--font-title);font-weight:600;font-size:17px;letter-spacing:.02em}
 .gantt-wrap{overflow:hidden}
@@ -530,7 +530,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .stat.hot .num{color:var(--ember)}
 
 /* DROPS + ARTICOLI */
-.drop-row{padding:0 0 24px;margin-bottom:28px;border-bottom:1px solid var(--line)}
+.drop-row{padding:0 0 34px;margin-bottom:48px;border-bottom:1px solid var(--line)}
 .drop-row:last-child{border-bottom:none}
 .drop-row-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .drop-row-title{font-family:var(--font-title);font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase}
@@ -553,7 +553,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .art-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
 
 /* KANBAN */
-.kanban{display:grid;grid-template-columns:repeat(5,minmax(210px,1fr));gap:28px;overflow-x:auto;padding-bottom:8px}
+.kanban{display:grid;grid-template-columns:repeat(5,minmax(210px,1fr));gap:36px;overflow-x:auto;padding-bottom:8px}
 @media(max-width:900px){.kanban{display:flex;overflow-x:auto}.kcol{min-width:230px}}
 .kcol{min-height:200px}
 .kcol-head{font-family:var(--font-m);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:0 0 9px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);margin-bottom:2px}
