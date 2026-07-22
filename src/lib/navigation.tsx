@@ -28,6 +28,12 @@ export interface NavContextValue {
    *  sotto; toggle dalla campanella in top-nav, stato ricordato. */
   widgetsOpen: boolean
   setWidgetsOpen: (open: boolean) => void
+  /** Assistente DÆMON: naviga alla pagina e apre il suo form «nuovo» — il
+   *  flag viene consumato da useRegisterNewAction al mount della pagina. */
+  requestNew: (tab: TabKey) => void
+  consumePendingNew: () => boolean
+  /** Apre il pannello assistente DÆMON (core grande in Overview e FAB). */
+  openAssist: () => void
 }
 
 export const NavContext = createContext<NavContextValue | null>(null)
@@ -61,13 +67,16 @@ export function usePendingEntity(kind: string, ready: boolean, onOpen: (id: stri
 /** Le pagine registrano qui la loro azione di creazione primaria; la scorciatoia
  *  "n" invoca quella della pagina attiva. Si sgancia da sola all'unmount. */
 export function useRegisterNewAction(fn: () => void) {
-  const { setNewAction } = useNav()
+  const { setNewAction, consumePendingNew } = useNav()
   const ref = useRef(fn)
   useEffect(() => {
     ref.current = fn
   })
   useEffect(() => {
     setNewAction(() => ref.current())
+    // Arrivo dall'assistente («aggiungi X» da un'altra pagina): la pagina di
+    // destinazione è montata e registrata, apri subito il suo form nuovo.
+    if (consumePendingNew()) queueMicrotask(() => ref.current())
     return () => setNewAction(null)
-  }, [setNewAction])
+  }, [setNewAction, consumePendingNew])
 }

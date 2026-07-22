@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useRef, useState, type ComponentType } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ComponentType } from 'react'
 import { LazyMotion, m, useReducedMotion } from 'framer-motion'
 
 const loadMotionFeatures = () => import('./lib/motionFeatures').then((mod) => mod.default)
@@ -8,6 +8,7 @@ import Login from './auth/Login'
 import ProfileForm from './auth/ProfileForm'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
+import DaemonCore from './components/DaemonCore'
 import ErrorBoundary from './components/ErrorBoundary'
 import MobileNav from './components/MobileNav'
 import WidgetsPanel from './components/WidgetsPanel'
@@ -46,6 +47,7 @@ const ContrattiSoon = lazy(() => import('./pages/ComingSoon').then((m) => ({ def
 // Dettaglio articolo e palette montati a livello App (aperti da qualsiasi pagina).
 const ArticoloDetail = lazy(() => import('./components/ArticoloDetail'))
 const CommandPalette = lazy(() => import('./components/CommandPalette'))
+const AssistPanel = lazy(() => import('./components/AssistPanel'))
 
 const PAGES: Record<TabKey, ComponentType> = {
   overview: Overview,
@@ -78,6 +80,8 @@ function AppShell() {
   const [archTab, setArchTab] = useState<ArchTab>('inspo')
   const [articoloId, setArticoloId] = useState<string | null>(null)
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const [assistOpen, setAssistOpen] = useState(false)
+  const openAssist = useCallback(() => setAssistOpen(true), [])
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [activeSheet, setActiveSheet] = useState<string | null>(null)
   const [widgetsOpen, setWidgetsOpenState] = useState(() => localStorage.getItem('daemon:widgets-open') === '1')
@@ -92,11 +96,40 @@ function AppShell() {
   }, [])
   const clearPendingEntity = useCallback(() => setPendingEntity(null), [])
 
+  // requestNew (assistente): naviga e arma il flag; la navigazione normale
+  // (goTab/goEntry) lo azzera, così un flag orfano non scatta su altre pagine.
+  const pendingNewRef = useRef<TabKey | null>(null)
+  const activeTabRef = useRef(activeTab)
+  useEffect(() => {
+    activeTabRef.current = activeTab
+  }, [activeTab])
+
   const goTab = useCallback((tab: TabKey) => {
+    pendingNewRef.current = null
     setActiveTab(tab)
     setActiveSheet(null)
   }, [])
+  const requestNew = useCallback((tab: TabKey) => {
+    if (activeTabRef.current === tab) {
+      newActionRef.current?.()
+    } else {
+      setActiveTab(tab)
+      setActiveSheet(null)
+      pendingNewRef.current = tab
+    }
+  }, [])
+  const consumePendingNew = useCallback(() => {
+    // Nessun confronto col tab attivo: gli effect dei figli girano prima di
+    // quelli di App, quindi l'unico registrante dopo un requestNew È la
+    // pagina di destinazione (tutte le destinazioni degli intenti registrano).
+    if (pendingNewRef.current) {
+      pendingNewRef.current = null
+      return true
+    }
+    return false
+  }, [])
   const goEntry = useCallback((entry: NavEntry) => {
+    pendingNewRef.current = null
     if (entry.archTab) setArchTab(entry.archTab)
     setActiveTab(entry.tab)
     setActiveSheet(null)
@@ -131,6 +164,10 @@ function AppShell() {
     },
     closeOverlays: () => {
       let closed = false
+      if (assistOpen) {
+        setAssistOpen(false)
+        closed = true
+      }
       if (paletteOpen) {
         setPaletteOpen(false)
         closed = true
@@ -184,6 +221,9 @@ function AppShell() {
         clearPendingEntity,
         widgetsOpen,
         setWidgetsOpen,
+        requestNew,
+        consumePendingNew,
+        openAssist,
       }}
     >
       <div className="shell">
@@ -219,6 +259,23 @@ function AppShell() {
       {articoloId && (
         <Suspense fallback={null}>
           <ArticoloDetail articoloId={articoloId} onClose={() => setArticoloId(null)} />
+        </Suspense>
+      )}
+      {activeTab !== 'overview' && (
+        <button className="core-fab" onClick={() => setAssistOpen(true)} title="DÆMON — assistente" aria-label="Apri l'assistente DÆMON">
+          <DaemonCore size={34} />
+        </button>
+      )}
+      {assistOpen && (
+        <Suspense fallback={null}>
+          <AssistPanel
+            activeTab={activeTab}
+            onClose={() => setAssistOpen(false)}
+            onOpenPalette={() => {
+              setAssistOpen(false)
+              setPaletteOpen(true)
+            }}
+          />
         </Suspense>
       )}
       {paletteOpen && (

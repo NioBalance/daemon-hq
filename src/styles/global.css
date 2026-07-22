@@ -317,6 +317,39 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .pflow-step.current .pflow-label{color:var(--bone)}
 .pflow-link{flex:1;min-width:16px;height:1px;background:var(--line2);margin-top:13px;transform-origin:left center}
 .pflow-link.done{background:var(--ok)}
+/* ── DÆMON core: orb animato (identità della stella) ─────────────────── */
+.core-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.core-glow{position:absolute;inset:-26%;border-radius:50%;background:radial-gradient(circle,rgba(226,56,42,.55) 0%,rgba(226,56,42,0) 70%);filter:blur(14px);animation:coreBreathe 6s ease-in-out infinite alternate;pointer-events:none}
+@keyframes coreBreathe{0%{opacity:.28;transform:scale(.96)}100%{opacity:.55;transform:scale(1.05)}}
+.core-ring{transform-origin:0 0}
+.core-ring.r1{animation:coreSpin 18s linear infinite}
+.core-ring.r2{animation:coreSpinRev 30s linear infinite}
+.core-ring.r3{animation:coreSpin 11s linear infinite}
+@keyframes coreSpin{to{transform:rotate(360deg)}}
+@keyframes coreSpinRev{to{transform:rotate(-360deg)}}
+.core-star{transform-origin:0 0;animation:corePulse 3.2s ease-in-out infinite alternate;filter:drop-shadow(0 0 6px var(--ember-glow))}
+@keyframes corePulse{0%{transform:scale(1)}100%{transform:scale(1.055)}}
+/* hover (dal contenitore cliccabile): anelli veloci, glow intenso */
+.ov-core:hover .core-ring.r1,.core-fab:hover .core-ring.r1{animation-duration:6s}
+.ov-core:hover .core-ring.r2,.core-fab:hover .core-ring.r2{animation-duration:10s}
+.ov-core:hover .core-ring.r3,.core-fab:hover .core-ring.r3{animation-duration:4s}
+.ov-core:hover .core-glow,.core-fab:hover .core-glow{opacity:.8;animation:none;transform:scale(1.08)}
+@media (prefers-reduced-motion:reduce){.core-glow,.core-ring,.core-star{animation:none!important}.core-glow{opacity:.35}}
+/* core grande al centro dell'Overview */
+.ov-core{display:flex;flex-direction:column;align-items:center;gap:14px;margin:6px auto 54px;background:none;border:none;cursor:pointer;padding:10px}
+.ov-core-cap{font-family:var(--font-m);font-size:9px;letter-spacing:.3em;color:var(--dim);transition:color var(--dur)}
+.ov-core:hover .ov-core-cap{color:var(--ember)}
+.ov-core:focus-visible{outline:2px solid var(--ember);outline-offset:4px;border-radius:12px}
+@media (max-width:768px){.ov-core{margin:0 auto 30px}.ov-core .core-wrap,.ov-core svg{width:110px;height:110px}}
+/* FAB mini (tutte le pagine tranne Overview) */
+.core-fab{position:fixed;right:18px;bottom:18px;z-index:var(--z-bottomnav);width:54px;height:54px;display:flex;align-items:center;justify-content:center;background:rgba(15,15,19,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line2);border-radius:50%;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.5);transition:border-color var(--dur)}
+.core-fab:hover{border-color:var(--ember)}
+.core-fab:focus-visible{outline:2px solid var(--ember);outline-offset:3px}
+@media (max-width:1199px){.core-fab{bottom:calc(88px + env(safe-area-inset-bottom))}}
+/* testata del pannello assistente */
+.palette.assist .as-head{display:flex;align-items:center;gap:12px;padding:14px 16px 4px}
+.as-title{display:flex;flex-direction:column;font-family:var(--font-title);font-weight:600;font-size:14px;letter-spacing:.08em}
+.as-sub{font-family:var(--font-b);font-weight:400;font-size:11px;color:var(--dim);letter-spacing:0;margin-top:2px}
 /* Lavagna — canvas libero */
 .lv-canvas{height:calc(100vh - 210px);min-height:460px;border:1px solid var(--line2);border-radius:var(--radius-lg);overflow:hidden;background:radial-gradient(ellipse 70% 70% at 50% 45%,#191920 0%,#131318 55%,#0e0e12 100%)}
 .lv-wrap{position:relative;width:100%;height:100%}
@@ -706,7 +739,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 @media(max-width:520px){.fieldrow{grid-template-columns:1fr}}
 .detail-img{height:240px;background:var(--void) center/cover no-repeat;border:1px solid var(--line);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--steel);font-family:var(--font-d);font-size:50px;margin-bottom:14px}
 /* TOAST */
-.toast-stack{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));right:16px;z-index:var(--z-toast);display:flex;flex-direction:column-reverse;gap:8px;max-width:min(360px,calc(100vw - 32px))}
+.toast-stack{position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));right:16px;z-index:var(--z-toast);display:flex;flex-direction:column-reverse;gap:8px;max-width:min(360px,calc(100vw - 32px))}
 .toast{display:flex;align-items:center;gap:10px;background:rgba(20,20,24,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line2);border-left:2px solid var(--steel);border-radius:14px;padding:11px 13px;font-size:13px;color:var(--bone);box-shadow:0 16px 44px rgba(0,0,0,.5);animation:toastIn var(--dur) var(--ease-out)}
 .toast.success{border-left-color:var(--ok)}
 .toast.error{border-left-color:var(--ember)}

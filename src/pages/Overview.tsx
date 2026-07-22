@@ -13,7 +13,8 @@ import { useFornitori } from '../features/fornitori/queries'
 import { useActivity, useActivityLogger } from '../features/activity/queries'
 import { KPI_METRICHE, kpiLabel, useKpiSnapshots, useUpsertKpi, type KpiSnapshot } from '../features/kpi/queries'
 import { useCountUp } from '../lib/useCountUp'
-import { useNav } from '../lib/navigation'
+import { useNav, useRegisterNewAction } from '../lib/navigation'
+import DaemonCore from '../components/DaemonCore'
 import { useAuth } from '../auth/useAuth'
 import { useToast } from '../lib/useToast'
 import { useFormDraft } from '../lib/useFormDraft'
@@ -53,7 +54,7 @@ const KPI_FIELDS: FieldDef[] = [
 ]
 
 export default function Overview() {
-  const { goTab } = useNav()
+  const { goTab, openAssist } = useNav()
   const { profile } = useAuth()
   const showToast = useToast()
   const logActivity = useActivityLogger()
@@ -78,6 +79,7 @@ export default function Overview() {
     data: todayIso(),
   })
   const [kpiError, setKpiError] = useState<string | null>(null)
+  useRegisterNewAction(() => openKpi())
   const kpiDraft = useFormDraft('kpi:new', kpiOpen, kpiValues, setKpiValues)
 
   const queries = [drops, fasi, articoli, tasks, designs, techpacks, samples, fornitori]
@@ -306,6 +308,11 @@ export default function Overview() {
           </button>
         </div>
       </div>
+
+      <button className="ov-core" onClick={openAssist} aria-label="Apri l'assistente DÆMON">
+        <DaemonCore size={168} />
+        <span className="ov-core-cap">DÆMON — CHIEDI DOVE</span>
+      </button>
 
       <div className="kpi-band">
         <div className="kb-cell">
