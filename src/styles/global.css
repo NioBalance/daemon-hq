@@ -345,7 +345,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .ov-core:hover .core-glow,.core-fab:hover .core-glow{opacity:.8;animation:none;transform:scale(1.08)}
 @media (prefers-reduced-motion:reduce){.core-glow,.core-ring,.core-star{animation:none!important}.core-glow{opacity:.35}}
 .core-gl-host{position:relative;display:block}
-.core-gl-host canvas{display:block}
+.core-gl-host canvas{display:block;-webkit-mask-image:radial-gradient(circle at 50% 50%,#000 58%,transparent 88%);mask-image:radial-gradient(circle at 50% 50%,#000 58%,transparent 88%)}
 /* core grande al centro dell'Overview */
 .ov-core{display:flex;flex-direction:column;align-items:center;gap:14px;margin:6px auto 54px;background:none;border:none;cursor:pointer;padding:10px}
 .ov-core-cap{font-family:var(--font-m);font-size:9px;letter-spacing:.3em;color:var(--dim);transition:color var(--dur)}

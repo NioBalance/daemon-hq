@@ -22,12 +22,33 @@ import { useInView } from '../lib/useInView'
  *  veloce). Il chiamante gestisce i fallback SVG; qui solo l'errore di init. */
 
 // ── taratura ("più vivo, più nitido, più Jarvis") ─────────────────────────
-const STAR_COUNT = 5200
+const STAR_COUNT = 9000 // polvere di luce: più fine e più numerosa (era 5200)
 const RING1_COUNT = 220
 const RING2_COUNT = 150
 const COMET_COUNT = 14 // comete che si staccano e rientrano
 const COMET_TRAIL = 6 // sprite di scia per cometa
 const STAR_Z_SPREAD = 0.5 // profondità della stella
+
+// dimensioni sprite: più piccole = grana fine, non grumi
+const STAR_SIZE = 0.72
+const STAR_SIZE_JITTER = 0.5
+const RING1_SIZE = 0.95
+const RING1_SIZE_JITTER = 0.55
+const RING2_SIZE = 0.8
+const RING2_SIZE_JITTER = 0.5
+
+// falloff del punto: banda stretta = bordo nitido, alone minimo (non "fiamma")
+const CORE_HARD = 0.3
+const CORE_SOFT = 0.23
+const HALO_OUT = 0.5
+const HALO_IN = 0.32
+const HALO_STRENGTH = 0.14
+
+// drift a riposo (vive anche da fermo) e quanto vira verso il caldo
+const DRIFT_BASE = 0.02
+const DRIFT_EXCITE = 0.05
+const HOT_MIX_HOVER = 0.22 // era 0.45: troppo verso il bianco in hover
+const HOT_MIX_GLOW = 0.14
 
 const VERT = /* glsl */ `
   attribute float aSeed;
@@ -41,7 +62,7 @@ const VERT = /* glsl */ `
   void main() {
     float t = uTime;
     // drift per-particella attorno alla casa; con l'eccitazione si agita
-    float amp = 0.016 + uExcite * 0.05;
+    float amp = ${DRIFT_BASE} + uExcite * ${DRIFT_EXCITE};
     float speed = 0.7 + aSeed * 2.0 + uExcite * 2.6;
     vec3 p = position;
     p.x += sin(t * speed + aSeed * 6.283) * amp;
@@ -50,7 +71,9 @@ const VERT = /* glsl */ `
     p *= uBreathe;
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
-    float size = aSize * (1.0 + uExcite * 0.7);
+    // shimmer di dimensione, sfasato per particella: scintillio anche da fermo
+    float shimmer = 0.86 + 0.14 * sin(t * (3.1 + aSeed * 5.0) + aSeed * 23.0);
+    float size = aSize * shimmer * (1.0 + uExcite * 0.35);
     gl_PointSize = size * (uScale / -mv.z) * uDpr;
     // scintillio veloce e marcato
     vGlow = 0.35 + 0.65 * sin(t * (2.5 + aSeed * 4.0) + aSeed * 40.0);
@@ -91,40 +114,82 @@ const FRAG = /* glsl */ `
     vec2 uv = gl_PointCoord - 0.5;
     float d = length(uv);
     if (d > 0.5) discard;
-    // nucleo DURO + piccolo alone: punto nitido, non bagliore
-    float core = smoothstep(0.34, 0.18, d);
-    float halo = smoothstep(0.5, 0.2, d) * 0.28;
-    vec3 col = mix(uColor, uColorHot, uExcite * 0.45 + vGlow * 0.2);
-    float alpha = (core * 0.95 + halo) * (0.4 + 0.6 * vGlow) * uAlpha * (1.0 + uExcite * 0.35);
+    // nucleo DURO + alone sottile: polvere di luce nitida, non bagliore diffuso
+    float core = smoothstep(${CORE_HARD}, ${CORE_SOFT}, d);
+    float halo = smoothstep(${HALO_OUT}, ${HALO_IN}, d) * ${HALO_STRENGTH};
+    vec3 col = mix(uColor, uColorHot, uExcite * ${HOT_MIX_HOVER} + vGlow * ${HOT_MIX_GLOW});
+    float alpha = (core * 0.95 + halo) * (0.4 + 0.6 * vGlow) * uAlpha * (1.0 + uExcite * 0.15);
     gl_FragColor = vec4(col * alpha, alpha);
   }
 `
 
-/** Campiona l'alpha del logo: torna posizioni [-s,s] dove il PNG è pieno. */
+// comete: stesso falloff nitido, ma quasi spente a riposo — la scia netta è il premio dell'hover
+const COMET_FRAG = /* glsl */ `
+  uniform vec3 uColor;
+  uniform vec3 uColorHot;
+  uniform float uExcite;
+  uniform float uAlpha;
+  varying float vGlow;
+  void main() {
+    vec2 uv = gl_PointCoord - 0.5;
+    float d = length(uv);
+    if (d > 0.5) discard;
+    float core = smoothstep(${CORE_HARD}, ${CORE_SOFT}, d);
+    float halo = smoothstep(${HALO_OUT}, ${HALO_IN}, d) * ${HALO_STRENGTH};
+    vec3 col = mix(uColor, uColorHot, uExcite * 0.5 + vGlow * 0.2);
+    float restBoost = 0.14 + 0.86 * uExcite;
+    float alpha = (core * 0.95 + halo) * (0.4 + 0.6 * vGlow) * uAlpha * restBoost;
+    gl_FragColor = vec4(col * alpha, alpha);
+  }
+`
+
+/** Campiona l'alpha del logo: torna posizioni [-s,s] dove il PNG è pieno.
+ *  Rejection sampling uniforme-per-area (non per-pixel-solido): il nucleo
+ *  della stella è una minuscola area interamente opaca — pescare "un pixel
+ *  a caso fra quelli solidi" la sovraccampiona ~10× rispetto al resto della
+ *  forma, ed è quello che bruciava il centro a bianco in additive blending.
+ *  Qui l'accettazione è proporzionale all'alpha locale, quindi la densità
+ *  finale è uniforme sull'area piena. Una vignetta tonda in coda azzera
+ *  qualunque residuo verso gli angoli del campione quadrato: niente bordo
+ *  quadrato, la sfumatura è garantita indipendentemente dal PNG sorgente. */
 async function sampleLogo(count: number): Promise<Float32Array> {
   const img = new Image()
   img.src = starLogo
   await img.decode()
-  const N = 160
+  const N = 192
   const cv = document.createElement('canvas')
   cv.width = N
   cv.height = N
   const ctx = cv.getContext('2d', { willReadFrequently: true })!
   ctx.drawImage(img, 0, 0, N, N)
   const data = ctx.getImageData(0, 0, N, N).data
-  const solid: [number, number][] = []
-  for (let y = 0; y < N; y++)
-    for (let x = 0; x < N; x++) {
-      if (data[(y * N + x) * 4 + 3] > 120) solid.push([x, y])
-    }
-  const out = new Float32Array(count * 3)
+  const R = N / 2
   const S = 1.05
-  for (let i = 0; i < count; i++) {
-    const [x, y] = solid[Math.floor(Math.random() * solid.length)]
-    out[i * 3] = ((x + Math.random() - N / 2) / (N / 2)) * S
-    out[i * 3 + 1] = (-(y + Math.random() - N / 2) / (N / 2)) * S
+  const out = new Float32Array(count * 3)
+  let i = 0
+  let guard = 0
+  const maxGuard = count * 400
+  while (i < count && guard < maxGuard) {
+    guard++
+    const x = Math.random() * N
+    const y = Math.random() * N
+    const xi = Math.min(N - 1, x | 0)
+    const yi = Math.min(N - 1, y | 0)
+    const a = data[(yi * N + xi) * 4 + 3] / 255
+    if (a < 0.04) continue
+    const dx = xi - R
+    const dy = yi - R
+    const rr = Math.sqrt(dx * dx + dy * dy) / R
+    const vign = rr < 0.78 ? 1 : Math.max(0, 1 - (rr - 0.78) / 0.2)
+    // le 8 punte convergono in un hub minuscolo e interamente opaco: senza smorzarlo
+    // resta il punto più denso della stella e in additive blending brucia a bianco
+    const hubTaper = rr < 0.16 ? 0.1 + 0.9 * (rr / 0.16) : 1
+    if (vign <= 0 || Math.random() > a * vign * hubTaper) continue
+    out[i * 3] = ((x - R) / R) * S
+    out[i * 3 + 1] = (-(y - R) / R) * S
     // profondità: più livelli di distanza
     out[i * 3 + 2] = (Math.random() - 0.5) * STAR_Z_SPREAD
+    i++
   }
   return out
 }
@@ -188,7 +253,7 @@ function makeComets(uniforms: Uniforms) {
     geo,
     new ShaderMaterial({
       vertexShader: COMET_VERT,
-      fragmentShader: FRAG,
+      fragmentShader: COMET_FRAG,
       uniforms,
       transparent: true,
       depthWrite: false,
@@ -221,7 +286,12 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
         const starPos = await sampleLogo(STAR_COUNT)
         if (disposed) return
 
-        renderer = new WebGLRenderer({ alpha: true, antialias: false, powerPreference: 'low-power' })
+        renderer = new WebGLRenderer({
+          alpha: true,
+          antialias: false,
+          premultipliedAlpha: false, // altrimenti il canvas compone sulla pagina con un alone rettangolare visibile
+          powerPreference: 'low-power',
+        })
         renderer.setClearColor(0x000000, 0) // niente box scuro: canvas trasparente
         renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1))
         renderer.setSize(size, size)
@@ -238,20 +308,20 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
           uExcite: { value: 0 },
           uBreathe: { value: 1 },
           uColor: { value: new Color('#E2382A') },
-          uColorHot: { value: new Color('#ffc2b3') },
+          uColorHot: { value: new Color('#FF7A3D') }, // ember caldo — era troppo pallido, bruciava a bianco
           uDpr: { value: renderer.getPixelRatio() },
           uScale: { value: size * 0.10 }, // px proporzionali al canvas (tarato a 168)
         }
-        const star = makePoints(starPos, 1.2, 1.0, { ...shared, uAlpha: { value: 0.85 } })
+        const star = makePoints(starPos, STAR_SIZE, STAR_SIZE_JITTER, { ...shared, uAlpha: { value: 0.7 } })
         scene.add(star)
 
         // anelli inclinati (profondità) e controrotanti
-        const ring1 = makePoints(ringPositions(RING1_COUNT, 1.32), 1.4, 0.9, {
+        const ring1 = makePoints(ringPositions(RING1_COUNT, 1.32), RING1_SIZE, RING1_SIZE_JITTER, {
           ...shared,
           uBreathe: { value: 1 },
           uAlpha: { value: 0.9 },
         })
-        const ring2 = makePoints(ringPositions(RING2_COUNT, 1.58), 1.1, 0.8, {
+        const ring2 = makePoints(ringPositions(RING2_COUNT, 1.58), RING2_SIZE, RING2_SIZE_JITTER, {
           ...shared,
           uBreathe: { value: 1 },
           uAlpha: { value: 0.7 },
