@@ -29,4 +29,10 @@ export const ICONS: Record<string, ReactNode> = {
   lavagna: ic(<><rect x="3.5" y="4.5" width="17" height="13" rx="2"/><path d="M7 20l2-2.5M17 20l-2-2.5M8 8.5h6M8 12h4"/></>),
   hqmap: ic(<><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="7" r="2.4"/><circle cx="12" cy="17" r="2.4"/><path d="M7.8 7.2l2.6 8M16.6 8.6l-3 6.6M8 6.4h8"/></>),
   menu: ic(<><path d="M4 7h16M4 12h16M4 17h16" /></>),
+  // ticker LIVE: icone al posto delle label testuali
+  instagram: ic(<><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="4.3" /><circle cx="17" cy="7" r=".9" /></>),
+  orders: ic(<><path d="M3 4h2.2l1.1 11.2A2 2 0 0 0 8.3 17H18a2 2 0 0 0 2-1.7L21.5 8H6" /><circle cx="9.5" cy="20" r="1.3" /><circle cx="17.5" cy="20" r="1.3" /></>),
+  pacchi: ic(<><path d="M3.5 8l8.5-4 8.5 4-8.5 4-8.5-4z" /><path d="M3.5 8v8l8.5 4 8.5-4V8" /><path d="M12 12v8" /></>),
+  waitlist: ic(<><circle cx="12" cy="8" r="3" /><path d="M6 20c.6-4 2.6-6 6-6s5.4 2 6 6" /><circle cx="4.5" cy="10" r="2" /><circle cx="19.5" cy="10" r="2" /></>),
+  revenue: ic(<><path d="M16 6.5a6 6 0 1 0 0 11" /><path d="M5 10.5h9M5 13.5h8" /></>),
 }

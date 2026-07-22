@@ -41,10 +41,11 @@ export default function Header({
   onSearchClick: () => void
 }) {
   const { goEntry, archTab, widgetsOpen, setWidgetsOpen, setActiveSheet } = useNav()
-  // Impulso "notare le icone" solo al primo accesso di questo dispositivo.
+  // Impulso "notare le icone" a ogni nuovo accesso (una volta per sessione,
+  // non a ogni navigazione interna): sessionStorage, non localStorage.
   const [notice] = useState(() => {
-    if (localStorage.getItem('dhq:icons-seen')) return false
-    localStorage.setItem('dhq:icons-seen', '1')
+    if (sessionStorage.getItem('dhq:icons-seen')) return false
+    sessionStorage.setItem('dhq:icons-seen', '1')
     return true
   })
   const unseen = useUnseenActivity()

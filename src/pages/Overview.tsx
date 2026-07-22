@@ -16,6 +16,15 @@ import { KPI_METRICHE, kpiLabel, useKpiSnapshots, useUpsertKpi, type KpiSnapshot
 import { useCountUp } from '../lib/useCountUp'
 import { useNav, useRegisterNewAction } from '../lib/navigation'
 import DaemonCore from '../components/DaemonCore'
+import { ICONS } from '../components/navIcons'
+
+const TICKER_ICON: Record<KpiMetrica, keyof typeof ICONS> = {
+  instagram_followers: 'instagram',
+  ordini_totali: 'orders',
+  pacchi_drop: 'pacchi',
+  waitlist: 'waitlist',
+  revenue_drop: 'revenue',
+}
 
 const DaemonCoreGL = lazy(() => import('../components/DaemonCoreGL'))
 
@@ -322,8 +331,13 @@ export default function Overview() {
           {KPI_METRICHE.map((m) => {
             const latest = kpiLatest(m.value)
             return (
-              <span className={`lt-item${m.value === 'pacchi_drop' ? ' hot' : ''}`} key={m.value}>
-                <span className="lt-lbl">{m.label}</span>
+              <span
+                className={`lt-item${m.value === 'pacchi_drop' ? ' hot' : ''}`}
+                key={m.value}
+                role="group"
+                aria-label={m.label}
+              >
+                <span className="lt-icon">{ICONS[TICKER_ICON[m.value]]}</span>
                 <span className="lt-val">
                   {latest ? `${latest.valore.toLocaleString('it-IT')}${m.unit ? ` ${m.unit}` : ''}` : '—'}
                 </span>
@@ -343,7 +357,10 @@ export default function Overview() {
 
       <div className="kpi-band">
         <div className="kb-cell">
-          <span className="kb-lbl">Prossimo drop</span>
+          <span className={`kb-head${days !== null && days <= 14 ? ' urgent' : ''}`}>
+            <span className="kb-icon">{ICONS.dropx}</span>
+            <span className="kb-lbl">Prossimo drop</span>
+          </span>
           <div className={`kb-num${days !== null && days <= 14 ? ' hot' : ''}`}>
             {days !== null ? <CountNum value={days} /> : '—'}
           </div>
@@ -355,7 +372,10 @@ export default function Overview() {
           </button>
         </div>
         <div className="kb-cell">
-          <span className="kb-lbl">Campioni</span>
+          <span className={`kb-head${campioniInReview > 0 ? ' warn' : ''}`}>
+            <span className="kb-icon">{ICONS.samples}</span>
+            <span className="kb-lbl">Campioni</span>
+          </span>
           <div className="kb-num">
             <CountNum value={campioniInReview} />
           </div>
@@ -367,7 +387,10 @@ export default function Overview() {
           </button>
         </div>
         <div className="kb-cell">
-          <span className="kb-lbl">Tech pack</span>
+          <span className={`kb-head${tpConti.inviato > 0 ? ' warn' : ''}`}>
+            <span className="kb-icon">{ICONS.techpack}</span>
+            <span className="kb-lbl">Tech pack</span>
+          </span>
           <div className="kb-num">
             <CountNum value={tpConti.inviato} />
           </div>
@@ -379,7 +402,10 @@ export default function Overview() {
           </button>
         </div>
         <div className="kb-cell">
-          <span className="kb-lbl">Task aperti</span>
+          <span className={`kb-head${taskAperti > 0 ? ' urgent' : ' ok'}`}>
+            <span className="kb-icon">{ICONS.oggi}</span>
+            <span className="kb-lbl">Task aperti</span>
+          </span>
           <div className="kb-num">
             <CountNum value={taskAperti} />
           </div>
@@ -389,7 +415,10 @@ export default function Overview() {
           </button>
         </div>
         <div className="kb-cell">
-          <span className="kb-lbl">Fornitori attivi</span>
+          <span className="kb-head ok">
+            <span className="kb-icon">{ICONS.fornitori}</span>
+            <span className="kb-lbl">Fornitori attivi</span>
+          </span>
           <div className="kb-num">
             <CountNum value={fornitoriAttivi.length} />
           </div>
