@@ -5,7 +5,9 @@ import { useNav } from '../lib/navigation'
 import { ICONS } from './navIcons'
 import { BellIcon } from './WidgetsPanel'
 import { useUnseenActivity } from '../features/activity/queries'
+import { useTheme } from '../lib/useTheme'
 import starLogo from '../assets/star-logo.png'
+import starLogoLight from '../assets/daemon-star-blue.png'
 
 function AiIcon() {
   return (
@@ -20,6 +22,21 @@ function SearchIcon() {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
       <circle cx="11" cy="11" r="7" />
       <line x1="16.5" y1="16.5" x2="21" y2="21" />
+    </svg>
+  )
+}
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 3v2.2M12 18.8V21M21 12h-2.2M5.2 12H3M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6M18.4 18.4l-1.6-1.6M7.2 7.2 5.6 5.6" />
+    </svg>
+  )
+}
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
     </svg>
   )
 }
@@ -41,6 +58,7 @@ export default function Header({
   onSearchClick: () => void
 }) {
   const { goEntry, archTab, widgetsOpen, setWidgetsOpen, setActiveSheet } = useNav()
+  const { theme, toggleTheme } = useTheme()
   // Impulso "notare le icone" a ogni nuovo accesso (una volta per sessione,
   // non a ogni navigazione interna): sessionStorage, non localStorage.
   const [notice] = useState(() => {
@@ -69,9 +87,17 @@ export default function Header({
         title="Overview"
         aria-label="Vai a Overview"
       >
-        <img src={starLogo} alt="" />
+        <img src={theme === 'light' ? starLogoLight : starLogo} alt="" />
       </button>
       <div className={`tn-right${notice ? ' notice' : ''}`}>
+        <button
+          className="hicon"
+          title={theme === 'light' ? 'Passa al tema scuro' : 'Passa al tema chiaro'}
+          aria-label={theme === 'light' ? 'Passa al tema scuro' : 'Passa al tema chiaro'}
+          onClick={toggleTheme}
+        >
+          {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+        </button>
         <button
           className={`hicon${widgetsOpen ? ' active' : ''}`}
           title="Notifiche e note del team"

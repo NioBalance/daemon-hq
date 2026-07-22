@@ -14,6 +14,10 @@
   /* Token v4 (handoff cockpit): grigio spento per stati inattivi, hairline
      secondaria per le superfici flottanti, alone ember per icone attive. */
   --dim:#5C5C68; --line2:#2C2C36; --ember-glow:rgba(226,56,42,.35); --info:#5b8def;
+  /* Inchiostro fisso: SEMPRE scuro in entrambi i temi. Serve dove il testo
+     sta su un accento pastello/verde a prescindere dal tema dell'app (badge
+     owner, nodo pipeline completato) — non deve invertirsi con --void. */
+  --ink-fixed:#14131A;
   --glow-ember:0 0 32px 2px rgba(226,56,42,.32); --glow-white:0 0 22px 2px rgba(234,230,222,.14);
   --ease-out:cubic-bezier(.16,1,.3,1);
   --dur-snap:.12s; --dur:.35s; --dur-lux:.45s;
@@ -34,6 +38,59 @@
      --z-sheet e lo slot unico activeSheet: mai due sheet sovrapposti. */
   --z-header:40; --z-bottomnav:44; --z-sheet:46; --z-modal:50; --z-toast:70;
 }
+
+/* ============ TEMA CHIARO — parchment/retro (toggle header, localStorage) ============
+   Token override: la maggior parte dei componenti li usa già via var(--*) e
+   si adatta da sola. Sotto, gli override puntuali per i punti dove un colore
+   letterale (rgba scure per i pannelli glass, #fff negli hover) non passa
+   dai token e va corretto selettore per selettore. */
+:root[data-theme="light"]{
+  --void:#EDEAE2; --surface:#F7F4EC; --surface2:#E4E0D6; --surface-3:#DAD5C6; --line:#D8D3C6;
+  --bone:#1C1A16; --muted:#6E6A5E; --steel:#B9AF98;
+  --dim:#8C8674; --line2:#CBC3AE; --info:#3A66B0;
+  --glow-white:0 0 22px 2px rgba(28,26,22,.12);
+  --glass-1:rgba(255,253,248,.6); --glass-2:rgba(247,244,236,.65); --glass-3:rgba(228,224,212,.75);
+  --solid-1:rgba(255,253,248,.92); --solid-2:rgba(247,244,236,.92);
+  --glass-border:1px solid rgba(28,26,22,.1);
+  --shadow-elevation:0 1px 2px rgba(28,26,22,.06),0 8px 16px -4px rgba(28,26,22,.07),0 24px 48px -16px rgba(28,26,22,.09);
+}
+[data-theme="light"] header.topnav{background:rgba(255,253,248,.8)}
+[data-theme="light"] .live-ticker-in{background:rgba(255,253,248,.88)}
+[data-theme="light"] .fw-card{background:rgba(247,244,236,.88);box-shadow:0 16px 44px rgba(28,26,22,.1),inset 0 0 0 1px rgba(28,26,22,.03)}
+[data-theme="light"] .core-fab{background:rgba(255,253,248,.92);box-shadow:0 10px 28px rgba(28,26,22,.13)}
+[data-theme="light"] .lv-node{box-shadow:0 8px 24px rgba(28,26,22,.09)}
+[data-theme="light"] .lv-toolbar{background:rgba(247,244,236,.97);box-shadow:0 10px 28px rgba(28,26,22,.13)}
+[data-theme="light"] .lv-pin-bg{background:rgba(28,26,22,.32)}
+[data-theme="light"] .lv-pin{background:rgba(255,253,248,.98);box-shadow:0 16px 44px rgba(28,26,22,.16)}
+[data-theme="light"] .lv-pin input{background:rgba(228,224,214,.7)}
+[data-theme="light"] .hq-dropsel{background:rgba(228,224,214,.7)}
+[data-theme="light"] .hq-legend{background:rgba(247,244,236,.88)}
+[data-theme="light"] .hq-panel{background:rgba(247,244,236,.97)}
+[data-theme="light"] .hq-note textarea{background:rgba(228,224,214,.7)}
+[data-theme="light"] .hqn{background:rgba(247,244,236,.92);box-shadow:0 10px 28px rgba(28,26,22,.12)}
+[data-theme="light"] .hqn.sel{box-shadow:0 0 0 2px var(--ember-glow),0 10px 28px rgba(28,26,22,.12)}
+[data-theme="light"] .hq-row-stato{background:rgba(228,224,214,.7)}
+[data-theme="light"] .smp-hover{background:rgba(247,244,236,.97);box-shadow:0 14px 36px rgba(28,26,22,.16)}
+[data-theme="light"] .gantt-tip{background:rgba(247,244,236,.96);box-shadow:0 12px 32px rgba(28,26,22,.13)}
+[data-theme="light"] .mtg-online{background:rgba(28,26,22,.045)}
+[data-theme="light"] .mtg-linkrow input{background:rgba(228,224,214,.7)}
+[data-theme="light"] .mtg-add input{background:rgba(228,224,214,.7)}
+[data-theme="light"] .hicon:hover,[data-theme="light"] .hicon:focus-visible{color:var(--ink-fixed);filter:drop-shadow(0 0 7px rgba(28,26,22,.3))}
+[data-theme="light"] .hicon.active{color:var(--ink-fixed);filter:drop-shadow(0 0 6px rgba(28,26,22,.2))}
+[data-theme="light"] .tn-right.notice .hicon{animation-name:hiconNoticeLight}
+@keyframes hiconNoticeLight{0%,100%{filter:drop-shadow(0 0 3px var(--ember-glow))}50%{color:var(--ink-fixed);filter:drop-shadow(0 0 11px var(--ember))}}
+[data-theme="light"] .modal-bg{background:rgba(28,26,22,.4)}
+[data-theme="light"] .modal{background:rgba(247,244,236,.94)}
+[data-theme="light"] .field input,[data-theme="light"] .field select,[data-theme="light"] .field textarea{background:rgba(228,224,214,.7)}
+[data-theme="light"] .toast{background:rgba(247,244,236,.95)}
+[data-theme="light"] .sheet-bg{background:rgba(28,26,22,.32)}
+[data-theme="light"] .sheet{background:rgba(247,244,236,.98)}
+[data-theme="light"] .palette-bg{background:rgba(28,26,22,.38)}
+[data-theme="light"] .palette{background:rgba(247,244,236,.95)}
+[data-theme="light"] .lightbox-bg{background:rgba(20,19,16,.94)}
+[data-theme="light"] .fv-bg{background:rgba(20,19,16,.92)}
+[data-theme="light"] .cal-ev.meeting{background:rgba(58,102,176,.09)}
+
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
@@ -334,7 +391,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .pflow{display:flex;align-items:flex-start;gap:0;margin:2px 0 16px;padding-bottom:6px;overflow-x:auto}
 .pflow-step{flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;width:78px;text-align:center}
 .pflow-node{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font-family:var(--font-m);font-size:11px;border:1px solid var(--line2);background:var(--void);color:var(--dim);transition:none}
-.pflow-step.done .pflow-node{background:var(--ok);border-color:transparent;color:var(--void)}
+.pflow-step.done .pflow-node{background:var(--ok);border-color:transparent;color:var(--ink-fixed)}
 .pflow-step.current .pflow-node{border-color:var(--ember);color:var(--ember);box-shadow:0 0 0 3px var(--ember-glow);animation:pflowPulse 2s ease-in-out infinite}
 @keyframes pflowPulse{0%,100%{box-shadow:0 0 0 2px var(--ember-glow)}50%{box-shadow:0 0 0 5px rgba(226,56,42,.12)}}
 @media (prefers-reduced-motion:reduce){.pflow-step.current .pflow-node{animation:none}}
@@ -571,7 +628,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .badge.click{cursor:pointer}
 .badge.click:hover{border-color:var(--bone);color:var(--bone)}
 .badge.click:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
-.owner{font-family:var(--font-m);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--void);padding:3px 8px;border-radius:var(--radius-pill)}
+.owner{font-family:var(--font-m);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-fixed);padding:3px 8px;border-radius:var(--radius-pill)}
 .owner.design{background:#C9B8E8}
 .owner.logistica{background:#A9C9E2}
 .owner.fornitori{background:#E2C9A9}
