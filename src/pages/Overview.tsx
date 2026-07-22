@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from 'react'
+import { lazy, Suspense, useCallback, useState, type FormEvent } from 'react'
+import { useReducedMotion } from 'framer-motion'
 import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
@@ -15,6 +16,32 @@ import { KPI_METRICHE, kpiLabel, useKpiSnapshots, useUpsertKpi, type KpiSnapshot
 import { useCountUp } from '../lib/useCountUp'
 import { useNav, useRegisterNewAction } from '../lib/navigation'
 import DaemonCore from '../components/DaemonCore'
+
+const DaemonCoreGL = lazy(() => import('../components/DaemonCoreGL'))
+
+function webglAvailable(): boolean {
+  try {
+    const c = document.createElement('canvas')
+    return !!(c.getContext('webgl2') || c.getContext('webgl'))
+  } catch {
+    return false
+  }
+}
+
+/** Core con fallback a cascata: reduced-motion o WebGL assente → SVG;
+ *  mentre il chunk three carica → SVG; errore GL a runtime → SVG. */
+function SmartCore() {
+  const reduce = useReducedMotion()
+  const [glFailed, setGlFailed] = useState(false)
+  const [glOk] = useState(webglAvailable)
+  const onFallback = useCallback(() => setGlFailed(true), [])
+  if (!glOk || reduce || glFailed) return <DaemonCore size={168} />
+  return (
+    <Suspense fallback={<DaemonCore size={168} />}>
+      <DaemonCoreGL size={168} onFallback={onFallback} />
+    </Suspense>
+  )
+}
 import { useAuth } from '../auth/useAuth'
 import { useToast } from '../lib/useToast'
 import { useFormDraft } from '../lib/useFormDraft'
@@ -310,7 +337,7 @@ export default function Overview() {
       </div>
 
       <button className="ov-core" onClick={openAssist} aria-label="Apri l'assistente DÆMON">
-        <DaemonCore size={168} />
+        <SmartCore />
         <span className="ov-core-cap">DÆMON — CHIEDI DOVE</span>
       </button>
 
