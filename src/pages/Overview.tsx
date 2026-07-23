@@ -162,7 +162,7 @@ export default function Overview() {
         <div className="skeleton" style={{ height: 58, borderRadius: 999, marginBottom: 34 }} />
         <div className="ov-skel-band">
           {Array.from({ length: 5 }, (_, i) => (
-            <div className="skeleton" key={i} style={{ height: 90 }} />
+            <div className="skeleton" key={i} style={{ height: 54 }} />
           ))}
         </div>
         <div className="ov-skel-cols">
@@ -356,14 +356,12 @@ export default function Overview() {
       </button>
 
       <div className="kpi-band">
-        <div className="kb-cell">
-          <span className={`kb-head${days !== null && days <= 14 ? ' urgent' : ''}`}>
+        <div className={`kb-cell${days !== null && days <= 14 ? ' urgent' : ''}`}>
+          <span className="kb-head">
             <span className="kb-icon">{ICONS.dropx}</span>
             <span className="kb-lbl">Prossimo drop</span>
           </span>
-          <div className={`kb-num${days !== null && days <= 14 ? ' hot' : ''}`}>
-            {days !== null ? <CountNum value={days} /> : '—'}
-          </div>
+          <div className="kb-num">{days !== null ? <CountNum value={days} /> : '—'}</div>
           <span className="kb-meta">
             {nextDrop ? `${nextDrop.nome} · ${fasiDone}/${nextFasi.length} fasi` : 'Nessun drop pianificato'}
           </span>
@@ -371,8 +369,8 @@ export default function Overview() {
             Timeline →
           </button>
         </div>
-        <div className="kb-cell">
-          <span className={`kb-head${campioniInReview > 0 ? ' warn' : ''}`}>
+        <div className={`kb-cell${campioniInReview > 0 ? ' warn' : ''}`}>
+          <span className="kb-head">
             <span className="kb-icon">{ICONS.samples}</span>
             <span className="kb-lbl">Campioni</span>
           </span>
@@ -386,8 +384,8 @@ export default function Overview() {
             Campioni →
           </button>
         </div>
-        <div className="kb-cell">
-          <span className={`kb-head${tpConti.inviato > 0 ? ' warn' : ''}`}>
+        <div className={`kb-cell${tpConti.inviato > 0 ? ' warn' : ''}`}>
+          <span className="kb-head">
             <span className="kb-icon">{ICONS.techpack}</span>
             <span className="kb-lbl">Tech pack</span>
           </span>
@@ -401,8 +399,8 @@ export default function Overview() {
             Tech Pack →
           </button>
         </div>
-        <div className="kb-cell">
-          <span className={`kb-head${taskAperti > 0 ? ' urgent' : ' ok'}`}>
+        <div className={`kb-cell${taskAperti > 0 ? ' urgent' : ' ok'}`}>
+          <span className="kb-head">
             <span className="kb-icon">{ICONS.oggi}</span>
             <span className="kb-lbl">Task aperti</span>
           </span>
@@ -414,8 +412,8 @@ export default function Overview() {
             Oggi →
           </button>
         </div>
-        <div className="kb-cell">
-          <span className="kb-head ok">
+        <div className="kb-cell ok">
+          <span className="kb-head">
             <span className="kb-icon">{ICONS.fornitori}</span>
             <span className="kb-lbl">Fornitori attivi</span>
           </span>
