@@ -210,7 +210,6 @@ export default function Overview() {
 
   const nextFasi = nextDrop ? fasiList.filter((f) => f.drop_id === nextDrop.id) : []
   const fasiDone = nextFasi.filter((f) => f.done).length
-  const fasiPct = nextFasi.length ? fasiDone / nextFasi.length : 0
 
 
   const scored = samplesList
@@ -250,6 +249,7 @@ export default function Overview() {
   }
   const followerVals = (kpiSeries.get('instagram_followers') ?? []).map((x) => x.valore)
   const ordiniVals = (kpiSeries.get('ordini_totali') ?? []).map((x) => x.valore)
+  const revenueVals = (kpiSeries.get('revenue_drop') ?? []).map((x) => x.valore)
 
   // --- Cockpit: testata, ticker LIVE, number band ---
   const now = new Date()
@@ -429,6 +429,7 @@ export default function Overview() {
         </div>
       </div>
 
+      <h3 className="ov-col-title">Andamento</h3>
       <div className="chart-band">
         <div className="cb-cell">
           <span className="cb-lbl">Follower · trend</span>
@@ -451,11 +452,6 @@ export default function Overview() {
           <span className="cb-val">{activityList.length ? giorniBars.reduce((a, b) => a + b.value, 0) : '—'} azioni</span>
         </div>
         <div className="cb-cell">
-          <span className="cb-lbl">Pipeline {nextDrop ? nextDrop.nome : 'drop'}</span>
-          <ProgressRing value={fasiPct} size={62} stroke={4} />
-          <span className="cb-val">{fasiDone}/{nextFasi.length} fasi</span>
-        </div>
-        <div className="cb-cell">
           <span className="cb-lbl">Ordini · trend</span>
           {ordiniVals.length >= 2 ? (
             <Sparkline data={ordiniVals} height={46} color="var(--ok)" />
@@ -464,6 +460,17 @@ export default function Overview() {
           )}
           <span className="cb-val">
             {ordiniVals.length ? ordiniVals[ordiniVals.length - 1].toLocaleString('it-IT') : '—'}
+          </span>
+        </div>
+        <div className="cb-cell">
+          <span className="cb-lbl">Revenue · trend</span>
+          {revenueVals.length >= 2 ? (
+            <Sparkline data={revenueVals} height={46} color="var(--amber)" />
+          ) : (
+            <span className="cb-none">servono 2+ snapshot</span>
+          )}
+          <span className="cb-val">
+            {revenueVals.length ? `${revenueVals[revenueVals.length - 1].toLocaleString('it-IT')} €` : '—'}
           </span>
         </div>
         <div className="cb-cell">

@@ -245,11 +245,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .kb-meta{font-size:12px;color:var(--muted);line-height:1.4}
 .kb-cta{background:none;border:none;padding:0;font:inherit;font-size:12px;color:var(--ember);cursor:pointer;text-align:left;margin-top:auto}
 .kb-cta:hover{text-decoration:underline}
-/* Mini-charts band — 5 grafici draw-in, niente box */
+/* Mini-charts band — 5 grafici draw-in, senza divisori verticali: non è
+   "un'altra riga della tabella" sopra, è un vassoio più leggero di contesto */
 .chart-band{display:grid;grid-template-columns:repeat(5,1fr);margin:0 0 72px}
-@media (max-width:980px){.chart-band{grid-template-columns:repeat(2,1fr)}.cb-cell:nth-child(n+3){border-top:1px solid var(--line)}.cb-cell:nth-child(3){border-left:none}.cb-cell:nth-child(5){border-left:none}}
+@media (max-width:980px){.chart-band{grid-template-columns:repeat(2,1fr)}.cb-cell:nth-child(n+3){border-top:1px solid var(--line)}}
 .cb-cell{padding:24px 18px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
-.cb-cell + .cb-cell{border-left:1px solid var(--line)}
 .cb-lbl{font-family:var(--font-m);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
 .cb-val{font-family:var(--font-m);font-size:11px;color:var(--muted)}
 .cb-none{font-family:var(--font-m);font-size:10px;color:var(--steel);margin:auto 0}
