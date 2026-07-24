@@ -40,53 +40,62 @@
 }
 
 /* ============ TEMA CHIARO — parchment/retro (toggle header, localStorage) ============
-   Token override: la maggior parte dei componenti li usa già via var(--*) e
-   si adatta da sola. Sotto, gli override puntuali per i punti dove un colore
-   letterale (rgba scure per i pannelli glass, #fff negli hover) non passa
-   dai token e va corretto selettore per selettore. */
+   NON è il tema scuro invertito: superfici più separate/profonde (non un
+   grigio piatto) e i colori semantici (ember/amber/ok) sono retarati apposta
+   per il chiaro — le stesse tinte neon del cockpit scuro leggono sguaiate su
+   crema, quindi qui sono più profonde/desaturate ("oxblood", ocra, verde
+   foresta) per un effetto retro coerente. shadow-elevation aggiunge anche un
+   filo di luce interna in alto: è quello che fa leggere i pannelli come
+   vetro smerigliato invece che come card piatte. Sotto, gli override
+   puntuali per i punti dove un colore letterale (rgba scure per i pannelli
+   glass, #fff negli hover) non passa dai token e va corretto selettore per
+   selettore. */
 :root[data-theme="light"]{
-  --void:#EDEAE2; --surface:#F7F4EC; --surface2:#E4E0D6; --surface-3:#DAD5C6; --line:#D8D3C6;
-  --bone:#1C1A16; --muted:#6E6A5E; --steel:#B9AF98;
-  --dim:#8C8674; --line2:#CBC3AE; --info:#3A66B0;
+  --void:#F1ECE0; --surface:#FAF7EE; --surface2:#E8E0CC; --surface-3:#DDD2B2; --line:#DDD3BA;
+  --bone:#1C1A16; --muted:#6B6555; --steel:#B4A886;
+  --dim:#89826D; --line2:#CDC0A0; --info:#3A66B0;
+  --ember:#C23A26; --ember-dim:#8A2E1E; --amber:#B07A22; --ok:#3F8657;
+  --ember-glow:rgba(194,58,38,.28);
   --glow-white:0 0 22px 2px rgba(28,26,22,.12);
-  --glass-1:rgba(255,253,248,.6); --glass-2:rgba(247,244,236,.65); --glass-3:rgba(228,224,212,.75);
-  --solid-1:rgba(255,253,248,.92); --solid-2:rgba(247,244,236,.92);
-  --glass-border:1px solid rgba(28,26,22,.1);
-  --shadow-elevation:0 1px 2px rgba(28,26,22,.06),0 8px 16px -4px rgba(28,26,22,.07),0 24px 48px -16px rgba(28,26,22,.09);
+  --glass-1:rgba(250,247,238,.62); --glass-2:rgba(241,236,224,.68); --glass-3:rgba(232,224,204,.78);
+  --solid-1:rgba(250,247,238,.94); --solid-2:rgba(241,236,224,.94);
+  --glass-border:1px solid rgba(28,26,22,.12);
+  --shadow-elevation:inset 0 1px 0 rgba(255,255,255,.55),0 1px 2px rgba(28,26,22,.08),0 10px 20px -4px rgba(28,26,22,.1),0 28px 56px -16px rgba(28,26,22,.13);
 }
-[data-theme="light"] header.topnav{background:rgba(255,253,248,.8)}
-[data-theme="light"] .live-ticker-in{background:rgba(255,253,248,.88)}
-[data-theme="light"] .fw-card{background:rgba(247,244,236,.88);box-shadow:0 16px 44px rgba(28,26,22,.1),inset 0 0 0 1px rgba(28,26,22,.03)}
-[data-theme="light"] .core-fab{background:rgba(255,253,248,.92);box-shadow:0 10px 28px rgba(28,26,22,.13)}
+[data-theme="light"] body{background-image:radial-gradient(ellipse 1100px 620px at 50% -10%, rgba(28,26,22,.05), transparent 60%)}
+[data-theme="light"] header.topnav{background:rgba(250,247,238,.8)}
+[data-theme="light"] .live-ticker-in{background:rgba(250,247,238,.88)}
+[data-theme="light"] .fw-card{background:rgba(241,236,224,.88);box-shadow:0 16px 44px rgba(28,26,22,.1),inset 0 0 0 1px rgba(28,26,22,.03)}
+[data-theme="light"] .core-fab{background:rgba(250,247,238,.92);box-shadow:0 10px 28px rgba(28,26,22,.13)}
 [data-theme="light"] .lv-node{box-shadow:0 8px 24px rgba(28,26,22,.09)}
-[data-theme="light"] .lv-toolbar{background:rgba(247,244,236,.97);box-shadow:0 10px 28px rgba(28,26,22,.13)}
+[data-theme="light"] .lv-toolbar{background:rgba(241,236,224,.97);box-shadow:0 10px 28px rgba(28,26,22,.13)}
 [data-theme="light"] .lv-pin-bg{background:rgba(28,26,22,.32)}
-[data-theme="light"] .lv-pin{background:rgba(255,253,248,.98);box-shadow:0 16px 44px rgba(28,26,22,.16)}
-[data-theme="light"] .lv-pin input{background:rgba(228,224,214,.7)}
-[data-theme="light"] .hq-dropsel{background:rgba(228,224,214,.7)}
-[data-theme="light"] .hq-legend{background:rgba(247,244,236,.88)}
-[data-theme="light"] .hq-panel{background:rgba(247,244,236,.97)}
-[data-theme="light"] .hq-note textarea{background:rgba(228,224,214,.7)}
-[data-theme="light"] .hqn{background:rgba(247,244,236,.92);box-shadow:0 10px 28px rgba(28,26,22,.12)}
+[data-theme="light"] .lv-pin{background:rgba(250,247,238,.98);box-shadow:0 16px 44px rgba(28,26,22,.16)}
+[data-theme="light"] .lv-pin input{background:rgba(232,224,204,.7)}
+[data-theme="light"] .hq-dropsel{background:rgba(232,224,204,.7)}
+[data-theme="light"] .hq-legend{background:rgba(241,236,224,.88)}
+[data-theme="light"] .hq-panel{background:rgba(241,236,224,.97)}
+[data-theme="light"] .hq-note textarea{background:rgba(232,224,204,.7)}
+[data-theme="light"] .hqn{background:rgba(241,236,224,.92);box-shadow:0 10px 28px rgba(28,26,22,.12)}
 [data-theme="light"] .hqn.sel{box-shadow:0 0 0 2px var(--ember-glow),0 10px 28px rgba(28,26,22,.12)}
-[data-theme="light"] .hq-row-stato{background:rgba(228,224,214,.7)}
-[data-theme="light"] .smp-hover{background:rgba(247,244,236,.97);box-shadow:0 14px 36px rgba(28,26,22,.16)}
-[data-theme="light"] .gantt-tip{background:rgba(247,244,236,.96);box-shadow:0 12px 32px rgba(28,26,22,.13)}
+[data-theme="light"] .hq-row-stato{background:rgba(232,224,204,.7)}
+[data-theme="light"] .smp-hover{background:rgba(241,236,224,.97);box-shadow:0 14px 36px rgba(28,26,22,.16)}
+[data-theme="light"] .gantt-tip{background:rgba(241,236,224,.96);box-shadow:0 12px 32px rgba(28,26,22,.13)}
 [data-theme="light"] .mtg-online{background:rgba(28,26,22,.045)}
-[data-theme="light"] .mtg-linkrow input{background:rgba(228,224,214,.7)}
-[data-theme="light"] .mtg-add input{background:rgba(228,224,214,.7)}
+[data-theme="light"] .mtg-linkrow input{background:rgba(232,224,204,.7)}
+[data-theme="light"] .mtg-add input{background:rgba(232,224,204,.7)}
 [data-theme="light"] .hicon:hover,[data-theme="light"] .hicon:focus-visible{color:var(--ink-fixed);filter:drop-shadow(0 0 7px rgba(28,26,22,.3))}
 [data-theme="light"] .hicon.active{color:var(--ink-fixed);filter:drop-shadow(0 0 6px rgba(28,26,22,.2))}
 [data-theme="light"] .tn-right.notice .hicon{animation-name:hiconNoticeLight}
 @keyframes hiconNoticeLight{0%,100%{filter:drop-shadow(0 0 3px var(--ember-glow))}50%{color:var(--ink-fixed);filter:drop-shadow(0 0 11px var(--ember))}}
 [data-theme="light"] .modal-bg{background:rgba(28,26,22,.4)}
-[data-theme="light"] .modal{background:rgba(247,244,236,.94)}
-[data-theme="light"] .field input,[data-theme="light"] .field select,[data-theme="light"] .field textarea{background:rgba(228,224,214,.7)}
-[data-theme="light"] .toast{background:rgba(247,244,236,.95)}
+[data-theme="light"] .modal{background:rgba(241,236,224,.94)}
+[data-theme="light"] .field input,[data-theme="light"] .field select,[data-theme="light"] .field textarea{background:rgba(232,224,204,.7)}
+[data-theme="light"] .toast{background:rgba(241,236,224,.95)}
 [data-theme="light"] .sheet-bg{background:rgba(28,26,22,.32)}
-[data-theme="light"] .sheet{background:rgba(247,244,236,.98)}
+[data-theme="light"] .sheet{background:rgba(241,236,224,.98)}
 [data-theme="light"] .palette-bg{background:rgba(28,26,22,.38)}
-[data-theme="light"] .palette{background:rgba(247,244,236,.95)}
+[data-theme="light"] .palette{background:rgba(241,236,224,.95)}
 [data-theme="light"] .lightbox-bg{background:rgba(20,19,16,.94)}
 [data-theme="light"] .fv-bg{background:rgba(20,19,16,.92)}
 [data-theme="light"] .cal-ev.meeting{background:rgba(58,102,176,.09)}
@@ -401,6 +410,10 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 /* ── DÆMON core: orb animato (identità della stella) ─────────────────── */
 .core-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none}
 .core-glow{position:absolute;inset:-26%;border-radius:50%;background:radial-gradient(circle,rgba(226,56,42,.55) 0%,rgba(226,56,42,0) 70%);filter:blur(14px);animation:coreBreathe 6s ease-in-out infinite alternate;pointer-events:none}
+/* Il core grande dell'Overview passa al blu (secondo logo) in tema chiaro:
+   l'alone CSS dietro il canvas deve seguirlo, altrimenti resta un bagliore
+   rosso dietro una stella blu. Il FAB (altre pagine) resta ember ovunque. */
+[data-theme="light"] .ov-core .core-glow{background:radial-gradient(circle,rgba(49,89,168,.5) 0%,rgba(49,89,168,0) 70%)}
 @keyframes coreBreathe{0%{opacity:.28;transform:scale(.96)}100%{opacity:.55;transform:scale(1.05)}}
 .core-ring{transform-origin:0 0}
 .core-ring.r1{animation:coreSpin 18s linear infinite}

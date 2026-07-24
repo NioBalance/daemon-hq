@@ -5,6 +5,7 @@ import {
   BufferGeometry,
   Clock,
   Color,
+  NormalBlending,
   PerspectiveCamera,
   Points,
   Scene,
@@ -12,14 +13,19 @@ import {
   WebGLRenderer,
 } from 'three'
 import starLogo from '../assets/star-logo.png'
+import starLogoLight from '../assets/daemon-star-blue.png'
 import { useInView } from '../lib/useInView'
 
 /** Core DÆMON a particelle (three.js, chunk lazy solo per l'Overview):
  *  la stella a 8 punte è campionata dall'alpha del logo PNG vero — identità
  *  garantita. Punti a nucleo duro (non alone), twinkle continuo, anelli
- *  inclinati controrotanti, comete con scia su orbite 3D, profondità in z.
+ *  inclinati controrotanti, comete con scia su orbite 3D, profondità in z,
+ *  nebulosa di granelli davanti/dietro al nucleo, scia che segue il mouse.
  *  Hover = eccitazione netta (uExcite → 1: tutto più grande, luminoso e
- *  veloce). Il chiamante gestisce i fallback SVG; qui solo l'errore di init. */
+ *  veloce). Tema chiaro: secondo logo (stella/cometa blu), palette blu,
+ *  blending normale invece che additivo — l'additive schiarisce soltanto,
+ *  su un fondo già chiaro le particelle sparivano invece di leggersi nitide.
+ *  Il chiamante gestisce i fallback SVG; qui solo l'errore di init. */
 
 // ── taratura ("più vivo, più nitido, più Jarvis") ─────────────────────────
 const STAR_COUNT = 10500 // polvere di luce: ancora più fine e numerosa (era 5200 → 9000)
@@ -29,6 +35,9 @@ const RING3_COUNT = 130 // terzo anello: più profondità, più "Jarvis" (rif. J
 const COMET_COUNT = 14 // comete che si staccano e rientrano
 const COMET_TRAIL = 6 // sprite di scia per cometa
 const STAR_Z_SPREAD = 0.5 // profondità della stella
+const NEBULA_COUNT = 260 // granelli sparsi attorno/davanti al nucleo
+const TRAIL_MAX = 18 // punti della scia del mouse
+const TRAIL_FADE_MS = 650
 
 // dimensioni sprite: la stella resta fine (polvere), gli anelli tornano
 // sostanziosi come nella v3 — non erano loro la causa del white-out
@@ -40,6 +49,8 @@ const RING2_SIZE = 1.1
 const RING2_SIZE_JITTER = 0.8
 const RING3_SIZE = 1.25
 const RING3_SIZE_JITTER = 0.85
+const NEBULA_SIZE = 0.55
+const NEBULA_SIZE_JITTER = 0.45
 
 // falloff del punto: banda stretta = bordo nitido, alone minimo (non "fiamma")
 const CORE_HARD = 0.28
@@ -55,6 +66,15 @@ const HOT_MIX_HOVER = 0.22 // era 0.45: troppo verso il bianco in hover
 const HOT_MIX_GLOW = 0.14
 // comete: visibili anche a riposo (non solo un accenno), scia piena in hover
 const COMET_REST_BOOST = 0.4
+
+// Palette per tema: il chiaro NON eredita l'ember — un rosso identico su
+// crema legge "dark invertito", non un tema proprio. Usa il blu del secondo
+// logo (stella/cometa), più profondo per restare leggibile col blending
+// normale (niente additive-glow che schiarisce verso il bianco).
+const DARK_COLOR = '#E2382A'
+const DARK_HOT = '#FF7A3D'
+const LIGHT_COLOR = '#3159A8'
+const LIGHT_HOT = '#17275C'
 
 const VERT = /* glsl */ `
   attribute float aSeed;
@@ -149,6 +169,33 @@ const COMET_FRAG = /* glsl */ `
   }
 `
 
+// scia del mouse: punti semplici che sfumano con l'età (aAge 0=nuovo, 1=spento)
+const TRAIL_VERT = /* glsl */ `
+  attribute float aAge;
+  uniform float uDpr;
+  uniform float uScale;
+  varying float vAge;
+  void main() {
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mv;
+    float size = mix(2.8, 0.3, aAge);
+    gl_PointSize = size * (uScale / -mv.z) * uDpr;
+    vAge = aAge;
+  }
+`
+const TRAIL_FRAG = /* glsl */ `
+  uniform vec3 uColor;
+  varying float vAge;
+  void main() {
+    vec2 uv = gl_PointCoord - 0.5;
+    float d = length(uv);
+    if (d > 0.5) discard;
+    float core = smoothstep(0.5, 0.0, d);
+    float alpha = core * (1.0 - vAge) * 0.8;
+    gl_FragColor = vec4(uColor * alpha, alpha);
+  }
+`
+
 /** Campiona l'alpha del logo: torna posizioni [-s,s] dove il PNG è pieno.
  *  Rejection sampling uniforme-per-area (non per-pixel-solido): il nucleo
  *  della stella è una minuscola area interamente opaca — pescare "un pixel
@@ -158,9 +205,9 @@ const COMET_FRAG = /* glsl */ `
  *  finale è uniforme sull'area piena. Una vignetta tonda in coda azzera
  *  qualunque residuo verso gli angoli del campione quadrato: niente bordo
  *  quadrato, la sfumatura è garantita indipendentemente dal PNG sorgente. */
-async function sampleLogo(count: number): Promise<Float32Array> {
+async function sampleLogo(count: number, src: string): Promise<Float32Array> {
   const img = new Image()
-  img.src = starLogo
+  img.src = src
   await img.decode()
   const N = 192
   const cv = document.createElement('canvas')
@@ -212,9 +259,32 @@ function ringPositions(count: number, radius: number): Float32Array {
   return out
 }
 
-type Uniforms = Record<string, { value: unknown }>
+/** Nube di granelli attorno al nucleo: densità più alta verso il centro ma
+ *  estesa oltre il bordo della stella, con z ampio così una parte passa
+ *  DAVANTI al nucleo — la sagoma nitida si intravede dentro una nebulosa
+ *  viva invece di leggere come un'icona piatta in primo piano. */
+function nebulaPositions(count: number): Float32Array {
+  const out = new Float32Array(count * 3)
+  for (let i = 0; i < count; i++) {
+    const rr = Math.pow(Math.random(), 0.6) * 1.35
+    const a = Math.random() * Math.PI * 2
+    out[i * 3] = Math.cos(a) * rr
+    out[i * 3 + 1] = Math.sin(a) * rr
+    out[i * 3 + 2] = (Math.random() - 0.5) * 1.6
+  }
+  return out
+}
 
-function makePoints(positions: Float32Array, baseSize: number, sizeJitter: number, uniforms: Uniforms) {
+type Uniforms = Record<string, { value: unknown }>
+type BlendMode = 'additive' | 'normal'
+
+function makePoints(
+  positions: Float32Array,
+  baseSize: number,
+  sizeJitter: number,
+  uniforms: Uniforms,
+  blend: BlendMode,
+) {
   const n = positions.length / 3
   const geo = new BufferGeometry()
   geo.setAttribute('position', new BufferAttribute(positions, 3))
@@ -232,13 +302,14 @@ function makePoints(positions: Float32Array, baseSize: number, sizeJitter: numbe
     uniforms,
     transparent: true,
     depthWrite: false,
-    blending: AdditiveBlending,
+    blending: blend === 'additive' ? AdditiveBlending : NormalBlending,
+    premultipliedAlpha: blend === 'normal',
   })
   return new Points(geo, mat)
 }
 
 /** Comete con scia: posizioni calcolate interamente nel vertex shader. */
-function makeComets(uniforms: Uniforms) {
+function makeComets(uniforms: Uniforms, blend: BlendMode) {
   const n = COMET_COUNT * COMET_TRAIL
   const geo = new BufferGeometry()
   geo.setAttribute('position', new BufferAttribute(new Float32Array(n * 3), 3))
@@ -263,14 +334,46 @@ function makeComets(uniforms: Uniforms) {
       uniforms,
       transparent: true,
       depthWrite: false,
-      blending: AdditiveBlending,
+      blending: blend === 'additive' ? AdditiveBlending : NormalBlending,
+      premultipliedAlpha: blend === 'normal',
     }),
   )
   points.frustumCulled = false
   return points
 }
 
-export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number; onFallback: () => void }) {
+/** Scia che segue il puntatore: buffer fisso aggiornato via JS ogni frame,
+ *  niente riallocazioni — gli slot senza un punto recente restano ad
+ *  aAge=1 (alpha 0, invisibili) invece di essere rimossi dalla geometria.
+ *  Stesso blending del resto della scena: additive si "vede" solo su fondo
+ *  scuro, su crema sparirebbe come le altre particelle. */
+function makeTrail(uniforms: Uniforms, blend: BlendMode) {
+  const geo = new BufferGeometry()
+  geo.setAttribute('position', new BufferAttribute(new Float32Array(TRAIL_MAX * 3), 3))
+  geo.setAttribute('aAge', new BufferAttribute(new Float32Array(TRAIL_MAX).fill(1), 1))
+  const mat = new ShaderMaterial({
+    vertexShader: TRAIL_VERT,
+    fragmentShader: TRAIL_FRAG,
+    uniforms,
+    transparent: true,
+    depthWrite: false,
+    blending: blend === 'additive' ? AdditiveBlending : NormalBlending,
+    premultipliedAlpha: blend === 'normal',
+  })
+  const points = new Points(geo, mat)
+  points.frustumCulled = false
+  return points
+}
+
+export default function DaemonCoreGL({
+  size = 168,
+  theme = 'dark',
+  onFallback,
+}: {
+  size?: number
+  theme?: 'dark' | 'light'
+  onFallback: () => void
+}) {
   const hostRef = useRef<HTMLDivElement | null>(null)
   const { ref: viewRef, inView } = useInView<HTMLDivElement>()
   const inViewRef = useRef(inView)
@@ -287,9 +390,14 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
     let scene: Scene | null = null
     const cleanupFns: (() => void)[] = []
 
+    const blend: BlendMode = theme === 'light' ? 'normal' : 'additive'
+    const baseColor = theme === 'light' ? LIGHT_COLOR : DARK_COLOR
+    const hotColor = theme === 'light' ? LIGHT_HOT : DARK_HOT
+    const logoSrc = theme === 'light' ? starLogoLight : starLogo
+
     void (async () => {
       try {
-        const starPos = await sampleLogo(STAR_COUNT)
+        const starPos = await sampleLogo(STAR_COUNT, logoSrc)
         if (disposed) return
 
         renderer = new WebGLRenderer({
@@ -313,12 +421,15 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
           uTime: { value: 0 },
           uExcite: { value: 0 },
           uBreathe: { value: 1 },
-          uColor: { value: new Color('#E2382A') },
-          uColorHot: { value: new Color('#FF7A3D') }, // ember caldo — era troppo pallido, bruciava a bianco
+          uColor: { value: new Color(baseColor) },
+          uColorHot: { value: new Color(hotColor) },
           uDpr: { value: renderer.getPixelRatio() },
           uScale: { value: size * 0.10 }, // px proporzionali al canvas (tarato a 168)
         }
-        const star = makePoints(starPos, STAR_SIZE, STAR_SIZE_JITTER, { ...shared, uAlpha: { value: 0.8 } })
+        // blending normale (chiaro) non "brucia" come l'additive: può permettersi
+        // alpha leggermente più alti senza perdere nitidezza
+        const boost = theme === 'light' ? 0.1 : 0
+        const star = makePoints(starPos, STAR_SIZE, STAR_SIZE_JITTER, { ...shared, uAlpha: { value: 0.8 + boost } }, blend)
         scene.add(star)
 
         // 3 anelli inclinati (profondità) e controrotanti: ognuno a un raggio,
@@ -327,18 +438,18 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
         const ring1 = makePoints(ringPositions(RING1_COUNT, 1.32), RING1_SIZE, RING1_SIZE_JITTER, {
           ...shared,
           uBreathe: { value: 1 },
-          uAlpha: { value: 0.9 },
-        })
+          uAlpha: { value: 0.9 + boost },
+        }, blend)
         const ring2 = makePoints(ringPositions(RING2_COUNT, 1.58), RING2_SIZE, RING2_SIZE_JITTER, {
           ...shared,
           uBreathe: { value: 1 },
-          uAlpha: { value: 0.7 },
-        })
+          uAlpha: { value: 0.7 + boost },
+        }, blend)
         const ring3 = makePoints(ringPositions(RING3_COUNT, 1.45), RING3_SIZE, RING3_SIZE_JITTER, {
           ...shared,
           uBreathe: { value: 1 },
-          uAlpha: { value: 0.8 },
-        })
+          uAlpha: { value: 0.8 + boost },
+        }, blend)
         ring1.rotation.x = 0.42
         ring2.rotation.x = -0.55
         ring3.rotation.x = 0.14
@@ -347,8 +458,24 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
         scene.add(ring2)
         scene.add(ring3)
 
+        // nebulosa: granelli sparsi attorno E davanti al nucleo — la motion
+        // vive sopra la sagoma della stella, che si intravede dentro invece
+        // di leggere come un'icona piatta e nitida in primo piano
+        const nebula = makePoints(nebulaPositions(NEBULA_COUNT), NEBULA_SIZE, NEBULA_SIZE_JITTER, {
+          ...shared,
+          uAlpha: { value: theme === 'light' ? 0.5 : 0.4 },
+        }, blend)
+        scene.add(nebula)
+
         // comete con scia su orbite 3D
-        scene.add(makeComets({ ...shared, uAlpha: { value: 0.9 } }))
+        scene.add(makeComets({ ...shared, uAlpha: { value: 0.9 } }, blend))
+
+        // scia del mouse: un piccolo sistema a parte, stesso blend del resto
+        const trail = makeTrail({ uColor: { value: new Color(hotColor) }, uDpr: shared.uDpr, uScale: shared.uScale }, blend)
+        scene.add(trail)
+        const trailPts: { x: number; y: number; t: number }[] = []
+        const trailPos = trail.geometry.attributes.position as BufferAttribute
+        const trailAge = trail.geometry.attributes.aAge as BufferAttribute
 
         let exciteTarget = 0
         const onEnter = () => {
@@ -357,12 +484,28 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
         const onLeave = () => {
           exciteTarget = 0
         }
+        // converte il puntatore in coordinate del piano z=0 della scena:
+        // proiezione inversa manuale, valida perché la camera guarda dritto
+        // lungo -Z verso l'origine (nessuna rotazione, solo offset su Z)
+        const vFov = (camera.fov * Math.PI) / 180
+        const onPointerMove = (e: PointerEvent) => {
+          const rect = renderer!.domElement.getBoundingClientRect()
+          if (rect.width === 0 || rect.height === 0) return
+          const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1
+          const ny = -(((e.clientY - rect.top) / rect.height) * 2 - 1)
+          const halfH = Math.tan(vFov / 2) * camera.position.z
+          const halfW = halfH * camera.aspect
+          trailPts.push({ x: nx * halfW, y: ny * halfH, t: performance.now() })
+          if (trailPts.length > TRAIL_MAX) trailPts.shift()
+        }
         const hoverEl = host.closest('.ov-core') ?? host
         hoverEl.addEventListener('pointerenter', onEnter)
         hoverEl.addEventListener('pointerleave', onLeave)
+        hoverEl.addEventListener('pointermove', onPointerMove as EventListener)
         cleanupFns.push(() => {
           hoverEl.removeEventListener('pointerenter', onEnter)
           hoverEl.removeEventListener('pointerleave', onLeave)
+          hoverEl.removeEventListener('pointermove', onPointerMove as EventListener)
         })
 
         const clock = new Clock()
@@ -380,6 +523,23 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
           ring1.rotation.z = t * (0.5 + ex * 1.4)
           ring2.rotation.z = -t * (0.34 + ex * 1.1)
           ring3.rotation.z = t * (0.22 + ex * 0.9)
+
+          // scia del mouse: età normalizzata su TRAIL_FADE_MS, gli slot senza
+          // un punto recente restano ad aAge 1 (alpha 0) senza toccare il buffer
+          const now = performance.now()
+          while (trailPts.length && now - trailPts[0].t > TRAIL_FADE_MS) trailPts.shift()
+          for (let i = 0; i < TRAIL_MAX; i++) {
+            const p = trailPts[trailPts.length - 1 - i]
+            if (p) {
+              trailPos.setXYZ(i, p.x, p.y, 0.05)
+              trailAge.setX(i, Math.min(1, (now - p.t) / TRAIL_FADE_MS))
+            } else {
+              trailAge.setX(i, 1)
+            }
+          }
+          trailPos.needsUpdate = true
+          trailAge.needsUpdate = true
+
           renderer!.render(scene!, camera)
         }
         tick()
@@ -405,7 +565,7 @@ export default function DaemonCoreGL({ size = 168, onFallback }: { size?: number
         renderer.domElement.remove()
       }
     }
-  }, [size, onFallback])
+  }, [size, theme, onFallback])
 
   return (
     <span className="core-wrap core-gl" style={{ width: size, height: size }} aria-hidden ref={viewRef}>

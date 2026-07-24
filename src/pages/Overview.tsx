@@ -17,6 +17,7 @@ import { useCountUp } from '../lib/useCountUp'
 import { useNav, useRegisterNewAction } from '../lib/navigation'
 import DaemonCore from '../components/DaemonCore'
 import { ICONS } from '../components/navIcons'
+import { useTheme } from '../lib/useTheme'
 
 const TICKER_ICON: Record<KpiMetrica, keyof typeof ICONS> = {
   instagram_followers: 'instagram',
@@ -41,13 +42,14 @@ function webglAvailable(): boolean {
  *  mentre il chunk three carica → SVG; errore GL a runtime → SVG. */
 function SmartCore() {
   const reduce = useReducedMotion()
+  const { theme } = useTheme()
   const [glFailed, setGlFailed] = useState(false)
   const [glOk] = useState(webglAvailable)
   const onFallback = useCallback(() => setGlFailed(true), [])
   if (!glOk || reduce || glFailed) return <DaemonCore size={168} />
   return (
     <Suspense fallback={<DaemonCore size={168} />}>
-      <DaemonCoreGL size={168} onFallback={onFallback} />
+      <DaemonCoreGL size={168} theme={theme} onFallback={onFallback} />
     </Suspense>
   )
 }
