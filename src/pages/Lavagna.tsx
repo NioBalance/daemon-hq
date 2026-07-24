@@ -16,7 +16,7 @@ export default function Lavagna() {
           <h2 className="ov-title">Lavagna</h2>
           <div className="ov-sub">CANVAS LIBERO · APPUNTI E BRAINSTORMING (NON LEGATO AI DATI)</div>
         </div>
-        <span className="code">DOPPIO-CLICK O «+ NODO» · TRASCINA TRA I NODI PER COLLEGARE</span>
+        <span className="code">Doppio-click o «+ Nodo» · trascina tra i nodi per collegare</span>
       </div>
 
       {isLoading && <Loading label="Carico la lavagna…" />}

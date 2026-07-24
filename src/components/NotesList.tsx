@@ -28,7 +28,7 @@ export default function NotesList({ entityType, entityId }: { entityType: NoteEn
 
   return (
     <div className="notes">
-      <span className="code">NOTE ({notes.length})</span>
+      <span className="code">Note ({notes.length})</span>
       {notes.map((n) => (
         <div className="noteline" key={n.id}>
           <span className="na">{n.author_name}</span>

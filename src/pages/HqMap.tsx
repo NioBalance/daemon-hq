@@ -241,7 +241,7 @@ export default function HqMap() {
 
                 {panelNode.kind === 'drop' && (
                   <div className="hq-panel-sec">
-                    <span className="code">FASI</span>
+                    <span className="code">Fasi</span>
                     {(fasiQ.data ?? [])
                       .filter((f) => f.drop_id === panelNode.entityId)
                       .sort((a, b) => a.ordine - b.ordine)
@@ -255,7 +255,7 @@ export default function HqMap() {
                 )}
                 {panelNode.kind === 'techpack' && (
                   <div className="hq-panel-sec">
-                    <span className="code">STATO</span>
+                    <span className="code">Stato</span>
                     <select className="hq-row-stato" value={panelNode.sub} onChange={(e) => changeStato(panelNode, e.target.value)}>
                       {TP_STATI.map((v) => (
                         <option key={v} value={v}>
@@ -267,7 +267,7 @@ export default function HqMap() {
                 )}
                 {panelNode.kind === 'sample' && (
                   <div className="hq-panel-sec">
-                    <span className="code">VERDETTO</span>
+                    <span className="code">Verdetto</span>
                     <select className="hq-row-stato" value={panelNode.sub} onChange={(e) => changeStato(panelNode, e.target.value)}>
                       {VERDETTI.map((v) => (
                         <option key={v} value={v}>
@@ -279,7 +279,7 @@ export default function HqMap() {
                 )}
 
                 <div className="hq-panel-sec">
-                  <span className="code">NOTA FIRMATA</span>
+                  <span className="code">Nota firmata</span>
                   <NodeNote
                     key={`${panelNode.kind}:${panelNode.entityId}`}
                     entityType={NOTE_ENTITY[panelNode.kind]}

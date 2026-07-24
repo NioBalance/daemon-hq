@@ -9,7 +9,7 @@ function Soon({ eyebrow, title, desc, fase }: { eyebrow: string; title: string; 
       <h2 className="soon-title">{title}</h2>
       <p className="soon-desc">{desc}</p>
       <div className="soon-line" aria-hidden />
-      <span className="code">IN ARRIVO — {fase}</span>
+      <span className="code">In arrivo — {fase}</span>
     </div>
   )
 }

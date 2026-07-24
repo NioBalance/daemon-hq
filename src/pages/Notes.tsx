@@ -190,7 +190,7 @@ export default function Notes() {
         <>
           {pinned.length > 0 && (
             <>
-              <span className="code">PINNATE ({pinned.length})</span>
+              <span className="code">Pinnate ({pinned.length})</span>
               <div className="memo-grid">
                 {pinned.map((memo) => (
                   <MemoCard
@@ -207,7 +207,7 @@ export default function Notes() {
           )}
           {others.length > 0 && (
             <>
-              <span className="code">BACHECA ({others.length})</span>
+              <span className="code">Bacheca ({others.length})</span>
               <div className="memo-grid">
                 {others.map((memo) => (
                   <MemoCard

@@ -172,7 +172,7 @@ export default function ArticoloDetail({ articoloId, onClose }: { articoloId: st
       </div>
       <hr className="divider" style={{ margin: '16px 0' }} />
       <span className="code">
-        TASK ({myTasks.filter((t) => t.done).length}/{myTasks.length})
+        Task ({myTasks.filter((t) => t.done).length}/{myTasks.length})
       </span>
       <div className="tasklist">
         {myTasks.map((t) => (

@@ -249,13 +249,13 @@ export default function Calendario() {
           <div className="cal-embed-wrap">
             <iframe src={embedLink.url} className="cal-embed" title="Google Calendar" loading="lazy" />
             <p className="code" style={{ display: 'block', marginTop: 8 }}>
-              URL CONFIGURATO IN ARCHIVIO → LINK («GOOGLE CALENDAR — EMBED») · LE SCADENZE AUTOMATICHE DEI
-              DROP RESTANO NELLA VISTA HQ
+              URL configurato in Archivio → Link («Google Calendar — embed») · le scadenze automatiche dei
+              drop restano nella vista HQ
             </p>
           </div>
         ) : (
           <div className="card" style={{ maxWidth: 640 }}>
-            <span className="code">GOOGLE CALENDAR — CONFIGURAZIONE EMBED</span>
+            <span className="code">Google Calendar — configurazione embed</span>
             <p className="card-meta" style={{ margin: '8px 0' }}>
               Da Google Calendar: Impostazioni → il tuo calendario → «Integra calendario» → copia l'URL
               dell'iframe (o l'intero snippet) e incollalo qui. Vale per tutto il team e resta modificabile
@@ -330,7 +330,7 @@ export default function Calendario() {
             </span>
           </div>
 
-          <span className="code">PROSSIMI 10</span>
+          <span className="code">Prossimi 10</span>
           <div className="ev-list" style={{ marginTop: 10 }}>
             {upcoming.length === 0 && <div className="empty" style={{ padding: 18 }}>Nessun evento in arrivo.</div>}
             {upcoming.map((e) => (

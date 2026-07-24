@@ -235,7 +235,7 @@ export default function TechpackFolder({ techpack, onClose }: { techpack: Techpa
     <Modal title={`Cartella — ${techpack.nome}`} onClose={onClose} wide>
       <div className="row" style={{ justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
         <span className="code">
-          {files.length} FILE · MAX 50MB — VIDEO E FILE PIÙ PESANTI COME LINK DRIVE
+          {files.length} file · max 50MB — video e file più pesanti come link Drive
         </span>
         <div className="row" style={{ flexWrap: 'wrap' }}>
           <button className="btn sm ghost" onClick={() => setLinkModal(true)}>

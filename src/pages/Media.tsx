@@ -236,7 +236,7 @@ export default function MediaStudio() {
                 onAddVideo={() => openAddVideo('in-edit')}
               />
               <p className="code" style={{ display: 'block', marginTop: 4 }}>
-                MEDIA SENZA TAG — APRILI E USA «SPOSTA / TAGGA» PER SISTEMARLI NELLE RIGHE
+                Media senza tag — aprili e usa «Sposta / Tagga» per sistemarli nelle righe
               </p>
             </div>
           )}
@@ -296,7 +296,7 @@ export default function MediaStudio() {
               onChange={(k, v) => setVideoValues((s) => ({ ...s, [k]: v }))}
             />
             <p className="code" style={{ display: 'block', marginBottom: 10 }}>
-              I VIDEO RESTANO SU DRIVE/DROPBOX — QUI VIVONO CON LINK E ANTEPRIMA (CARICABILE DAL LIGHTBOX)
+              I video restano su Drive/Dropbox — qui vivono con link e anteprima (caricabile dal lightbox)
             </p>
             {videoError && <p className="auth-msg err">{videoError}</p>}
             <div className="modal-actions">

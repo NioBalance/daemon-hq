@@ -234,7 +234,7 @@ export default function Timeline() {
                       <div className="gantt-drop-head">
                         <h3 className="gantt-drop-title">{d.nome}</h3>
                         <span className="code">
-                          {d.data_lancio ? `LANCIO ${fmtDate(d.data_lancio)}` : 'SENZA DATA'}
+                          {d.data_lancio ? `Lancio ${fmtDate(d.data_lancio)}` : 'Senza data'}
                         </span>
                       </div>
                       {dropFasi.length ? (
@@ -334,7 +334,7 @@ export default function Timeline() {
           {dropsInYear.length === 0 && <div className="empty">Nessun drop con data lancio nel {year}.</div>}
           {dropsNoDate.length > 0 && (
             <p className="code" style={{ display: 'block', marginTop: 10 }}>
-              SENZA DATA: {dropsNoDate.map((d) => d.nome).join(' · ')}
+              Senza data: {dropsNoDate.map((d) => d.nome).join(' · ')}
             </p>
           )}
           <div className="legend" style={{ marginTop: 12 }}>

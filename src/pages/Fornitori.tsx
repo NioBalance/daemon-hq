@@ -461,7 +461,7 @@ export default function Fornitori() {
                 fallback="+"
                 title="Tocca per caricare/cambiare il logo"
               />
-              <span className="code">LOGO (OPZIONALE)</span>
+              <span className="code">Logo (opzionale)</span>
             </div>
             <FormFields
               fields={FORNITORE_FIELDS}

@@ -320,7 +320,7 @@ export default function Campioni() {
                 fallback="+"
                 title="Tocca per caricare/cambiare la foto del campione"
               />
-              <span className="code">FOTO CAMPIONE (OPZIONALE)</span>
+              <span className="code">Foto campione (opzionale)</span>
             </div>
             <div className="smp-radar">
               <ScoreRadarSvg
@@ -338,7 +338,7 @@ export default function Campioni() {
                   setValues((s) => ({ ...s, [key]: v }))
                 }}
               />
-              <span className="code">TRASCINA I VERTICI O USA I CAMPI SOTTO — SALVA CON «SALVA»</span>
+              <span className="code">Trascina i vertici o usa i campi sotto — salva con «Salva»</span>
             </div>
             <FormFields
               fields={SMP_FIELDS}

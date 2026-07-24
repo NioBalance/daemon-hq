@@ -19,7 +19,7 @@ export default function ShortcutsPanel({ onClose }: { onClose: () => void }) {
         <span className="kbd">?</span>
       </div>
       <p className="code" style={{ display: 'block', margin: '16px 0 6px' }}>
-        NAVIGAZIONE — PREMI G POI LA LETTERA
+        Navigazione — premi G poi la lettera
       </p>
       {ALL_NAV_ENTRIES.map((entry) => (
         <div className="shortcut-row" key={entry.id}>
