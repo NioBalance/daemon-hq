@@ -26,6 +26,9 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Bump di versione cache PWA: cambiare il suffisso (-v5, -v6, …) dopo
+        // ogni redesign/deploy importante invalida le cache dei client vecchi.
+        cacheId: 'daemon-hq-v5',
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,

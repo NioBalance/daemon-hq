@@ -47,8 +47,10 @@
   --glow-ember:0 0 24px hsl(var(--primary) / .30);
   --glow-white:0 0 22px 2px rgba(234,230,222,.14);
   --shadow-elevation:var(--shadow-1);
+  /* motion §8: fast=hover/focus/toggle · base=sidebar/tab/drawer · slow=liste/modali */
   --ease-out:cubic-bezier(.16,1,.3,1);
-  --dur-snap:.12s; --dur:.35s; --dur-lux:.45s;
+  --dur-fast:.12s; --dur-base:.2s; --dur-slow:.35s;
+  --dur-snap:var(--dur-fast); --dur:var(--dur-slow); --dur-lux:.45s;
   /* font: Anton SOLO wordmark/logo; Bricolage titoli; Inter UI; JetBrains Mono dati */
   --font-logo:'Anton',sans-serif;
   --font-d:'Bricolage Grotesque',sans-serif; --font-b:'Inter',sans-serif;
@@ -220,7 +222,7 @@ main{max-width:1200px;margin:0 auto;padding:40px 32px 110px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--ember);color:hsl(var(--primary-foreground));border:none;border-radius:var(--radius-button);font-family:var(--font-b);font-weight:600;font-size:13px;padding:8px 16px;cursor:pointer;position:relative;transition:background var(--dur),box-shadow var(--dur),transform var(--dur-snap)}
 .btn:hover{background:#C22F23}
 .btn:not(.ghost):not(.danger):hover{box-shadow:var(--glow-ember)}
-.btn:active{transform:scale(.97)}
+.btn:active{transform:scale(.98)}
 .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
 .btn.ghost:hover{color:var(--bone)}
 .btn.sm{padding:4px 10px;font-size:12px}
@@ -847,7 +849,10 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 /* HEADER ICONS */
 .hicons{display:flex;gap:6px;align-items:center}
 /* Icone top-nav: outlined, niente bg/bordo, rosso neon; bianco acceso on-hover */
-.hicon{width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:var(--radius-sm);color:var(--ember);cursor:pointer;padding:0;filter:drop-shadow(0 0 3px var(--ember-glow));transition:color var(--dur),filter var(--dur)}
+/* Icone top-nav: restano rosso neon (scelta esplicita), ma il glow a riposo
+   va via — il budget §D7 è max 3 glow per viewport (nav attiva, CTA, core).
+   L'alone torna su hover/active e nell'impulso notice. */
+.hicon{width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:var(--radius-sm);color:var(--ember);cursor:pointer;padding:0;transition:color var(--dur-fast),filter var(--dur-fast)}
 .hicon:hover,.hicon:focus-visible{color:#fff;filter:drop-shadow(0 0 7px rgba(255,255,255,.55))}
 .hicon.active{color:#fff;filter:drop-shadow(0 0 6px rgba(255,255,255,.4))}
 .hicon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -918,22 +923,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .fieldrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:520px){.fieldrow{grid-template-columns:1fr}}
 .detail-img{height:240px;background:var(--void) center/cover no-repeat;border:1px solid var(--line);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--steel);font-family:var(--font-d);font-size:50px;margin-bottom:14px}
-/* TOAST */
-.toast-stack{position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));right:16px;z-index:var(--z-toast);display:flex;flex-direction:column-reverse;gap:8px;max-width:min(360px,calc(100vw - 32px))}
-.toast{display:flex;align-items:center;gap:10px;background:rgba(20,20,24,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line2);border-left:2px solid var(--steel);border-radius:14px;padding:11px 13px;font-size:13px;color:var(--bone);box-shadow:0 16px 44px rgba(0,0,0,.5);animation:toastIn var(--dur) var(--ease-out)}
-.toast.success{border-left-color:var(--ok)}
-.toast.error{border-left-color:var(--ember)}
-.toast.info{border-left-color:var(--amber)}
-.toast .toast-icon{font-family:var(--font-m);flex-shrink:0}
-.toast.success .toast-icon{color:var(--ok)}
-.toast.error .toast-icon{color:var(--ember)}
-.toast.info .toast-icon{color:var(--amber)}
-.toast span{flex:1}
-.toast .toast-close{background:none;border:none;border-radius:var(--radius-sm);color:var(--steel);cursor:pointer;font-size:12px;flex-shrink:0}
-.toast .toast-close:hover{color:var(--bone)}
-.toast .toast-close:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+/* TOAST legacy rimosso: il render è passato a ui-v2/ToastStack (.toast2 §6.10) */
 @keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.toast{animation:none}}
 
 /* BORDI VIVI — anello a gradiente che percorre il perimetro on-hover/focus,
    al posto di un bordo statico che si schiarisce. Tecnica: conic-gradient
@@ -969,6 +960,15 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
   .cal-day::before,.media-card::before,.btn::before{
     background:var(--energy-color);animation:none
   }
+  /* anche gli stati hover/focus: le regole sopra sono più specifiche del
+     selettore base e senza questo override l'anello girava lo stesso */
+  .card:hover::before,.card:focus-visible::before,
+  .art-card:hover::before,.art-card:focus-visible::before,
+  .kcard:hover::before,.kcard:focus-visible::before,
+  .cal-day:hover::before,.cal-day:focus-visible::before,
+  .media-card:hover::before,.media-card:focus-visible::before,
+  .chip:hover::before,.chip:focus-visible::before,
+  .btn:hover::before,.btn:focus-visible::before{animation:none}
 }
 
 /* Hover lift: disattivato lo spostamento sotto reduced-motion, i colori restano */
@@ -1004,7 +1004,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .sheet-title{font-family:var(--font-title);font-weight:600;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);text-align:left;margin:14px 12px 6px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .sheet-item{display:flex;align-items:center;width:100%;text-align:left;background:none;border:none;color:var(--bone);font-family:var(--font-b);font-weight:500;font-size:15px;padding:13px 12px;border-radius:var(--radius-sm);cursor:pointer}
 .sheet-item.active{box-shadow:inset 2px 0 0 var(--ember);color:var(--bone)}
-@media (max-width:1199px){main{padding-bottom:150px}.toast-stack{bottom:calc(86px + env(safe-area-inset-bottom))}}
+@media (max-width:1199px){main{padding-bottom:150px}}
 
 /* COMMAND PALETTE (Ctrl/Cmd+K) */
 .palette-bg{position:fixed;inset:0;background:rgba(11,11,13,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:var(--z-modal);display:flex;align-items:flex-start;justify-content:center;padding:12vh 14px 14px}
@@ -1081,9 +1081,10 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .year-month{font-family:var(--font-b);font-weight:500;font-size:9px;color:var(--muted);text-align:center;border-left:1px dashed var(--line);padding:4px 0}
 .year-row{position:relative;height:36px;border-bottom:1px dashed var(--line)}
 .year-row:last-of-type{border-bottom:none}
-.year-bar{position:absolute;top:5px;height:26px;display:flex;align-items:center;padding:0 10px;border:none;border-radius:var(--radius-pill);background:linear-gradient(90deg,var(--ember-dim),var(--ember));color:var(--bone);font-family:var(--font-b);font-weight:500;font-size:11px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;box-shadow:0 0 14px rgba(226,56,42,.25);transition:box-shadow var(--dur)}
+/* niente glow a riposo (budget §D7): l'alone arriva solo on-hover */
+.year-bar{position:absolute;top:5px;height:26px;display:flex;align-items:center;padding:0 10px;border:none;border-radius:var(--radius-pill);background:linear-gradient(90deg,var(--ember-dim),var(--ember));color:hsl(var(--primary-foreground));font-family:var(--font-b);font-weight:500;font-size:11px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:box-shadow var(--dur)}
 .year-bar:hover{box-shadow:var(--glow-ember)}
-.year-bar.launched{background:linear-gradient(90deg,rgba(87,179,108,.4),var(--ok));box-shadow:0 0 14px rgba(87,179,108,.2)}
+.year-bar.launched{background:linear-gradient(90deg,hsl(var(--success) / .4),var(--ok))}
 .year-bar.launched:hover{box-shadow:0 0 24px rgba(87,179,108,.4)}
 
 /* TECH PACK — bordo stato + cartella file */
@@ -1301,6 +1302,25 @@ button.tpf-row.tpf-dir{cursor:pointer}
 .drawer-x:hover{color:var(--bone)}
 .drawer-x:focus-visible{outline:2px solid hsl(var(--ring));outline-offset:2px}
 .drawer-body{flex:1;overflow-y:auto;padding:16px 18px calc(18px + env(safe-area-inset-bottom))}
+
+/* ============ MOTION v5 §8 — fadeSlideIn con stagger su liste e tabelle ============
+   30ms per riga, cap alla 12ª (oltre entrano tutte insieme: il ritardo su
+   liste lunghe legge come lentezza, non come cura). */
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.dt-row,.now-row,.act-row,.mtg-row,.kcard{animation:fadeSlideIn var(--dur-slow) var(--ease-out) backwards}
+.dt-row:nth-child(2){animation-delay:30ms}.dt-row:nth-child(3){animation-delay:60ms}.dt-row:nth-child(4){animation-delay:90ms}.dt-row:nth-child(5){animation-delay:120ms}.dt-row:nth-child(6){animation-delay:150ms}.dt-row:nth-child(7){animation-delay:180ms}.dt-row:nth-child(8){animation-delay:210ms}.dt-row:nth-child(9){animation-delay:240ms}.dt-row:nth-child(10){animation-delay:270ms}.dt-row:nth-child(11){animation-delay:300ms}.dt-row:nth-child(12){animation-delay:330ms}
+.now-row:nth-child(2),.act-row:nth-child(2),.mtg-row:nth-child(2),.kcard:nth-child(3){animation-delay:30ms}
+.now-row:nth-child(3),.act-row:nth-child(3),.mtg-row:nth-child(3),.kcard:nth-child(4){animation-delay:60ms}
+.now-row:nth-child(4),.act-row:nth-child(4),.mtg-row:nth-child(4),.kcard:nth-child(5){animation-delay:90ms}
+.now-row:nth-child(5),.act-row:nth-child(5),.mtg-row:nth-child(5),.kcard:nth-child(6){animation-delay:120ms}
+@media (prefers-reduced-motion:reduce){.dt-row,.now-row,.act-row,.mtg-row,.kcard{animation:none}}
+
+/* Target touch §11: sotto lg i bottoni compatti crescono ad almeno 40px */
+@media (max-width:1023px){
+  .btn.sm{padding:9px 12px}
+  .btn2-sm{height:40px;padding:0 12px}
+  .dt-x,.toast2-close,.drawer-x{min-width:40px;min-height:40px}
+}
 
 /* Credito in fondo a ogni pagina — sobrio, non un vero footer di sito */
 .app-credit{display:flex;align-items:center;justify-content:center;gap:10px;padding:18px 20px;margin-top:32px;border-top:1px solid var(--line);font-family:var(--font-b);font-weight:500;font-size:10px;color:var(--dim);text-align:center}
