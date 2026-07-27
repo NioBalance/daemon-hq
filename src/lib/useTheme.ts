@@ -2,7 +2,9 @@ import { useCallback, useState } from 'react'
 
 export type Theme = 'dark' | 'light'
 
-const KEY = 'dhq:theme'
+/** Chiavi §12: daemon_theme + daemon_theme_v. La versione la scrive lo script
+ *  pre-mount in index.html (THEME_VERSION); un bump lì invalida i salvataggi. */
+const KEY = 'daemon_theme'
 
 function apply(theme: Theme) {
   if (theme === 'light') document.documentElement.dataset.theme = 'light'

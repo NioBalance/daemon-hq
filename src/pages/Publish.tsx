@@ -26,7 +26,7 @@ import type { PublishFase, PublishTipo } from '../lib/database.types'
 const FASI: { key: PublishFase; label: string; dot: string }[] = [
   { key: 'idea', label: 'Idea', dot: 'var(--dim)' },
   { key: 'in-edit', label: 'In-Edit', dot: 'var(--amber)' },
-  { key: 'pronto', label: 'Pronto', dot: 'var(--info)' },
+  { key: 'pronto', label: 'Pronto', dot: 'hsl(var(--info))' },
   { key: 'programmato', label: 'Programmato', dot: 'var(--ember)' },
   { key: 'pubblicato', label: 'Pubblicato', dot: 'var(--ok)' },
 ]

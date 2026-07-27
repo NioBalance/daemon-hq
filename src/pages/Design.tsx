@@ -16,7 +16,7 @@ import type { DesignFase } from '../lib/database.types'
 const FASI: { key: DesignFase; label: string; dot: string }[] = [
   { key: 'idea', label: 'Idea', dot: 'var(--dim)' },
   { key: 'sketch', label: 'Sketch', dot: 'var(--amber)' },
-  { key: 'techpack', label: 'Tech Pack', dot: 'var(--info)' },
+  { key: 'techpack', label: 'Tech Pack', dot: 'hsl(var(--info))' },
   { key: 'campione', label: 'Campione', dot: 'var(--ember)' },
   { key: 'approvato', label: 'Approvato', dot: 'var(--ok)' },
 ]

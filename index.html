@@ -3,9 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <script>
-      // Applica il tema salvato PRIMA del CSS/paint: evita il flash del tema sbagliato.
+      // Applica il tema salvato PRIMA del CSS/paint: evita il flash del tema
+      // sbagliato. THEME_VERSION (§12/D4): un bump invalida i temi salvati
+      // vecchi — a versione diversa si riparte dal default dark.
       try {
-        if (localStorage.getItem('dhq:theme') === 'light') document.documentElement.dataset.theme = 'light'
+        var THEME_VERSION = '5'
+        if (localStorage.getItem('daemon_theme_v') !== THEME_VERSION) {
+          localStorage.removeItem('daemon_theme')
+          localStorage.setItem('daemon_theme_v', THEME_VERSION)
+        }
+        if (localStorage.getItem('daemon_theme') === 'light') document.documentElement.dataset.theme = 'light'
       } catch {}
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />

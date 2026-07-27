@@ -40,7 +40,7 @@ const COLOR_VAR: Record<string, string> = {
   ember: 'var(--ember)',
   amber: 'var(--amber)',
   ok: 'var(--ok)',
-  info: 'var(--info)',
+  info: 'hsl(var(--info))',
   dim: 'var(--dim)',
 }
 const SHAPES: CanvasForma[] = ['rect', 'pill', 'ellisse']
