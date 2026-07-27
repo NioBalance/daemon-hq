@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
-import EmptyState from '../components/EmptyState'
+import EmptyState from '../components/ui-v2/EmptyState'
 import OwnerBadge from '../components/OwnerBadge'
 import NotesList from '../components/NotesList'
 import { useChats, useCreateChat, useUpdateChat, useDeleteChat, type Chat } from '../features/chats/queries'
@@ -288,7 +288,7 @@ export default function Chats() {
 
           <h3 className="pg-eyebrow" style={{ marginTop: 26 }}>Da seguire · {open.length}</h3>
           <div style={{ marginTop: 10 }}>
-            {open.length ? open.map(chatCard) : <EmptyState icon="chat" text="Nessuna conversazione aperta." ctaLabel="+ Conversazione" onCta={openCreate} />}
+            {open.length ? open.map(chatCard) : <EmptyState icon="chat" title="Nessuna conversazione aperta" caption="Registra le richieste clienti da seguire." ctaLabel="+ Conversazione" onCta={openCreate} />}
           </div>
 
           {closed.length > 0 && (

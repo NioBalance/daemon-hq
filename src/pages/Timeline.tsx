@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import Modal from '../components/Modal'
 import FormFields, { type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
-import EmptyState from '../components/EmptyState'
+import EmptyState from '../components/ui-v2/EmptyState'
 import OwnerBadge from '../components/OwnerBadge'
 import GanttChart from '../components/GanttChart'
 import {
@@ -209,7 +209,7 @@ export default function Timeline() {
       {!isLoading && !isError && view === 'gantt' && (
         <>
           {sortedDrops.length === 0 ? (
-            <EmptyState icon="box" text="Nessun drop. Creane uno per vedere la pipeline." ctaLabel="+ Drop" onCta={openCreateDrop} />
+            <EmptyState icon="box" title="Nessun drop" caption="Creane uno per vedere la pipeline." ctaLabel="+ Drop" onCta={openCreateDrop} />
           ) : (
             <div className="tl-cols">
               <div className="tl-gantt">
@@ -400,7 +400,7 @@ export default function Timeline() {
               </div>
             )
           })}
-          {sortedDrops.length === 0 && <EmptyState icon="calendar" text="Nessun drop pianificato." ctaLabel="+ Nuovo drop" onCta={openCreateDrop} />}
+          {sortedDrops.length === 0 && <EmptyState icon="calendar" title="Nessun drop pianificato" caption="Pianifica il primo lancio per vedere l'anno." ctaLabel="+ Nuovo drop" onCta={openCreateDrop} />}
         </>
       )}
 

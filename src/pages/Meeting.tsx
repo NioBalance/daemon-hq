@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
-import EmptyState from '../components/EmptyState'
+import EmptyState from '../components/ui-v2/EmptyState'
 import {
   useMeetings,
   useCreateMeeting,
@@ -305,7 +305,7 @@ export default function Meeting() {
                 })}
               </ul>
             ) : (
-              <EmptyState icon="note" text="Nessuna riunione ancora." ctaLabel="+ Nuova riunione" onCta={openCreate} />
+              <EmptyState icon="note" title="Nessuna riunione ancora" caption="Pianifica il primo allineamento del team." ctaLabel="+ Nuova riunione" onCta={openCreate} />
             )}
           </section>
 

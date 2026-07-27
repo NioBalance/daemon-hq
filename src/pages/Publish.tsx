@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
-import EmptyState from '../components/EmptyState'
+import EmptyState from '../components/ui-v2/EmptyState'
 import OwnerBadge from '../components/OwnerBadge'
 import {
   usePublishItems,
@@ -200,7 +200,7 @@ export default function Publish() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <EmptyState icon="star" text="Nessun contenuto in pipeline." ctaLabel="+ Contenuto" onCta={openCreate} />
+        <EmptyState icon="star" title="Nessun contenuto in pipeline" caption="Metti in coda il primo post o reel." ctaLabel="+ Contenuto" onCta={openCreate} />
       ) : (
         <div className="kanban">
           {FASI.map((f, fi) => {

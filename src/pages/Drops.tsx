@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
-import EmptyState from '../components/EmptyState'
+import EmptyState from '../components/ui-v2/EmptyState'
 import NotesList from '../components/NotesList'
 import ArticoloCard from '../components/ArticoloCard'
 import PhaseFlow from '../components/PhaseFlow'
@@ -220,7 +220,7 @@ export default function Drops() {
               </div>
             )
           })}
-          {sortedDrops.length === 0 && <EmptyState icon="box" text="Nessun drop. Creane uno." ctaLabel="+ Drop" onCta={openCreateDrop} />}
+          {sortedDrops.length === 0 && <EmptyState icon="box" title="Nessun drop" caption="Creane uno per iniziare la produzione." ctaLabel="+ Drop" onCta={openCreateDrop} />}
 
           {orphanArticoli.length > 0 && (
             <div className="drop-row">

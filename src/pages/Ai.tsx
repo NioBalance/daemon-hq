@@ -3,7 +3,7 @@ import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
-import EmptyState from '../components/EmptyState'
+import EmptyState from '../components/ui-v2/EmptyState'
 import LinkCard from '../components/LinkCard'
 import { useAiLinks, useCreateAiLink, useUpdateAiLink, useDeleteAiLink, type AiLink } from '../features/aiLinks/queries'
 import { useToast } from '../lib/useToast'
@@ -93,7 +93,7 @@ export default function Ai() {
           {(links ?? []).map((l) => (
             <LinkCard key={l.id} label={l.label} url={l.url} onEdit={() => openEdit(l)} onDelete={() => handleDelete(l)} />
           ))}
-          {(links ?? []).length === 0 && <EmptyState icon="star" text="Nessuno strumento collegato." ctaLabel="+ Strumento" onCta={openCreate} />}
+          {(links ?? []).length === 0 && <EmptyState icon="star" title="Nessuno strumento collegato" caption="Collega i tool AI che il team usa davvero." ctaLabel="+ Strumento" onCta={openCreate} />}
         </>
       )}
 

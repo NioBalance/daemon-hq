@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
-import EmptyState from '../components/EmptyState'
+import EmptyState from '../components/ui-v2/EmptyState'
 import NotesList from '../components/NotesList'
 import { useToast } from '../lib/useToast'
 import { useConfirmDelete } from '../lib/confirm-context'
@@ -422,7 +422,8 @@ export default function Fornitori() {
           ) : (
             <EmptyState
               icon="box"
-              text={q || filtro !== 'tutti' ? 'Nessun fornitore col filtro attivo.' : 'Nessun fornitore in scheda.'}
+              title={q || filtro !== 'tutti' ? 'Nessun fornitore col filtro attivo' : 'Nessun fornitore in scheda'}
+              caption={q || filtro !== 'tutti' ? 'Prova ad allargare la ricerca.' : 'Apri la prima scheda di vetting.'}
               ctaLabel="+ Nuovo fornitore"
               onCta={openCreate}
             />

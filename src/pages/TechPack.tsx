@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
-import EmptyState from '../components/EmptyState'
+import EmptyState from '../components/ui-v2/EmptyState'
 import OwnerBadge from '../components/OwnerBadge'
 import TechpackFolder from '../components/TechpackFolder'
 import FileViewer from '../components/FileViewer'
@@ -384,7 +384,7 @@ export default function TechPack() {
               })}
             </div>
           ) : (
-            <EmptyState icon="note" text="Nessun tech pack. Creane uno dal design approvato." ctaLabel="+ Nuovo tech pack" onCta={openCreate} />
+            <EmptyState icon="note" title="Nessun tech pack" caption="Creane uno dal design approvato." ctaLabel="+ Nuovo tech pack" onCta={openCreate} />
           )}
         </>
       )}

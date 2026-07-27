@@ -44,24 +44,28 @@ const ICONS: Record<string, ReactNode> = {
   ),
 }
 
-/** Empty state illustrato (§2.4): icona line-art + una riga di testo + CTA. */
+/** Empty state v5 (spec §6.11): icona 32 subtle + titolo + una riga caption +
+ *  azione contestuale. Il copy è direttivo: dice cosa fare, non solo cosa manca. */
 export default function EmptyState({
   icon = 'box',
-  text,
+  title,
+  caption,
   ctaLabel,
   onCta,
 }: {
   icon?: string
-  text: string
+  title: string
+  caption?: string
   ctaLabel?: string
   onCta?: () => void
 }) {
   return (
-    <div className="empty-state">
+    <div className="empty2">
       <span aria-hidden>{ICONS[icon] ?? ICONS.box}</span>
-      <p>{text}</p>
+      <p className="empty2-title">{title}</p>
+      {caption && <p className="empty2-caption">{caption}</p>}
       {ctaLabel && onCta && (
-        <button className="btn sm ghost" onClick={onCta}>
+        <button className="btn2 btn2-secondary btn2-sm" onClick={onCta}>
           {ctaLabel}
         </button>
       )}

@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState, type FormEvent } from 'react'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState, SkeletonGrid } from '../components/QueryState'
-import EmptyState from '../components/EmptyState'
+import EmptyState from '../components/ui-v2/EmptyState'
 import FolderCard from '../components/FolderCard'
 import LinkCard from '../components/LinkCard'
 import { useInspo, useCreateInspo, useUpdateInspo, useDeleteInspo, type Inspo } from '../features/inspo/queries'
@@ -198,7 +198,7 @@ export default function Archivio() {
               />
             ))}
           </div>
-          {(inspo.data ?? []).length === 0 && <EmptyState icon="star" text="Nessuna inspirazione salvata." ctaLabel="+ Inspirazione" onCta={openAddInspo} />}
+          {(inspo.data ?? []).length === 0 && <EmptyState icon="star" title="Nessuna inspirazione salvata" caption="Aggiungi reference e moodboard per il team." ctaLabel="+ Inspirazione" onCta={openAddInspo} />}
         </>
       )}
 

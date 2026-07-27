@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { Loading } from '../components/QueryState'
 import { ErrorState } from '../components/QueryState'
-import EmptyState from '../components/EmptyState'
+import EmptyState from '../components/ui-v2/EmptyState'
 import { useDrops, useDropFasi, useUpdateFase } from '../features/drops/queries'
 import { useArticoli, useArticoloTasks } from '../features/articoli/queries'
 import { useTechpacks, useUpdateTechpack } from '../features/techpacks/queries'
@@ -214,7 +214,7 @@ export default function HqMap() {
       </div>
 
       {!drop ? (
-        <EmptyState icon="box" text="Nessun drop. Creane uno per costruire la mappa." />
+        <EmptyState icon="box" title="Nessun drop" caption="Creane uno per costruire la mappa." />
       ) : (
         <div className="hq-cols">
           <div className="hq-canvas">

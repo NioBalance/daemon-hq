@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState, SkeletonGrid } from '../components/QueryState'
-import EmptyState from '../components/EmptyState'
+import EmptyState from '../components/ui-v2/EmptyState'
 import ArticoloCard from '../components/ArticoloCard'
 import GadgetRow from '../components/GadgetRow'
 import { useArticoli, useCreateArticolo, type Articolo } from '../features/articoli/queries'
@@ -131,7 +131,7 @@ export default function Catalogo() {
               </div>
             ))
           ) : (
-            <EmptyState icon="photo" text="Nessun articolo in questa categoria." ctaLabel="+ Articolo" onCta={openCreate} />
+            <EmptyState icon="photo" title="Nessun articolo in questa categoria" caption="Aggiungi il primo capo del catalogo." ctaLabel="+ Articolo" onCta={openCreate} />
           )}
         </>
       )}

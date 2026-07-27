@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
-import EmptyState from '../components/EmptyState'
+import EmptyState from '../components/ui-v2/EmptyState'
 import GadgetRow from '../components/GadgetRow'
 import OwnerBadge from '../components/OwnerBadge'
 import ScoreRadarSvg from '../components/ScoreRadarSvg'
@@ -300,7 +300,7 @@ export default function Campioni() {
               })}
             </div>
           ) : (
-            <EmptyState icon="star" text="Nessun campione registrato." ctaLabel="+ Nuovo campione" onCta={openCreate} />
+            <EmptyState icon="star" title="Nessun campione in review" caption="Registra l'arrivo del primo sample per valutarlo." ctaLabel="+ Nuovo campione" onCta={openCreate} />
           )}
         </>
       )}
