@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import Modal from '../components/Modal'
+import Drawer from '../components/ui-v2/Drawer'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/ui-v2/EmptyState'
@@ -210,6 +211,7 @@ export default function Fornitori() {
   const [cerca, setCerca] = useState('')
 
   const saving = createFornitore.isPending || updateFornitore.isPending
+  const FormShell = modalMode === 'edit' ? Drawer : Modal
   const draft = useFormDraft(`fornitore:${editingId ?? 'new'}`, modalMode !== 'none', values, setValues)
 
   useRegisterNewAction(openCreate)
@@ -450,8 +452,10 @@ export default function Fornitori() {
         </div>
       </section>
 
+      {/* §6.8: il click riga apre il dettaglio/modifica nel Drawer da destra;
+          la creazione resta nel Modal centrato. */}
       {modalMode !== 'none' && (
-        <Modal title={modalMode === 'edit' ? 'Modifica fornitore' : 'Nuovo fornitore'} onClose={closeModal}>
+        <FormShell title={modalMode === 'edit' ? 'Modifica fornitore' : 'Nuovo fornitore'} onClose={closeModal}>
           <form onSubmit={handleSubmit}>
             <div className="f-logo-edit">
               <ImageUpload
@@ -480,7 +484,7 @@ export default function Fornitori() {
             </div>
           </form>
           {modalMode === 'edit' && editingId && <NotesList entityType="fornitori" entityId={editingId} />}
-        </Modal>
+        </FormShell>
       )}
     </>
   )

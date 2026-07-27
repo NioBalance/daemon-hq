@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type CSSProperties, type FormEvent } from 'react'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
@@ -159,10 +159,12 @@ export default function DesignPage() {
         <div className="kanban">
           {FASI.map((f, i) => {
             const items = (designs ?? []).filter((d) => d.fase === f.key)
+            const total = (designs ?? []).length
             return (
               <div
                 className="kcol"
                 key={f.key}
+                style={{ '--kcol-c': f.dot } as CSSProperties}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
                   e.preventDefault()
@@ -177,6 +179,9 @@ export default function DesignPage() {
                     {f.label}
                   </span>
                   <span className="kcol-count">{items.length}</span>
+                  <span className="kcol-bar" aria-hidden>
+                    <i style={{ width: `${total ? Math.round((items.length / total) * 100) : 0}%` }} />
+                  </span>
                 </div>
                 {items.map((d) => (
                   <div

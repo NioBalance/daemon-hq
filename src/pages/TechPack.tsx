@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import Modal from '../components/Modal'
+import Drawer from '../components/ui-v2/Drawer'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/ui-v2/EmptyState'
@@ -177,6 +178,7 @@ export default function TechPack() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const saving = createTechpack.isPending || updateTechpack.isPending
+  const FormShell = modalMode === 'edit' ? Drawer : Modal
   const draft = useFormDraft(`techpack:${editingId ?? 'new'}`, modalMode !== 'none', values, setValues)
 
   useRegisterNewAction(openCreate)
@@ -398,8 +400,9 @@ export default function TechPack() {
         />
       )}
 
+      {/* §6.8: modifica dal click riga nel Drawer da destra, creazione nel Modal */}
       {modalMode !== 'none' && (
-        <Modal title={modalMode === 'edit' ? 'Modifica tech pack' : 'Nuovo tech pack'} onClose={() => setModalMode('none')}>
+        <FormShell title={modalMode === 'edit' ? 'Modifica tech pack' : 'Nuovo tech pack'} onClose={() => setModalMode('none')}>
           <form onSubmit={handleSubmit}>
             <FormFields
               fields={TP_FIELDS}
@@ -416,7 +419,7 @@ export default function TechPack() {
               </button>
             </div>
           </form>
-        </Modal>
+        </FormShell>
       )}
     </>
   )

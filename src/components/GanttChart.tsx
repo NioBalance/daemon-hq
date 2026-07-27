@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import {
   BarChart,
@@ -18,12 +19,16 @@ function shortName(nome: string): string {
   return nome.split(/\s[—-]\s/)[0].trim() || nome
 }
 
+/** Stato v5 §7.2 della barra: futura surface-3 con bordo · in corso gradiente
+ *  incandescenza · fatta success/70 · in ritardo bordo destructive. */
+type FaseStato = 'done' | 'late' | 'current' | 'future'
+
 interface GanttRow {
   label: string
   fullName: string
   offset: number
   span: number
-  color: string
+  stato: FaseStato
   start: string
   end: string
   done: boolean
@@ -31,12 +36,6 @@ interface GanttRow {
 }
 
 const EST_WINDOW = 60 // giorni pre-lancio su cui distribuire le fasi stimate
-
-function faseColor(done: boolean, end: string, todayStr: string): string {
-  if (done) return 'var(--ok)'
-  if (end < todayStr) return 'var(--ember)'
-  return 'var(--amber)'
-}
 
 function GanttTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: GanttRow }> }) {
   if (!active || !payload || !payload.length) return null
@@ -58,6 +57,7 @@ function GanttTooltip({ active, payload }: { active?: boolean; payload?: Array<{
  *  mount, fermo con reduced-motion. */
 export default function GanttChart({ drop, fasi }: { drop: Drop; fasi: DropFase[] }) {
   const reduceMotion = useReducedMotion()
+  const gradId = useId()
   const todayStr = todayIso()
 
   const ordered = [...fasi].sort((a, b) => a.ordine - b.ordine)
@@ -73,16 +73,19 @@ export default function GanttChart({ drop, fasi }: { drop: Drop; fasi: DropFase[
     return { f, date: f.data ?? est, estimated: !f.data }
   })
 
+  // "in corso" = la prima fase non completata e non in ritardo (§7.2)
+  const firstOpen = withDates.findIndex((it) => !it.f.done && !(it.date < todayStr))
   const rows: GanttRow[] = withDates.map((it, i) => {
     const end = it.date
     const prev = i > 0 ? withDates[i - 1].date : addDaysIso(end, -Math.round(step) || -7)
     const start = prev < end ? prev : addDaysIso(end, -3)
+    const stato: FaseStato = it.f.done ? 'done' : end < todayStr ? 'late' : i === firstOpen ? 'current' : 'future'
     return {
       label: shortName(it.f.nome),
       fullName: it.f.nome,
       offset: 0,
       span: Math.max(1, daysBetween(start, end)),
-      color: faseColor(it.f.done, end, todayStr),
+      stato,
       start,
       end,
       done: it.f.done,
@@ -103,13 +106,20 @@ export default function GanttChart({ drop, fasi }: { drop: Drop; fasi: DropFase[
     <div className="gantt-wrap" style={{ width: '100%', height }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart layout="vertical" data={rows} margin={{ top: 6, right: 20, bottom: 6, left: 6 }} barCategoryGap="42%">
+          <defs>
+            {/* fase in corso: gradiente incandescenza §7.2 (l'unico ammesso) */}
+            <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="hsl(5 76% 53%)" />
+              <stop offset="100%" stopColor="hsl(37 73% 56%)" />
+            </linearGradient>
+          </defs>
           <XAxis
             type="number"
             domain={[0, total]}
             tickCount={5}
             tickFormatter={(v: number) => fmtDate(addDaysIso(min, Math.round(v)))}
-            tick={{ fill: 'var(--dim)', fontSize: 9, fontFamily: 'var(--font-m)' }}
-            stroke="var(--line)"
+            tick={{ fill: 'var(--muted)', fontSize: 11, fontFamily: 'var(--font-m)' }}
+            axisLine={false}
             tickLine={false}
           />
           <YAxis
@@ -117,37 +127,49 @@ export default function GanttChart({ drop, fasi }: { drop: Drop; fasi: DropFase[
             dataKey="label"
             width={150}
             tick={{ fill: 'var(--muted)', fontSize: 11 }}
-            stroke="var(--line)"
+            axisLine={false}
             tickLine={false}
             interval={0}
           />
-          <Tooltip content={<GanttTooltip />} cursor={{ fill: 'rgba(234,230,222,.03)' }} />
+          <Tooltip content={<GanttTooltip />} cursor={{ fill: 'hsl(var(--foreground) / .03)' }} />
           <Bar dataKey="offset" stackId="a" fill="transparent" isAnimationActive={false} />
           <Bar
             dataKey="span"
             stackId="a"
             radius={[4, 4, 4, 4]}
             isAnimationActive={!reduceMotion}
-            animationDuration={900}
+            animationDuration={800}
             animationEasing="ease-out"
           >
-            {rows.map((r, i) => (
-              <Cell
-                key={i}
-                fill={r.color}
-                fillOpacity={r.estimated ? 0.3 : 1}
-                stroke={r.estimated ? r.color : 'none'}
-                strokeWidth={r.estimated ? 1 : 0}
-                strokeDasharray={r.estimated ? '3 2' : undefined}
-              />
-            ))}
+            {rows.map((r, i) => {
+              const fill =
+                r.stato === 'done'
+                  ? 'hsl(var(--success) / .7)'
+                  : r.stato === 'current'
+                    ? `url(#${gradId})`
+                    : r.stato === 'late'
+                      ? 'hsl(var(--destructive) / .18)'
+                      : 'hsl(var(--surface-3))'
+              const stroke =
+                r.stato === 'late' ? 'hsl(var(--destructive))' : r.stato === 'future' ? 'hsl(var(--border))' : r.estimated ? 'hsl(var(--border-strong))' : 'none'
+              return (
+                <Cell
+                  key={i}
+                  fill={fill}
+                  fillOpacity={r.estimated && r.stato !== 'late' ? 0.45 : 1}
+                  stroke={stroke}
+                  strokeWidth={stroke === 'none' ? 0 : 1}
+                  strokeDasharray={r.estimated ? '3 2' : undefined}
+                />
+              )
+            })}
           </Bar>
           {showToday && (
             <ReferenceLine
               x={todayOffset}
-              stroke="var(--ember)"
+              stroke="hsl(var(--destructive))"
               strokeWidth={1.5}
-              label={{ value: 'oggi', position: 'top', fill: 'var(--ember)', fontSize: 9 }}
+              label={{ value: 'oggi', position: 'top', fill: 'hsl(var(--destructive-fg))', fontSize: 9 }}
             />
           )}
         </BarChart>

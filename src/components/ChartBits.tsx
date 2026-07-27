@@ -1,6 +1,5 @@
-import { useId } from 'react'
 import { m, useReducedMotion } from 'framer-motion'
-import { ComposedChart, Area, Line, BarChart, Bar, Cell, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, BarChart, Bar, Cell, ResponsiveContainer } from 'recharts'
 
 /** Anello di progresso SVG che si riempie al mount (pathLength via Framer). */
 export function ProgressRing({
@@ -30,7 +29,6 @@ export function ProgressRing({
           stroke="var(--ember)"
           strokeWidth={stroke}
           strokeLinecap="round"
-          style={{ filter: 'drop-shadow(0 0 5px rgba(226,56,42,.55))' }}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
           initial={reduceMotion ? false : { pathLength: 0 }}
           animate={{ pathLength: clamped }}
@@ -42,28 +40,9 @@ export function ProgressRing({
   )
 }
 
-/** Punto luminoso solo sull'ultimo campione: ancora il valore corrente sulla
- *  linea senza ripetere assi/tooltip — l'unico "dato" visibile sul disegno. */
-function makeEndDot(color: string, lastIndex: number) {
-  return function EndDot(props: { cx?: number; cy?: number; index?: number }) {
-    const { cx, cy, index } = props
-    if (index !== lastIndex || cx == null || cy == null) return <g />
-    return (
-      <circle
-        cx={cx}
-        cy={cy}
-        r={3}
-        fill={color}
-        stroke="none"
-        style={{ filter: `drop-shadow(0 0 4px ${color})` }}
-      />
-    )
-  }
-}
-
-/** Sparkline: linea con alone sfumato sotto e punto luminoso sull'ultimo
- *  valore, draw-in one-shot al mount (fermo con reduced-motion). Mono-serie:
- *  il colore identifica il grafico, il valore vive nel testo accanto. */
+/** Sparkline v5 (spec §7.2, letterale): stroke 1.5px, nessun asse, nessun
+ *  dot, nessuna area. Mono-serie: il colore identifica il grafico, il valore
+ *  vive nel testo accanto, mai sulla linea. Draw-in one-shot al mount. */
 export function Sparkline({
   data,
   height = 40,
@@ -74,47 +53,30 @@ export function Sparkline({
   color?: string
 }) {
   const reduceMotion = useReducedMotion()
-  const gradId = useId()
   if (data.length < 2) return <div className="spark-empty" style={{ height }} />
   const points = data.map((v, i) => ({ i, v }))
   return (
     <div style={{ width: '100%', height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={points} margin={{ top: 4, right: 3, bottom: 2, left: 3 }}>
-          <defs>
-            <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.32} />
-              <stop offset="100%" stopColor={color} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <Area
-            type="monotone"
-            dataKey="v"
-            stroke="none"
-            fill={`url(#${gradId})`}
-            isAnimationActive={!reduceMotion}
-            animationDuration={1400}
-            animationEasing="ease-out"
-          />
+        <LineChart data={points} margin={{ top: 4, right: 2, bottom: 2, left: 2 }}>
           <Line
             type="monotone"
             dataKey="v"
             stroke={color}
-            strokeWidth={2}
-            strokeLinecap="round"
-            dot={makeEndDot(color, points.length - 1)}
+            strokeWidth={1.5}
+            dot={false}
             isAnimationActive={!reduceMotion}
-            animationDuration={1400}
+            animationDuration={800}
             animationEasing="ease-out"
           />
-        </ComposedChart>
+        </LineChart>
       </ResponsiveContainer>
     </div>
   )
 }
 
-/** Mini bar chart senza assi rumorosi: ogni barra sfuma verso l'alto nel suo
- *  colore, grow-up al mount, fermo con reduced-motion. */
+/** Mini bar chart v5 (spec §7.2): barre piatte /85, radius top 4, larghezza
+ *  max 28px, senza assi rumorosi; grow-up al mount, fermo con reduced-motion. */
 export function MiniBars({
   data,
   height = 44,
@@ -123,30 +85,20 @@ export function MiniBars({
   height?: number
 }) {
   const reduceMotion = useReducedMotion()
-  const gradId = useId()
-  const colors = [...new Set(data.map((d) => d.color ?? 'var(--ember)'))]
-  const idFor = (c: string) => `${gradId}-${colors.indexOf(c)}`
   return (
     <div style={{ width: '100%', height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
-          <defs>
-            {colors.map((c) => (
-              <linearGradient key={c} id={idFor(c)} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={c} stopOpacity={1} />
-                <stop offset="100%" stopColor={c} stopOpacity={0.55} />
-              </linearGradient>
-            ))}
-          </defs>
+        <BarChart data={data} margin={{ top: 2, right: 2, bottom: 2, left: 2 }} barCategoryGap="32%">
           <Bar
             dataKey="value"
-            radius={[4, 4, 1, 1]}
+            radius={[4, 4, 0, 0]}
+            maxBarSize={28}
             isAnimationActive={!reduceMotion}
-            animationDuration={600}
+            animationDuration={800}
             animationEasing="ease-out"
           >
             {data.map((d, i) => (
-              <Cell key={i} fill={`url(#${idFor(d.color ?? 'var(--ember)')})`} />
+              <Cell key={i} fill={d.color ?? 'var(--ember)'} fillOpacity={0.85} />
             ))}
           </Bar>
         </BarChart>

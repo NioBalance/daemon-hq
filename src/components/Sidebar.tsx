@@ -81,7 +81,14 @@ export default function Sidebar({ activeTab }: { activeTab: TabKey }) {
       <nav className="sb-nav" ref={navRef} aria-label="Sezioni">
         {NAV_GROUPS.map((group) => (
           <div className="sb-group" key={group.id}>
-            {!collapsed && <div className="sb-eyebrow">{group.title}</div>}
+            {!collapsed && (
+              <div className="sb-eyebrow">
+                {group.title}
+                {/* Slot dot integrazioni §6.1 (Shopify su Operativo, Meta/ManyChat
+                    su Media & Marketing): predisposto vuoto, si popola con la fase API */}
+                <span className="sb-integrations" aria-hidden />
+              </div>
+            )}
             {/* Spider-line riusata (spec §2): il connettore si disegna dal
                 titolo verso le voci quando il gruppo (ri)appare espanso. */}
             {!collapsed && !reduceMotion && (

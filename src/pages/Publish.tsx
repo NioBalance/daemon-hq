@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type CSSProperties, type FormEvent } from 'react'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
@@ -209,6 +209,7 @@ export default function Publish() {
               <div
                 className="kcol"
                 key={f.key}
+                style={{ '--kcol-c': f.dot } as CSSProperties}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
                   e.preventDefault()
@@ -223,6 +224,9 @@ export default function Publish() {
                     {f.label}
                   </span>
                   <span className="kcol-count">{col.length}</span>
+                  <span className="kcol-bar" aria-hidden>
+                    <i style={{ width: `${items.length ? Math.round((col.length / items.length) * 100) : 0}%` }} />
+                  </span>
                 </div>
                 {col.map((it) => {
                   const asset = it.media_id ? mediaById.get(it.media_id) : null

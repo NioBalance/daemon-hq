@@ -215,13 +215,16 @@ export default function Timeline() {
               <div className="tl-gantt">
                 <div className="legend gantt-legend">
                   <span>
-                    <i style={{ background: 'var(--ok)' }} /> Completata
+                    <i style={{ background: 'hsl(var(--success) / .7)' }} /> Completata
                   </span>
                   <span>
-                    <i style={{ background: 'var(--amber)' }} /> Da fare
+                    <i style={{ background: 'linear-gradient(90deg,hsl(5 76% 53%),hsl(37 73% 56%))' }} /> In corso
                   </span>
                   <span>
-                    <i style={{ background: 'var(--ember)' }} /> Scaduta
+                    <i style={{ background: 'hsl(var(--surface-3))', border: '1px solid hsl(var(--border))' }} /> Futura
+                  </span>
+                  <span>
+                    <i style={{ background: 'hsl(var(--destructive) / .18)', border: '1px solid hsl(var(--destructive))' }} /> In ritardo
                   </span>
                   <span>
                     <i className="est" /> Data stimata
