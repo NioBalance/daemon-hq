@@ -13,6 +13,7 @@ export default function KpiCard({
   onOpen,
   icon,
   hero = false,
+  tone,
   progress,
 }: {
   label: string
@@ -25,16 +26,22 @@ export default function KpiCard({
   icon?: ReactNode
   /** KPI hero Overview: scala 40px invece di 28px (conta nel budget glow) */
   hero?: boolean
+  /** trio semantico: icona+label+numero condividono il colore di stato */
+  tone?: 'ok' | 'warn' | 'urgent'
   /** 0..1 — SOLO se esiste un target */
   progress?: number
 }) {
   return (
-    <button type="button" className={`kpi-card glass-surface${hero ? ' hero' : ''}`} onClick={onOpen}>
+    <button
+      type="button"
+      className={`kpi-card glass-surface${hero ? ' hero' : ''}${tone ? ` tone-${tone}` : ''}`}
+      onClick={onOpen}
+    >
       <span className="kpi-card-head">
         <span className="text-nav-label kpi-card-label">{label}</span>
         {icon && <span className="kpi-card-icon">{icon}</span>}
       </span>
-      <span className={hero ? 'text-kpi-xl' : 'text-kpi'}>{value}</span>
+      <span className={`kpi-card-value ${hero ? 'text-kpi-xl' : 'text-kpi'}`}>{value}</span>
       {meta && <span className="text-caption kpi-card-meta">{meta}</span>}
       {progress != null && (
         <span className="kpi-card-bar" aria-hidden>

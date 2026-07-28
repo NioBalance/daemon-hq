@@ -1,10 +1,12 @@
-import { lazy, Suspense, useCallback, useState, type FormEvent } from 'react'
-import { useReducedMotion } from 'framer-motion'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { m, useReducedMotion } from 'framer-motion'
 import PanelHead from '../components/PanelHead'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
 import { ProgressRing, Sparkline, MiniBars } from '../components/ChartBits'
+import KpiCard from '../components/ui-v2/KpiCard'
+import { useLinks, useCreateLink, useUpdateLink } from '../features/links/queries'
 import { useDrops, useDropFasi, useUpdateFase } from '../features/drops/queries'
 import { useArticoli, useArticoloTasks } from '../features/articoli/queries'
 import { useDesigns } from '../features/designs/queries'
@@ -80,6 +82,63 @@ function CountNum({ value, decimals = 0, suffix = '' }: { value: number; decimal
   )
 }
 
+/** Sezione dell'Overview: eyebrow + steel divider, entrata staggerata
+ *  (stesso pattern LazyMotion-strict di App.tsx, guardia reduced-motion). */
+function OvSection({ title, index, children }: { title: string; index: number; children: ReactNode }) {
+  const reduce = useReducedMotion()
+  return (
+    <m.section
+      className="ov-sec"
+      aria-label={title}
+      initial={reduce ? false : { opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.09 * index, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className="ov-sec-head">
+        <span className="text-nav-label ov-sec-title">{title}</span>
+        <span className="ov-sec-line" aria-hidden />
+      </div>
+      {children}
+    </m.section>
+  )
+}
+
+/** Iframe del negozio renderizzato alla larghezza reale del viewport scelto
+ *  (desktop 1280 / mobile 390) e scalato via transform per stare nella
+ *  finestra: la preview è il sito VERO in miniatura, non un embed schiacciato. */
+function ScaledFrame({ url, frameWidth, ratio, title }: { url: string; frameWidth: number; ratio: number; title: string }) {
+  const hostRef = useRef<HTMLDivElement | null>(null)
+  const [scale, setScale] = useState(0)
+  useEffect(() => {
+    const el = hostRef.current
+    if (!el) return
+    const ro = new ResizeObserver(() => setScale(el.clientWidth / frameWidth))
+    ro.observe(el)
+    setScale(el.clientWidth / frameWidth)
+    return () => ro.disconnect()
+  }, [frameWidth])
+  return (
+    <div className="shop-win-view" ref={hostRef} style={{ aspectRatio: `${1 / ratio}` }}>
+      {scale > 0 && (
+        <iframe
+          src={url}
+          title={title}
+          style={{
+            width: frameWidth,
+            height: Math.round(frameWidth * ratio),
+            transform: `scale(${scale})`,
+            transformOrigin: '0 0',
+            border: 'none',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+const SHOP_LABEL_RE = /negozio|shop|store|sito/i
+
 const KPI_FIELDS: FieldDef[] = [
   {
     key: 'metrica',
@@ -109,6 +168,38 @@ export default function Overview() {
   const activityQ = useActivity()
   const upsertKpi = useUpsertKpi()
   const updateFase = useUpdateFase()
+  const linksQ = useLinks()
+  const createLink = useCreateLink()
+  const updateLink = useUpdateLink()
+
+  // Preview negozio: stessa idea dell'embed Calendario — la config vive in una
+  // riga `links` (match sulla label), salvata a runtime coi mutation hook.
+  const shopLink =
+    (linksQ.data ?? []).find((l) => SHOP_LABEL_RE.test(l.label) && l.url) ??
+    (linksQ.data ?? []).find((l) => SHOP_LABEL_RE.test(l.label))
+  const [shopUrlInput, setShopUrlInput] = useState('')
+  const shopSaving = createLink.isPending || updateLink.isPending
+
+  async function saveShopUrl(e: FormEvent) {
+    e.preventDefault()
+    let url = shopUrlInput.trim()
+    if (!url) return
+    if (!/^https?:\/\//i.test(url)) url = `https://${url}`
+    try {
+      new URL(url)
+    } catch {
+      showToast('error', 'URL non valido.')
+      return
+    }
+    try {
+      if (shopLink) await updateLink.mutateAsync({ id: shopLink.id, patch: { url } })
+      else await createLink.mutateAsync({ label: 'Negozio online', url, ordine: 99 })
+      setShopUrlInput('')
+      showToast('success', 'Preview del negozio configurata.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Salvataggio non riuscito.')
+    }
+  }
 
   const [kpiOpen, setKpiOpen] = useState(false)
   const [kpiValues, setKpiValues] = useState<FormValues>({
@@ -164,7 +255,7 @@ export default function Overview() {
         <div className="skeleton" style={{ height: 58, borderRadius: 999, marginBottom: 34 }} />
         <div className="ov-skel-band">
           {Array.from({ length: 5 }, (_, i) => (
-            <div className="skeleton" key={i} style={{ height: 54 }} />
+            <div className="skeleton" key={i} style={{ height: 128, borderRadius: 'var(--radius-card)' }} />
           ))}
         </div>
         <div className="ov-skel-cols">
@@ -357,80 +448,59 @@ export default function Overview() {
         <span className="ov-core-cap">DÆMON — CHIEDI DOVE</span>
       </button>
 
-      <div className="kpi-band">
-        <div className={`kb-cell${days !== null && days <= 14 ? ' urgent' : ''}`}>
-          <span className="kb-head">
-            <span className="kb-icon">{ICONS.dropx}</span>
-            <span className="kb-lbl">Prossimo drop</span>
-          </span>
-          <div className="kb-num">{days !== null ? <CountNum value={days} /> : '—'}</div>
-          <span className="kb-meta">
-            {nextDrop ? `${nextDrop.nome} · ${fasiDone}/${nextFasi.length} fasi` : 'Nessun drop pianificato'}
-          </span>
-          <button className="kb-cta" onClick={() => goTab('drops')}>
-            Timeline →
-          </button>
+      <OvSection title="Stato produzione" index={0}>
+        <div className="ov-kpi-grid">
+          <KpiCard
+            label="Prossimo drop"
+            icon={ICONS.dropx}
+            tone={days !== null && days <= 14 ? 'urgent' : undefined}
+            value={days !== null ? <CountNum value={days} /> : '—'}
+            meta={nextDrop ? `${nextDrop.nome} · ${fasiDone}/${nextFasi.length} fasi` : 'Nessun drop pianificato'}
+            ctaLabel="Timeline"
+            onOpen={() => goTab('drops')}
+            progress={nextFasi.length ? fasiDone / nextFasi.length : undefined}
+          />
+          <KpiCard
+            label="Campioni"
+            icon={ICONS.samples}
+            tone={campioniInReview > 0 ? 'warn' : undefined}
+            value={<CountNum value={campioniInReview} />}
+            meta={`in review${mediaCampioni ? ` · media ${mediaCampioni.toFixed(1)}★` : ''}`}
+            ctaLabel="Campioni"
+            onOpen={() => goTab('samples')}
+          />
+          <KpiCard
+            label="Tech pack"
+            icon={ICONS.techpack}
+            tone={tpConti.inviato > 0 ? 'warn' : undefined}
+            value={<CountNum value={tpConti.inviato} />}
+            meta={`in attesa fornitore · ${tpConti.confermato + tpConti.produzione} confermati`}
+            ctaLabel="Tech Pack"
+            onOpen={() => goTab('techpack')}
+          />
+          <KpiCard
+            label="Task aperti"
+            icon={ICONS.oggi}
+            tone={taskAperti > 0 ? 'urgent' : 'ok'}
+            value={<CountNum value={taskAperti} />}
+            meta={`su ${tasksList.length} totali, articoli`}
+            ctaLabel="Oggi"
+            onOpen={() => goTab('oggi')}
+          />
+          <KpiCard
+            label="Fornitori attivi"
+            icon={ICONS.fornitori}
+            tone="ok"
+            value={<CountNum value={fornitoriAttivi.length} />}
+            meta={`${fornitoriBackup} backup attivi`}
+            ctaLabel="Fornitori"
+            onOpen={() => goTab('fornitori')}
+          />
         </div>
-        <div className={`kb-cell${campioniInReview > 0 ? ' warn' : ''}`}>
-          <span className="kb-head">
-            <span className="kb-icon">{ICONS.samples}</span>
-            <span className="kb-lbl">Campioni</span>
-          </span>
-          <div className="kb-num">
-            <CountNum value={campioniInReview} />
-          </div>
-          <span className="kb-meta">
-            in review{mediaCampioni ? ` · media ${mediaCampioni.toFixed(1)}★` : ''}
-          </span>
-          <button className="kb-cta" onClick={() => goTab('samples')}>
-            Campioni →
-          </button>
-        </div>
-        <div className={`kb-cell${tpConti.inviato > 0 ? ' warn' : ''}`}>
-          <span className="kb-head">
-            <span className="kb-icon">{ICONS.techpack}</span>
-            <span className="kb-lbl">Tech pack</span>
-          </span>
-          <div className="kb-num">
-            <CountNum value={tpConti.inviato} />
-          </div>
-          <span className="kb-meta">
-            in attesa fornitore · {tpConti.confermato + tpConti.produzione} confermati
-          </span>
-          <button className="kb-cta" onClick={() => goTab('techpack')}>
-            Tech Pack →
-          </button>
-        </div>
-        <div className={`kb-cell${taskAperti > 0 ? ' urgent' : ' ok'}`}>
-          <span className="kb-head">
-            <span className="kb-icon">{ICONS.oggi}</span>
-            <span className="kb-lbl">Task aperti</span>
-          </span>
-          <div className="kb-num">
-            <CountNum value={taskAperti} />
-          </div>
-          <span className="kb-meta">su {tasksList.length} totali, articoli</span>
-          <button className="kb-cta" onClick={() => goTab('oggi')}>
-            Oggi →
-          </button>
-        </div>
-        <div className="kb-cell ok">
-          <span className="kb-head">
-            <span className="kb-icon">{ICONS.fornitori}</span>
-            <span className="kb-lbl">Fornitori attivi</span>
-          </span>
-          <div className="kb-num">
-            <CountNum value={fornitoriAttivi.length} />
-          </div>
-          <span className="kb-meta">{fornitoriBackup} backup attivi</span>
-          <button className="kb-cta" onClick={() => goTab('fornitori')}>
-            Fornitori →
-          </button>
-        </div>
-      </div>
+      </OvSection>
 
-      <h3 className="ov-col-title">Andamento</h3>
-      <div className="chart-band">
+      <OvSection title="Andamento" index={1}>
+        <div className="chart-band glass-surface">
         <div className="cb-cell">
           <span className="cb-lbl">Follower · trend</span>
           {followerVals.length >= 2 ? (
@@ -478,7 +548,58 @@ export default function Overview() {
           <ProgressRing value={pctApprovati} size={62} stroke={4} />
           <span className="cb-val">{mediaCampioni ? `media ${mediaCampioni.toFixed(1)}★` : '—'}</span>
         </div>
-      </div>
+        </div>
+      </OvSection>
+
+      <OvSection title="Negozio online" index={2}>
+        {shopLink?.url ? (
+          <div className="shop-windows">
+            <div className="shop-win glass-surface">
+              <div className="shop-win-bar">
+                <span className="shop-dots" aria-hidden>
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                <span className="shop-url">{new URL(shopLink.url).host}</span>
+                <a className="tlink" href={shopLink.url} target="_blank" rel="noopener">
+                  Apri ↗
+                </a>
+              </div>
+              <ScaledFrame url={shopLink.url} frameWidth={1280} ratio={0.62} title="Negozio — desktop" />
+            </div>
+            <div className="shop-win glass-surface shop-win-mobile">
+              <div className="shop-win-bar">
+                <span className="shop-dots" aria-hidden>
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                <span className="shop-url">mobile</span>
+              </div>
+              <ScaledFrame url={shopLink.url} frameWidth={390} ratio={1.9} title="Negozio — mobile" />
+            </div>
+          </div>
+        ) : (
+          <form className="shop-config" onSubmit={saveShopUrl}>
+            <p className="shop-config-hint">
+              Incolla l'URL del negozio per vederlo qui in due finestre live (desktop e mobile). Se il sito
+              blocca l'embed, resta comunque il link «Apri ↗».
+            </p>
+            <div className="shop-config-row">
+              <input
+                value={shopUrlInput}
+                onChange={(e) => setShopUrlInput(e.target.value)}
+                placeholder="https://…"
+                aria-label="URL del negozio online"
+              />
+              <button className="btn" type="submit" disabled={shopSaving || !shopUrlInput.trim()}>
+                {shopSaving ? 'Salvataggio…' : 'Salva'}
+              </button>
+            </div>
+          </form>
+        )}
+      </OvSection>
 
       {isEmptyDb ? (
         <div className="ov-empty">
@@ -492,7 +613,7 @@ export default function Overview() {
           </div>
         </div>
       ) : (
-        <>
+        <OvSection title="Operativo" index={3}>
           <div className="ov-cols">
             <section aria-label="Adesso">
               <h3 className="ov-col-title">Adesso</h3>
@@ -552,7 +673,7 @@ export default function Overview() {
             <button className="tlink" onClick={() => goTab('media')}>+ Upload media</button>
             <button className="tlink" onClick={() => openKpi()}>Aggiorna KPI</button>
           </div>
-        </>
+        </OvSection>
       )}
 
       {kpiOpen && (
