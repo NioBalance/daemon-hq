@@ -527,7 +527,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .ov-core-cap{font-family:var(--font-b);font-weight:500;font-size:9px;letter-spacing:.04em;color:var(--dim);transition:color var(--dur)}
 .ov-core:hover .ov-core-cap{color:var(--ember)}
 .ov-core:focus-visible{outline:2px solid var(--ember);outline-offset:4px;border-radius:12px}
-@media (max-width:768px){.ov-core{margin:0 auto 30px}.ov-core .core-wrap,.ov-core svg{width:110px;height:110px}}
+@media (max-width:768px){.ov-core{margin:0 auto 30px}.ov-core .core-wrap,.ov-core svg{width:150px;height:150px}}
 /* FAB mini (tutte le pagine tranne Overview) */
 .core-fab{position:fixed;right:18px;bottom:18px;z-index:var(--z-bottomnav);width:54px;height:54px;display:flex;align-items:center;justify-content:center;background:rgba(15,15,19,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line2);border-radius:50%;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.5);transition:border-color var(--dur)}
 .core-fab:hover{border-color:var(--ember)}

@@ -49,10 +49,11 @@ const NEBULA_SIZE = 0.5
 const NEBULA_SIZE_JITTER = 0.4
 
 // orbite: [semiasse x, semiasse y, tilt X, tilt Y, velocità (segno=verso), teste, count, size]
+// sprite grandi e MORBIDI (uSoft): un nastro di luce, non una collana di pixel
 const ORBITS: [number, number, number, number, number, number, number, number][] = [
-  [1.3, 1.18, 0.5, 0.0, 0.9, 1, 240, 1.25],
-  [1.52, 1.36, -0.42, 0.25, -0.6, 2, 200, 1.05],
-  [1.42, 1.05, 0.15, -0.55, 0.45, 1, 160, 1.15],
+  [1.3, 1.18, 0.5, 0.0, 0.9, 1, 240, 2.0],
+  [1.52, 1.36, -0.42, 0.25, -0.6, 2, 200, 1.7],
+  [1.42, 1.05, 0.15, -0.55, 0.45, 1, 160, 1.85],
 ]
 
 // campo puntatore
@@ -61,8 +62,8 @@ const POINTER_PUSH = 0.1
 const POINTER_SWIRL = 0.16
 
 // impulso radiale
-const PULSE_PERIOD_REST = 6
-const PULSE_PERIOD_HOVER = 2.8
+const PULSE_PERIOD_REST = 4.2
+const PULSE_PERIOD_HOVER = 2.4
 
 const DARK_COLOR = '#E2382A'
 const DARK_HOT = '#FF7A3D'
@@ -86,12 +87,13 @@ const DUST_VERT = /* glsl */ `
   void main() {
     float t = uTime;
     vec3 p = position;
-    // micro-orbita per particella: il logo non ruota, vive
-    float ang = t * (0.25 + aSeed * 0.6) + aSeed * 6.283;
-    float amp = 0.012 + aSeed * 0.02 + uExcite * 0.028;
+    // micro-orbita per particella: il logo non ruota, vive — ampia e sempre
+    // attiva, il sistema si muove anche senza mouse
+    float ang = t * (0.4 + aSeed * 0.9) + aSeed * 6.283;
+    float amp = 0.02 + aSeed * 0.03 + uExcite * 0.028;
     p.x += cos(ang) * amp;
     p.y += sin(ang * 1.31 + aSeed * 3.0) * amp;
-    p.z += sin(t * 0.4 + aSeed * 9.0) * amp * 1.6;
+    p.z += sin(t * 0.55 + aSeed * 9.0) * amp * 1.8;
     // hover: ignizione — il nucleo stringe appena
     p *= uBreathe * (1.0 - uExcite * 0.05);
 
@@ -111,11 +113,11 @@ const DUST_VERT = /* glsl */ `
 
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
-    float shimmer = 0.9 + 0.1 * sin(t * (2.0 + aSeed * 4.0) + aSeed * 23.0);
+    float shimmer = 0.88 + 0.12 * sin(t * (2.6 + aSeed * 4.5) + aSeed * 23.0);
     float size = aSize * shimmer * (1.0 + uExcite * 0.3 + fall * 0.8 + wave * 0.5);
     gl_PointSize = size * (uScale / -mv.z) * uDpr;
     // twinkle di base; puntatore e impulso spingono oltre 1 (il frag vira al caldo)
-    vGlow = 0.45 + 0.55 * sin(t * (1.6 + aSeed * 3.0) + aSeed * 40.0);
+    vGlow = 0.45 + 0.55 * sin(t * (2.4 + aSeed * 4.0) + aSeed * 40.0);
     vGlow = min(1.6, vGlow + fall * 1.2 + wave * 1.1);
   }
 `
@@ -138,12 +140,12 @@ const ORBIT_VERT = /* glsl */ `
     float t = uTime;
     float ang = aSeed * 6.28318;
     vec3 p = vec3(cos(ang) * uRadii.x, sin(ang) * uRadii.y, 0.0);
-    // grana: l'orbita non è un filo perfetto
+    // grana: l'orbita non è un filo perfetto, e ondeggia anche da ferma
     p.xy += vec2(sin(aSeed * 47.0), cos(aSeed * 31.0)) * 0.018;
-    p.z += sin(t * 0.5 + aSeed * 12.0) * 0.03;
+    p.z += sin(t * 0.7 + aSeed * 12.0) * 0.05;
 
     // flusso di energia: teste luminose che percorrono l'orbita, coda che sfuma
-    float head = fract(t * uSpeed * (0.05 + uExcite * 0.07));
+    float head = fract(t * uSpeed * (0.08 + uExcite * 0.07));
     float phase = (aSeed - head) * 6.28318 * uHeads;
     float flow = pow(0.5 + 0.5 * cos(phase), 6.0);
 
@@ -164,18 +166,20 @@ const FRAG = /* glsl */ `
   uniform vec3 uColorHot;
   uniform float uExcite;
   uniform float uAlpha;
+  uniform float uSoft;
   varying float vGlow;
   void main() {
     vec2 uv = gl_PointCoord - 0.5;
     float d = length(uv);
     if (d > 0.5) discard;
-    // nucleo duro + alone minimo: polvere nitida, non bagliore
-    float core = smoothstep(0.3, 0.16, d);
-    float halo = smoothstep(0.5, 0.26, d) * 0.08;
+    // uSoft 0 = nucleo duro (polvere nitida della stella); 1 = falloff largo
+    // e gaussiano (nastro di luce delle orbite, niente scalini a pixel)
+    float core = smoothstep(mix(0.3, 0.46, uSoft), mix(0.16, 0.04, uSoft), d);
+    float halo = smoothstep(0.5, 0.26, d) * mix(0.08, 0.22, uSoft);
     // il caldo entra con l'hover E dove vGlow supera 1 (puntatore/impulso/testa orbita)
     float hot = clamp(uExcite * 0.35 + max(vGlow - 1.0, 0.0) * 0.7, 0.0, 1.0);
     vec3 col = mix(uColor, uColorHot, hot);
-    float alpha = (core + halo) * clamp(vGlow, 0.0, 1.25) * uAlpha * (1.0 + uExcite * 0.12);
+    float alpha = (core + halo) * clamp(vGlow, 0.0, 1.25) * uAlpha * (1.0 + uExcite * 0.3);
     gl_FragColor = vec4(col * alpha, alpha);
   }
 `
@@ -306,7 +310,9 @@ export default function DaemonCoreGL({
           powerPreference: 'low-power',
         })
         renderer.setClearColor(0x000000, 0)
-        renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1))
+        // supersampling: sempre ≥2x anche su schermi dpr 1 — un solo canvas
+        // piccolo, il costo è nulla e sparisce l'effetto "a pixel"
+        renderer.setPixelRatio(Math.min(2.5, Math.max(2, window.devicePixelRatio || 1)))
         renderer.setSize(size, size)
         renderer.domElement.style.display = 'block'
         renderer.domElement.style.background = 'transparent'
@@ -333,17 +339,23 @@ export default function DaemonCoreGL({
         }
         const boost = theme === 'light' ? 0.1 : 0
 
-        // nucleo
+        // nucleo — NON sempre in highlight: a riposo convive col sistema,
+        // si accende con impulso/puntatore/hover (uExcite alza l'alpha nel frag)
         const starGeo = new BufferGeometry()
         starGeo.setAttribute('position', new BufferAttribute(starPos, 3))
         seedAttributes(starGeo, STAR_COUNT, STAR_SIZE, STAR_SIZE_JITTER)
-        scene.add(new Points(starGeo, makeMaterial(DUST_VERT, { ...shared, uAlpha: { value: 0.85 + boost } }, blend)))
+        scene.add(
+          new Points(starGeo, makeMaterial(DUST_VERT, { ...shared, uAlpha: { value: 0.6 + boost }, uSoft: { value: 0 } }, blend)),
+        )
 
         // nebulosa di profondità
         const nebGeo = new BufferGeometry()
         nebGeo.setAttribute('position', new BufferAttribute(nebulaPositions(NEBULA_COUNT), 3))
         seedAttributes(nebGeo, NEBULA_COUNT, NEBULA_SIZE, NEBULA_SIZE_JITTER)
-        const nebula = new Points(nebGeo, makeMaterial(DUST_VERT, { ...shared, uAlpha: { value: theme === 'light' ? 0.5 : 0.38 } }, blend))
+        const nebula = new Points(
+          nebGeo,
+          makeMaterial(DUST_VERT, { ...shared, uAlpha: { value: theme === 'light' ? 0.5 : 0.4 }, uSoft: { value: 0.7 } }, blend),
+        )
         scene.add(nebula)
 
         // 3 orbite ellittiche con flusso
@@ -357,7 +369,8 @@ export default function DaemonCoreGL({
               ORBIT_VERT,
               {
                 ...shared,
-                uAlpha: { value: 0.9 + boost },
+                uAlpha: { value: 0.55 + boost },
+                uSoft: { value: 1 },
                 uRadii: { value: new Vector2(rx, ry) },
                 uSpeed: { value: speed },
                 uHeads: { value: heads },
@@ -418,9 +431,11 @@ export default function DaemonCoreGL({
           const period = PULSE_PERIOD_REST + (PULSE_PERIOD_HOVER - PULSE_PERIOD_REST) * ex
           const pt = (t % period) / period
           shared.uPulse.value = pt * 1.9
-          shared.uPulseGain.value = (1 - pt) * (0.45 + ex * 0.55)
-          // parallasse pigra della nebulosa
-          nebula.rotation.z = t * 0.03
+          shared.uPulseGain.value = (1 - pt) * (0.6 + ex * 0.4)
+          // il sistema intero ondeggia piano (parallasse 3D percepibile anche da fermi)
+          scene!.rotation.z = Math.sin(t * 0.12) * 0.07
+          scene!.rotation.x = Math.sin(t * 0.09) * 0.05
+          nebula.rotation.z = t * 0.055
           renderer!.render(scene!, camera)
         }
         tick()
