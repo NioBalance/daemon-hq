@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import Drawer from '../components/ui-v2/Drawer'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
@@ -309,17 +310,15 @@ export default function Fornitori() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">Fornitori</h2>
-          <div className="ov-sub">
-            {(fornitori ?? []).length} CONTROPART{(fornitori ?? []).length === 1 ? 'E' : 'I'} · STRATEGIA DUAL-SUPPLIER
-          </div>
-        </div>
-        <button className="pg-add" onClick={openCreate}>
-          + Fornitore
-        </button>
-      </div>
+      <PageNav
+        title="Fornitori"
+        sub={`${(fornitori ?? []).length} contropart${(fornitori ?? []).length === 1 ? 'e' : 'i'} · strategia dual-supplier`}
+        actions={
+          <button className="pg-add" onClick={openCreate}>
+            + Fornitore
+          </button>
+        }
+      />
       <p className="pg-note">
         Produttore strutturato per la core line (1.000+ pz/mese) + laboratorio per le capsule. Condizioni target: 30%
         avvio, saldo dopo, preferenza pagamento 60gg, condizioni migliori al crescere degli ordini.

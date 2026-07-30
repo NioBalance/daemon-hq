@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState, SkeletonGrid } from '../components/QueryState'
@@ -86,15 +87,15 @@ export default function Catalogo() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">Catalogo</h2>
-          <div className="ov-sub">{all.length} CAPI · LA MEMORIA STORICA DEL PRODOTTO</div>
-        </div>
-        <button className="tlink" onClick={openCreate}>
-          + Articolo
-        </button>
-      </div>
+      <PageNav
+        title="Catalogo"
+        sub={`${all.length} capi · la memoria storica del prodotto`}
+        actions={
+          <button className="tlink" onClick={openCreate}>
+            + Articolo
+          </button>
+        }
+      />
 
       {isLoading && <SkeletonGrid count={8} height={190} minWidth={180} />}
       {isError && <ErrorState message={error.message} onRetry={() => refetch()} />}

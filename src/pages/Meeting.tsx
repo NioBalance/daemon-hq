@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
@@ -228,17 +229,16 @@ export default function Meeting() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">Riunioni</h2>
-          <div className="ov-sub">
-            {meetings.length} RIUNION{meetings.length === 1 ? 'E' : 'I'} · MEMORIA DECISIONALE DEL TEAM
-          </div>
-        </div>
-        <button className="pg-add" onClick={openCreate}>
-          + Riunione
-        </button>
-      </div>
+      <PageNav
+        title="Riunioni"
+        icon="riunioni"
+        sub={`${meetings.length} riunion${meetings.length === 1 ? 'e' : 'i'} · memoria decisionale del team`}
+        actions={
+          <button className="pg-add" onClick={openCreate}>
+            + Riunione
+          </button>
+        }
+      />
 
       {meetingsQ.isLoading ? (
         <div aria-busy="true">

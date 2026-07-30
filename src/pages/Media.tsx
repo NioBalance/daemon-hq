@@ -1,4 +1,5 @@
 import { useRef, useState, type FormEvent } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
@@ -190,12 +191,7 @@ export default function MediaStudio() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">Media Studio</h2>
-          <div className="ov-sub">{allMedia.length} ASSET · SITO / CREATIVE / INSTAGRAM</div>
-        </div>
-      </div>
+      <PageNav title="Media Studio" sub={`${allMedia.length} asset · sito / creative / Instagram`} />
       <p className="pg-note">
         Tutto il materiale foto e video del brand, organizzato per destinazione. Un asset può vivere in più righe con
         i tag (niente duplicati); tocca un media per aprire il lightbox con le azioni rapide.

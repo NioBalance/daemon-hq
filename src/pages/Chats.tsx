@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
@@ -231,15 +232,16 @@ export default function Chats() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">Chats — Customer Care</h2>
-          <div className="ov-sub">{open.length} DA SEGUIRE · {closed.length} CHIUSE</div>
-        </div>
-        <button className="tlink" onClick={openCreate}>
-          + Conversazione
-        </button>
-      </div>
+      <PageNav
+        title="Chats — Customer Care"
+        icon="chats"
+        sub={`${open.length} da seguire · ${closed.length} chiuse`}
+        actions={
+          <button className="tlink" onClick={openCreate}>
+            + Conversazione
+          </button>
+        }
+      />
       <p className="pg-note">
         Accesso rapido a ManyChat, WhatsApp e Direct + il registro delle conversazioni da seguire, con note firmate.
       </p>

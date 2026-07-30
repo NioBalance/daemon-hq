@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import PanelHead from '../components/PanelHead'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
@@ -225,9 +225,10 @@ export default function Calendario() {
 
   return (
     <>
-      <PanelHead
+      <PageNav
         title="Calendario"
-        desc="Planner del team: incontri, deadline e date di lancio. Le date dei drop e delle fasi non completate entrano da sole dalla Timeline."
+        icon="cal"
+        sub="planner del team · incontri, deadline e lanci (le date dei drop entrano da sole dalla Timeline)"
         actions={
           <button className="btn" onClick={() => openCreate()}>
             + Evento

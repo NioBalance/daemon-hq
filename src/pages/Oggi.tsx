@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import OwnerBadge from '../components/OwnerBadge'
 import { ErrorState } from '../components/QueryState'
 import { useUpdateFase } from '../features/drops/queries'
@@ -120,32 +121,31 @@ export default function Oggi() {
 
   return (
     <>
-      <div className="ov-head og-head">
-        <div>
-          <h2 className="ov-title">Oggi</h2>
-          <div className="ov-sub">
-            {oggi.count ? `${oggi.count} VOC${oggi.count === 1 ? 'E' : 'I'} APERTE` : 'NIENTE IN CODA'} · {headDate}
+      <PageNav
+        title="Oggi"
+        icon="oggi"
+        sub={`${oggi.count ? `${oggi.count} voc${oggi.count === 1 ? 'e' : 'i'} aperte` : 'niente in coda'} · ${headDate}`}
+        actions={
+          <div className="og-toggle" role="tablist" aria-label="Raggruppamento">
+            {(
+              [
+                ['urgenza', 'Urgenza'],
+                ['tipo', 'Tipo'],
+              ] as [Vista, string][]
+            ).map(([v, label]) => (
+              <button
+                key={v}
+                role="tab"
+                aria-selected={vista === v}
+                className={`og-tab${vista === v ? ' active' : ''}`}
+                onClick={() => setVista(v)}
+              >
+                {label}
+              </button>
+            ))}
           </div>
-        </div>
-        <div className="og-toggle" role="tablist" aria-label="Raggruppamento">
-          {(
-            [
-              ['urgenza', 'Urgenza'],
-              ['tipo', 'Tipo'],
-            ] as [Vista, string][]
-          ).map(([v, label]) => (
-            <button
-              key={v}
-              role="tab"
-              aria-selected={vista === v}
-              className={`og-tab${vista === v ? ' active' : ''}`}
-              onClick={() => setVista(v)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+        }
+      />
 
       {oggi.count === 0 ? (
         <div className="ov-empty">

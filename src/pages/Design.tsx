@@ -1,4 +1,5 @@
 import { useState, type CSSProperties, type FormEvent } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
@@ -133,15 +134,16 @@ export default function DesignPage() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">Pipeline Design</h2>
-          <div className="ov-sub">{(designs ?? []).length} CAPI · 5 FASI</div>
-        </div>
-        <button className="tlink" onClick={openCreate}>
-          + Design
-        </button>
-      </div>
+      <PageNav
+        title="Pipeline Design"
+        icon="design"
+        sub={`${(designs ?? []).length} capi · 5 fasi`}
+        actions={
+          <button className="tlink" onClick={openCreate}>
+            + Design
+          </button>
+        }
+      />
       <p className="pg-note">
         Ogni capo attraversa 5 fasi. Quando arriva a «Tech Pack», crea la scheda nella tab dedicata.
       </p>

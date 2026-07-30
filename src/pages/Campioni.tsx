@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
@@ -197,17 +198,16 @@ export default function Campioni() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">Review Campioni</h2>
-          <div className="ov-sub">
-            {(samples ?? []).length} CAMPION{(samples ?? []).length === 1 ? 'E' : 'I'} · 4 ASSI DI VALUTAZIONE
-          </div>
-        </div>
-        <button className="tlink" onClick={openCreate}>
-          + Campione
-        </button>
-      </div>
+      <PageNav
+        title="Review Campioni"
+        icon="samples"
+        sub={`${(samples ?? []).length} campion${(samples ?? []).length === 1 ? 'e' : 'i'} · 4 assi di valutazione`}
+        actions={
+          <button className="tlink" onClick={openCreate}>
+            + Campione
+          </button>
+        }
+      />
       <p className="pg-note">Ogni sample valutato su 4 assi. Le note diventano il feedback da girare al fornitore.</p>
 
       {isLoading && (

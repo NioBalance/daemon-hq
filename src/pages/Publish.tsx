@@ -1,4 +1,5 @@
 import { useState, type CSSProperties, type FormEvent } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
@@ -183,15 +184,15 @@ export default function Publish() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">Publish</h2>
-          <div className="ov-sub">{items.length} CONTENUT{items.length === 1 ? 'O' : 'I'} · PIPELINE EDITORIALE</div>
-        </div>
-        <button className="pg-add" onClick={openCreate}>
-          + Contenuto
-        </button>
-      </div>
+      <PageNav
+        title="Publish"
+        sub={`${items.length} contenut${items.length === 1 ? 'o' : 'i'} · pipeline editoriale`}
+        actions={
+          <button className="pg-add" onClick={openCreate}>
+            + Contenuto
+          </button>
+        }
+      />
 
       {itemsQ.isLoading ? (
         <div aria-busy="true">

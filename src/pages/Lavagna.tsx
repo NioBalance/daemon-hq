@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import { Loading, ErrorState } from '../components/QueryState'
 import { useCanvas } from '../features/lavagna/queries'
 import { useAuth } from '../auth/useAuth'
@@ -11,13 +12,11 @@ export default function Lavagna() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">Lavagna</h2>
-          <div className="ov-sub">CANVAS LIBERO · APPUNTI E BRAINSTORMING (NON LEGATO AI DATI)</div>
-        </div>
-        <span className="code">Doppio-click o «+ Nodo» · trascina tra i nodi per collegare</span>
-      </div>
+      <PageNav
+        title="Lavagna"
+        sub="canvas libero · appunti e brainstorming (non legato ai dati)"
+        actions={<span className="code">Doppio-click o «+ Nodo» · trascina tra i nodi per collegare</span>}
+      />
 
       {isLoading && <Loading label="Carico la lavagna…" />}
       {isError && (

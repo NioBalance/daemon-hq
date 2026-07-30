@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import Drawer from '../components/ui-v2/Drawer'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
@@ -294,15 +295,15 @@ export default function TechPack() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">Tech Pack</h2>
-          <div className="ov-sub">{(techpacks ?? []).length} SCHEDE · IL CONTRATTO COL FORNITORE</div>
-        </div>
-        <button className="tlink" onClick={openCreate}>
-          + Tech pack
-        </button>
-      </div>
+      <PageNav
+        title="Tech Pack"
+        sub={`${(techpacks ?? []).length} schede · il contratto col fornitore`}
+        actions={
+          <button className="tlink" onClick={openCreate}>
+            + Tech pack
+          </button>
+        }
+      />
       <p className="pg-note">
         La scheda tecnica è il contratto col fornitore: materiali, colorway, taglie e stato di conferma.
       </p>

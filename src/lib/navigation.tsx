@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useRef } from 'react'
 import type { ArchTab, NavEntry, TabKey } from './tabs'
 
 export interface NavContextValue {
+  /** Tab corrente (per PageNav e chiunque debba sapere dove siamo). */
+  activeTab: TabKey
   goTab: (tab: TabKey) => void
   /** Naviga a una voce dei gruppi (gestisce anche la sub-tab Archivio). */
   goEntry: (entry: NavEntry) => void

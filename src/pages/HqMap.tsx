@@ -1,4 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import { Loading } from '../components/QueryState'
 import { ErrorState } from '../components/QueryState'
 import EmptyState from '../components/ui-v2/EmptyState'
@@ -197,21 +198,21 @@ export default function HqMap() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">HQ Map</h2>
-          <div className="ov-sub">MAPPA OPERATIVA · DROP → ARTICOLI → TECH PACK → CAMPIONI</div>
-        </div>
-        {drops.length > 0 && (
-          <select className="hq-dropsel" value={currentDropId ?? ''} onChange={(e) => setDropId(e.target.value)}>
-            {drops.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.nome}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+      <PageNav
+        title="HQ Map"
+        sub="mappa operativa · drop → articoli → tech pack → campioni"
+        actions={
+          drops.length > 0 && (
+            <select className="hq-dropsel" value={currentDropId ?? ''} onChange={(e) => setDropId(e.target.value)}>
+              {drops.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.nome}
+                </option>
+              ))}
+            </select>
+          )
+        }
+      />
 
       {!drop ? (
         <EmptyState icon="box" title="Nessun drop" caption="Creane uno per costruire la mappa." />

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import PanelHead from '../components/PanelHead'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import type { FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
@@ -144,10 +144,11 @@ export default function Notes() {
 
   return (
     <>
-      <PanelHead
-        title="Note / Memo"
-        desc="Bacheca del team: idee, decisioni e promemoria non legati a un oggetto specifico. Le note pinnate salgono in cima (e alimenteranno il widget «Note per il team»). Ognuno modifica e cancella solo le proprie."
-      />
+      <PageNav title="Note / Memo" sub="bacheca del team · idee, decisioni, promemoria" />
+      <p className="pg-note">
+        Le note pinnate salgono in cima (e alimentano il widget «Note per il team»). Ognuno modifica e cancella solo
+        le proprie.
+      </p>
 
       <form className="card memo-new" onSubmit={handleCreate}>
         <div className="field" style={{ marginBottom: 8 }}>

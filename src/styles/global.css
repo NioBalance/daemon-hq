@@ -418,6 +418,25 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 /* Docked: il contenuto riserva la corsia dei widget */
 @media (min-width:1280px){.shell-main.widgets-docked main{padding-right:300px;max-width:none}}
 /* ── De-box v4: primitive condivise ───────────────────────────────────── */
+/* ── PageNav ui-v2 (pattern MARF): barra glass con indietro, icona sezione,
+   titolo+contesto, azioni. Orienta: dove sei, a cosa serve, cosa puoi fare. */
+.pgnav{display:flex;align-items:center;gap:13px;background:var(--glass-1);backdrop-filter:blur(var(--glass-blur)) saturate(1.15);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.15);border:var(--glass-border);border-radius:var(--radius-card);box-shadow:var(--shadow-1);padding:11px 15px;margin-bottom:20px}
+.pgnav-back{width:34px;height:34px;flex:none;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:var(--radius-button);color:var(--muted);cursor:pointer;transition:background var(--dur-fast,.12s),color var(--dur-fast,.12s)}
+.pgnav-back:hover,.pgnav-back:focus-visible{background:hsl(var(--hover-bg));color:var(--bone)}
+.pgnav-back svg{width:17px;height:17px}
+.pgnav-icon{width:36px;height:36px;flex:none;display:flex;align-items:center;justify-content:center;background:hsl(var(--surface-2) / .8);border:1px solid var(--line);border-radius:var(--radius-button);color:var(--ember)}
+.pgnav-icon svg{width:18px;height:18px}
+.pgnav-main{flex:1;min-width:0}
+.pgnav-title{font-family:var(--font-title);font-weight:700;font-size:19px;line-height:1.2;letter-spacing:-.01em}
+.pgnav-sub{font-size:12px;font-weight:500;color:var(--muted);margin-top:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pgnav-actions{display:flex;align-items:center;gap:14px;flex:none;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:640px){
+  .pgnav{padding:9px 11px;gap:10px;margin-bottom:14px}
+  .pgnav-icon{display:none}
+  .pgnav-title{font-size:16.5px}
+  .pgnav-sub{white-space:normal}
+}
+
 /* Testata pagina editoriale (pattern Overview/Oggi) */
 .pg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:34px}
 .pg-note{font-size:13px;color:var(--muted);line-height:1.6;max-width:600px;margin:-6px 0 34px}

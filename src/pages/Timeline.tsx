@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import FormFields, { type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
@@ -175,15 +176,15 @@ export default function Timeline() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">Timeline Lanci</h2>
-          <div className="ov-sub">{sortedDrops.length} DROP · PIPELINE</div>
-        </div>
-        <button className="tlink" onClick={openCreateDrop}>
-          + Drop
-        </button>
-      </div>
+      <PageNav
+        title="Timeline Lanci"
+        sub={`${sortedDrops.length} drop · pipeline`}
+        actions={
+          <button className="tlink" onClick={openCreateDrop}>
+            + Drop
+          </button>
+        }
+      />
 
       <div className="chips center">
         <button className={`chip${view === 'gantt' ? ' active' : ''}`} onClick={() => setView('gantt')}>

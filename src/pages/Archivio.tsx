@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, type FormEvent } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState, SkeletonGrid } from '../components/QueryState'
@@ -153,17 +154,16 @@ export default function Archivio() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">Archivio</h2>
-          <div className="ov-sub">
-            {(inspo.data?.length ?? 0)} INSPO · {(links.data?.length ?? 0)} LINK
-          </div>
-        </div>
-        <button className="tlink" onClick={archTab === 'inspo' ? openAddInspo : openCreateLink}>
-          + {archTab === 'inspo' ? 'Inspirazione' : 'Link'}
-        </button>
-      </div>
+      <PageNav
+        title="Archivio"
+        icon="inspo"
+        sub={`${inspo.data?.length ?? 0} inspo · ${links.data?.length ?? 0} link`}
+        actions={
+          <button className="tlink" onClick={archTab === 'inspo' ? openAddInspo : openCreateLink}>
+            + {archTab === 'inspo' ? 'Inspirazione' : 'Link'}
+          </button>
+        }
+      />
       <div className="subtabs">
         <button className={`chip${archTab === 'inspo' ? ' active' : ''}`} onClick={() => setArchTab('inspo')}>
           Inspirazione ({inspo.data?.length ?? 0})

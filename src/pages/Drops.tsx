@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { ErrorState } from '../components/QueryState'
@@ -145,20 +146,21 @@ export default function Drops() {
 
   return (
     <>
-      <div className="pg-head">
-        <div>
-          <h2 className="ov-title">Drops</h2>
-          <div className="ov-sub">{(drops ?? []).length} LANCI · {(articoli ?? []).length} ARTICOLI</div>
-        </div>
-        <div className="row" style={{ gap: 20 }}>
-          <button className="tlink" onClick={openCreateDrop}>
-            + Drop
-          </button>
-          <button className="tlink" onClick={() => openCreateArticolo()}>
-            + Articolo
-          </button>
-        </div>
-      </div>
+      <PageNav
+        title="Drops"
+        icon="dropx"
+        sub={`${(drops ?? []).length} lanci · ${(articoli ?? []).length} articoli`}
+        actions={
+          <div className="row" style={{ gap: 20 }}>
+            <button className="tlink" onClick={openCreateDrop}>
+              + Drop
+            </button>
+            <button className="tlink" onClick={() => openCreateArticolo()}>
+              + Articolo
+            </button>
+          </div>
+        }
+      />
       <p className="pg-note">
         Una riga per lancio, dentro tutti gli articoli con foto, colori e avanzamento task. Tocca la categoria per
         vedere tutti i capi di quel tipo nel tempo.

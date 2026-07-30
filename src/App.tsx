@@ -205,6 +205,7 @@ function AppShell() {
   return (
     <NavContext.Provider
       value={{
+        activeTab,
         goTab,
         goEntry,
         goCategoria,

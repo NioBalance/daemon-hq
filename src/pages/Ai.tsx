@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import PanelHead from '../components/PanelHead'
+import PageNav from '../components/ui-v2/PageNav'
 import Modal from '../components/Modal'
 import FormFields, { type FieldDef, type FormValues } from '../components/FormFields'
 import { Loading, ErrorState } from '../components/QueryState'
@@ -75,9 +75,10 @@ export default function Ai() {
 
   return (
     <>
-      <PanelHead
+      <PageNav
         title="AI"
-        desc="Collegamenti rapidi agli strumenti AI del team: chat, generazione immagini, automazioni. Modificabili da chiunque."
+        icon="inspo"
+        sub="strumenti AI del team · chat, immagini, automazioni"
         actions={
           <button className="btn" onClick={openCreate}>
             + Strumento
