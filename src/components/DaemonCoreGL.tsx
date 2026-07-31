@@ -33,16 +33,22 @@ import { useInView } from '../lib/useInView'
  *  Il chiamante gestisce i fallback SVG; qui solo l'errore di init. */
 
 // ── taratura ─────────────────────────────────────────────────────────────
-const CONTOUR_COUNT = 1500
-const CONTOUR_SIZE = 1.0
-const CONTOUR_SIZE_JITTER = 0.4
-const CONTOUR_JITTER = 0.016 // spessore del tratto: quasi niente, è un filo
-const CONTOUR_Z = 0.1
+// "outlined": tratto sottile — punti piccoli, jitter quasi zero, alpha contenuta
+const CONTOUR_COUNT = 1300
+const CONTOUR_SIZE = 0.6
+const CONTOUR_SIZE_JITTER = 0.22
+const CONTOUR_JITTER = 0.008
+const CONTOUR_Z = 0.08
 
-// orbite: [semiasse x, semiasse y, tilt X, tilt Y, velocità (segno=verso), teste, count, size]
+// NUBE ORBITALE: tante orbite sottili e tenui invece di 2 nastri spessi —
+// [semiasse x, semiasse y, tilt X, tilt Y, velocità (segno=verso), teste, count, size]
 const ORBITS: [number, number, number, number, number, number, number, number][] = [
-  [1.28, 1.12, 0.5, 0.08, 0.55, 1, 190, 1.8],
-  [1.5, 1.3, -0.42, 0.28, -0.4, 2, 160, 1.55],
+  [1.26, 1.1, 0.5, 0.08, 0.55, 1, 150, 1.05],
+  [1.34, 1.22, -0.35, 0.2, -0.42, 2, 140, 0.95],
+  [1.44, 1.18, 0.22, -0.4, 0.36, 1, 130, 1.0],
+  [1.5, 1.32, -0.5, 0.34, -0.3, 2, 130, 0.9],
+  [1.38, 1.05, 0.65, 0.5, 0.48, 1, 120, 0.95],
+  [1.56, 1.4, -0.15, -0.28, -0.24, 3, 120, 0.85],
 ]
 
 // campo puntatore
@@ -316,22 +322,22 @@ export default function DaemonCoreGL({
       scene.add(
         new Points(
           starGeo,
-          makeMaterial(CONTOUR_VERT, { ...shared, uAlpha: { value: 0.8 + boost }, uSoft: { value: 0 } }, blend),
+          makeMaterial(CONTOUR_VERT, { ...shared, uAlpha: { value: 0.72 + boost }, uSoft: { value: 0 } }, blend),
         ),
       )
 
-      // 2 orbite ellittiche inclinate, controrotanti, con flusso
+      // nube orbitale: 6 orbite sottili inclinate, controrotanti, con flusso
       for (const [rx, ry, tiltX, tiltY, speed, heads, count, psize] of ORBITS) {
         const geo = new BufferGeometry()
         geo.setAttribute('position', new BufferAttribute(new Float32Array(count * 3), 3))
-        seedAttributes(geo, count, psize, 0.6, true)
+        seedAttributes(geo, count, psize, 0.35, true)
         const pts = new Points(
           geo,
           makeMaterial(
             ORBIT_VERT,
             {
               ...shared,
-              uAlpha: { value: 0.5 + boost },
+              uAlpha: { value: 0.32 + boost },
               uSoft: { value: 1 },
               uRadii: { value: new Vector2(rx, ry) },
               uSpeed: { value: speed },

@@ -8,7 +8,8 @@ import { ProgressRing, Sparkline, MiniBars } from '../components/ChartBits'
 import KpiCard from '../components/ui-v2/KpiCard'
 import { useLinks, useCreateLink, useUpdateLink } from '../features/links/queries'
 import { useDrops, useDropFasi, useUpdateFase } from '../features/drops/queries'
-import { useArticoli, useArticoloTasks } from '../features/articoli/queries'
+import { useArticoli, useArticoloTasks, useToggleTask } from '../features/articoli/queries'
+import { useMemos, useCreateMemo } from '../features/memos/queries'
 import { useDesigns } from '../features/designs/queries'
 import { useTechpacks } from '../features/techpacks/queries'
 import { useSamples } from '../features/samples/queries'
@@ -48,17 +49,17 @@ function SmartCore() {
   const [glFailed, setGlFailed] = useState(false)
   const [glOk] = useState(webglAvailable)
   const onFallback = useCallback(() => setGlFailed(true), [])
-  if (!glOk || reduce || glFailed) return <DaemonCore size={140} />
+  if (!glOk || reduce || glFailed) return <DaemonCore size={116} />
   return (
-    <Suspense fallback={<DaemonCore size={140} />}>
-      <DaemonCoreGL size={140} theme={theme} onFallback={onFallback} />
+    <Suspense fallback={<DaemonCore size={116} />}>
+      <DaemonCoreGL size={116} theme={theme} onFallback={onFallback} />
     </Suspense>
   )
 }
 import { useAuth } from '../auth/useAuth'
 import { useToast } from '../lib/useToast'
 import { useFormDraft } from '../lib/useFormDraft'
-import { fmtDate, todayIso, addDaysIso, daysUntil, localDateIso, timeAgo } from '../lib/format'
+import { fmtDate, todayIso, addDaysIso, daysUntil, localDateIso, timeAgo, formatDelta } from '../lib/format'
 import type { KpiMetrica } from '../lib/database.types'
 import type { TabKey } from '../lib/tabs'
 
@@ -139,6 +140,22 @@ function ScaledFrame({ url, frameWidth, ratio, title }: { url: string; frameWidt
 
 const SHOP_LABEL_RE = /negozio|shop|store|sito/i
 
+/** Sparkline di sfondo delle tile Insights: area + linea in currentColor,
+ *  niente assi né dot — è atmosfera dietro il numero, non un grafico. */
+function TileSpark({ values }: { values: number[] }) {
+  if (values.length < 2) return null
+  const vals = values.slice(-12)
+  const min = Math.min(...vals)
+  const span = Math.max(...vals) - min || 1
+  const pts = vals.map((v, i) => `${(i / (vals.length - 1)) * 100},${29 - ((v - min) / span) * 24}`)
+  return (
+    <svg className="ins-spark" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden>
+      <polygon points={`0,32 ${pts.join(' ')} 100,32`} fill="currentColor" opacity="0.09" />
+      <polyline points={pts.join(' ')} fill="none" stroke="currentColor" strokeWidth="1.5" vectorEffect="non-scaling-stroke" opacity="0.5" />
+    </svg>
+  )
+}
+
 const KPI_FIELDS: FieldDef[] = [
   {
     key: 'metrica',
@@ -171,6 +188,35 @@ export default function Overview() {
   const linksQ = useLinks()
   const createLink = useCreateLink()
   const updateLink = useUpdateLink()
+  const memosQ = useMemos()
+  const createMemo = useCreateMemo()
+  const toggleTask = useToggleTask()
+  const reduceMotion = useReducedMotion()
+
+  // finestra Note: quick-add firmato direttamente dall'Overview
+  const [noteTxt, setNoteTxt] = useState('')
+  async function addQuickNote(e: FormEvent) {
+    e.preventDefault()
+    const testo = noteTxt.trim()
+    if (!testo || !profile) return
+    try {
+      await createMemo.mutateAsync({ author_id: profile.id, author_name: profile.nome, testo, colore: null })
+      setNoteTxt('')
+      showToast('success', 'Nota pubblicata.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Salvataggio non riuscito.')
+    }
+  }
+
+  function completaTask(id: string) {
+    toggleTask.mutate(
+      { id, done: true },
+      {
+        onSuccess: () => showToast('success', 'Task completato.'),
+        onError: (err) => showToast('error', err instanceof Error ? err.message : 'Salvataggio non riuscito.'),
+      },
+    )
+  }
 
   // Preview negozio: stessa idea dell'embed Calendario — la config vive in una
   // riga `links` (match sulla label), salvata a runtime coi mutation hook.
@@ -252,7 +298,11 @@ export default function Overview() {
           <h2 className="ov-title">Overview</h2>
           <div className="skeleton" style={{ width: 260, height: 12 }} />
         </div>
-        <div className="skeleton" style={{ height: 58, borderRadius: 999, marginBottom: 34 }} />
+        <div className="ins-band" aria-hidden>
+          {Array.from({ length: 5 }, (_, i) => (
+            <div className="skeleton" key={i} style={{ height: 88, borderRadius: 'var(--radius-card)' }} />
+          ))}
+        </div>
         <div className="ov-skel-band">
           {Array.from({ length: 5 }, (_, i) => (
             <div className="skeleton" key={i} style={{ height: 128, borderRadius: 'var(--radius-card)' }} />
@@ -352,11 +402,6 @@ export default function Overview() {
   const headTime = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
   const syncOk = !kpiQ.isError && !activityQ.isError
 
-  const kpiLatest = (m: KpiMetrica) => {
-    const series = kpiSeries.get(m) ?? []
-    return series[series.length - 1] ?? null
-  }
-
   const campioniInReview = samplesList.filter((s) => s.verdetto === 'in-review').length
   const taskAperti = tasksList.filter((t) => !t.done).length
   const fornitoriAttivi = fornitoriList.filter((f) => f.stato === 'attivo')
@@ -415,38 +460,122 @@ export default function Overview() {
         </div>
       </div>
 
-      <div className="live-ticker">
-        <div className="live-ticker-in">
-          <span className="lt-live">
-            <span className="lt-dot" aria-hidden /> LIVE
-          </span>
-          <span className="lt-sep" aria-hidden />
-          {KPI_METRICHE.map((m) => {
-            const latest = kpiLatest(m.value)
-            return (
-              <span
-                className={`lt-item${m.value === 'pacchi_drop' ? ' hot' : ''}`}
-                key={m.value}
-                role="group"
-                aria-label={m.label}
-              >
-                <span className="lt-icon">{ICONS[TICKER_ICON[m.value]]}</span>
-                <span className="lt-val">
-                  {latest ? `${latest.valore.toLocaleString('it-IT')}${m.unit ? ` ${m.unit}` : ''}` : '—'}
-                </span>
+      <div className="ins-head">
+        <span className="lt-live">
+          <span className="lt-dot" aria-hidden /> LIVE
+        </span>
+        <span className="ins-title">Insights</span>
+        <button className="tlink ins-cta" onClick={() => openKpi()}>
+          Aggiorna KPI →
+        </button>
+      </div>
+      <div className="ins-band">
+        {KPI_METRICHE.map((met, i) => {
+          const series = kpiSeries.get(met.value) ?? []
+          const latest = series[series.length - 1] ?? null
+          const prev = series[series.length - 2] ?? null
+          const delta = latest && prev && prev.valore !== 0 ? (latest.valore - prev.valore) / prev.valore : null
+          return (
+            <m.button
+              key={met.value}
+              className={`ins-tile${met.value === 'pacchi_drop' ? ' hot' : ''}`}
+              aria-label={`${met.label}: ${latest ? latest.valore.toLocaleString('it-IT') : 'nessun dato'} — aggiorna`}
+              onClick={() => openKpi(met.value)}
+              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.05 * i, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <TileSpark values={series.map((s) => s.valore)} />
+              <span className="ins-tile-head">
+                <span className="ins-icon">{ICONS[TICKER_ICON[met.value]]}</span>
+                <span className="ins-lbl">{met.label}</span>
               </span>
-            )
-          })}
-          <button className="tlink lt-cta" onClick={() => openKpi()}>
-            Aggiorna KPI →
-          </button>
-        </div>
+              <span className="ins-val">
+                {latest ? <CountNum value={latest.valore} /> : '—'}
+                {latest && met.unit ? <span className="ins-unit">{met.unit}</span> : null}
+              </span>
+              <span className="ins-delta">{delta !== null ? `${formatDelta(delta)} vs prec.` : 'primo snapshot'}</span>
+            </m.button>
+          )
+        })}
       </div>
 
-      <button className="ov-core" onClick={openAssist} aria-label="Apri l'assistente DÆMON">
-        <SmartCore />
-        <span className="ov-core-cap">DÆMON — CHIEDI DOVE</span>
-      </button>
+      <div className="ov-hero">
+        <aside className="ov-win" aria-label="To do">
+          <div className="ov-win-head">
+            <span className="ov-win-icon" aria-hidden>{ICONS.oggi}</span>
+            <span className="ov-win-title">To do</span>
+            <span className="ov-win-count">{taskAperti} apert{taskAperti === 1 ? 'o' : 'i'}</span>
+            <button className="tlink ov-win-link" onClick={() => goTab('oggi')}>
+              Oggi →
+            </button>
+          </div>
+          {taskAperti ? (
+            <ul className="ov-win-list">
+              {tasksList
+                .filter((t) => !t.done)
+                .slice(0, 5)
+                .map((t) => (
+                  <li className="ov-todo-row" key={t.id}>
+                    <input
+                      type="checkbox"
+                      className="now-check"
+                      aria-label={`Completa: ${t.testo}`}
+                      disabled={toggleTask.isPending}
+                      onChange={() => completaTask(t.id)}
+                    />
+                    <span className="ov-todo-txt">
+                      {t.testo}
+                      <span className="ov-todo-tag">
+                        {(articoli.data ?? []).find((a) => a.id === t.articolo_id)?.nome ?? ''}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+            </ul>
+          ) : (
+            <p className="ov-win-empty">Tutto fatto. Niente in coda.</p>
+          )}
+        </aside>
+
+        <button className="ov-core" onClick={openAssist} aria-label="Apri l'assistente DÆMON">
+          <SmartCore />
+          <span className="ov-core-cap">DÆMON — CHIEDI DOVE</span>
+        </button>
+
+        <aside className="ov-win" aria-label="Note del team">
+          <div className="ov-win-head">
+            <span className="ov-win-icon" aria-hidden>{ICONS.notes}</span>
+            <span className="ov-win-title">Note team</span>
+            <button className="tlink ov-win-link" onClick={() => goTab('notes')}>
+              Note →
+            </button>
+          </div>
+          <ul className="ov-win-list">
+            {[...(memosQ.data ?? [])]
+              .sort((a, b) => Number(b.pin) - Number(a.pin))
+              .slice(0, 3)
+              .map((memo) => (
+                <li className="ov-note-row" key={memo.id}>
+                  {memo.pin && <span className="ov-note-pin" aria-hidden>★</span>}
+                  <strong>{memo.author_name}</strong> {memo.testo}
+                </li>
+              ))}
+            {!(memosQ.data ?? []).length && <li className="ov-win-empty">Ancora nessuna nota.</li>}
+          </ul>
+          <form className="ov-note-add" onSubmit={addQuickNote}>
+            <input
+              value={noteTxt}
+              onChange={(e) => setNoteTxt(e.target.value)}
+              placeholder="Scrivi una nota al team…"
+              aria-label="Nuova nota"
+            />
+            <button type="submit" disabled={!noteTxt.trim() || createMemo.isPending} aria-label="Pubblica nota">
+              +
+            </button>
+          </form>
+        </aside>
+      </div>
 
       <OvSection title="Stato produzione" index={0}>
         <div className="ov-kpi-grid">
