@@ -1,29 +1,44 @@
-/** Il core DÆMON: orb SVG animato con l'identità della stella (ember, glow,
- *  pulsazione). Solo CSS keyframes — niente WebGL, niente dipendenze: leggero
- *  e nitido a ogni scala. Hover = anelli più veloci + glow intenso; con
- *  prefers-reduced-motion resta statico col solo glow fisso. */
-export default function DaemonCore({ size = 170 }: { size?: number }) {
+import { DAEMON_LOGO_PATH } from './daemonLogoGeometry'
+
+/** Il core DÆMON, fallback SVG "ologramma": il contorno VERO del logo a 8
+ *  punte (daemonLogoGeometry) in wireframe stroke-only — il glow è un layer
+ *  di stroke largo a bassa opacità, niente filtri pesanti. Attorno, 2 orbite
+ *  ellittiche inclinate con un punto orbitante ciascuna: il punto ruota
+ *  dentro un frame scale(1, ry/rx), così percorre davvero l'ellisse.
+ *  Solo CSS keyframes; con prefers-reduced-motion resta statico. */
+export default function DaemonCore({ size = 140 }: { size?: number }) {
+  // sotto i 60px (FAB, testata assistente) gli stroke in unità viewBox
+  // diventerebbero frazioni di pixel: si ispessisce tutto in proporzione
+  const small = size < 60
+  const wire = small ? 2.6 : 0.9
+  const glow = small ? 6 : 3
   return (
     <span className="core-wrap" style={{ width: size, height: size }} aria-hidden>
       <span className="core-glow" />
       <svg viewBox="-50 -50 100 100" width={size} height={size}>
-        {/* anelli orbitali */}
-        <g className="core-ring r1">
-          <circle cx="0" cy="0" r="40" fill="none" stroke="var(--ember)" strokeWidth="0.7" strokeDasharray="3 9" strokeLinecap="round" opacity="0.5" />
+        {/* orbita 1 — inclinata, punto orario */}
+        <g transform="rotate(-14)">
+          <ellipse rx="45" ry="38" fill="none" stroke="var(--ember)" strokeWidth={small ? 1.3 : 0.45} strokeDasharray="2.5 7" strokeLinecap="round" opacity="0.4" />
+          <g transform="scale(1 0.845)">
+            <g className="core-ring r1">
+              <circle cx="45" cy="0" r={small ? 3 : 1.5} fill="var(--ember)" />
+            </g>
+          </g>
         </g>
-        <g className="core-ring r2">
-          <circle cx="0" cy="0" r="46" fill="none" stroke="var(--ember)" strokeWidth="0.5" strokeDasharray="1 14" strokeLinecap="round" opacity="0.3" />
+        {/* orbita 2 — inclinazione opposta, punto antiorario */}
+        <g transform="rotate(17)">
+          <ellipse rx="47.5" ry="33" fill="none" stroke="var(--ember)" strokeWidth={small ? 1 : 0.35} strokeDasharray="1 10" strokeLinecap="round" opacity="0.28" />
+          <g transform="scale(1 0.695)">
+            <g className="core-ring r2">
+              <circle cx="47.5" cy="0" r={small ? 2.2 : 1.1} fill="var(--ember)" opacity="0.8" />
+            </g>
+          </g>
         </g>
-        {/* punto orbitante */}
-        <g className="core-ring r3">
-          <circle cx="40" cy="0" r="1.8" fill="var(--ember)" />
+        {/* wireframe del logo: contorno reale, glow = stroke largo sotto */}
+        <g className="core-holo-star" transform="scale(0.72) translate(-50 -50)">
+          <path d={DAEMON_LOGO_PATH} fill="none" stroke="var(--ember)" strokeWidth={glow} opacity="0.16" strokeLinejoin="round" strokeLinecap="round" />
+          <path d={DAEMON_LOGO_PATH} fill="none" stroke="var(--ember)" strokeWidth={wire} opacity="0.92" strokeLinejoin="round" strokeLinecap="round" />
         </g>
-        {/* stella a 4 punte, curva come il logo */}
-        <path
-          className="core-star"
-          d="M0,-30 C2.5,-9 9,-2.5 30,0 C9,2.5 2.5,9 0,30 C-2.5,9 -9,2.5 -30,0 C-9,-2.5 -2.5,-9 0,-30 Z"
-          fill="var(--ember)"
-        />
       </svg>
     </span>
   )

@@ -496,28 +496,24 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .pflow-step.current .pflow-label{color:var(--bone)}
 .pflow-link{flex:1;min-width:16px;height:1px;background:var(--line2);margin-top:13px;transform-origin:left center}
 .pflow-link.done{background:var(--ok)}
-/* ── DÆMON core: orb animato (identità della stella) ─────────────────── */
+/* ── DÆMON core "ologramma": wireframe del logo + orbite (GL e SVG) ────── */
 .core-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none}
-.core-glow{position:absolute;inset:-26%;border-radius:50%;background:radial-gradient(circle,rgba(226,56,42,.55) 0%,rgba(226,56,42,0) 70%);filter:blur(14px);animation:coreBreathe 6s ease-in-out infinite alternate;pointer-events:none}
-/* Il core grande dell'Overview passa al blu (secondo logo) in tema chiaro:
-   l'alone CSS dietro il canvas deve seguirlo, altrimenti resta un bagliore
-   rosso dietro una stella blu. Il FAB (altre pagine) resta ember ovunque. */
-[data-theme="light"] .ov-core .core-glow{background:radial-gradient(circle,rgba(49,89,168,.5) 0%,rgba(49,89,168,0) 70%)}
-@keyframes coreBreathe{0%{opacity:.28;transform:scale(.96)}100%{opacity:.55;transform:scale(1.05)}}
+/* glow sobrio, theme-aware (segue --primary: ember su void, ember cupo su parchment) */
+.core-glow{position:absolute;inset:-16%;border-radius:50%;background:radial-gradient(circle,hsl(var(--primary) / .4) 0%,transparent 70%);filter:blur(12px);animation:coreBreathe 6s ease-in-out infinite alternate;pointer-events:none}
+@keyframes coreBreathe{0%{opacity:.18;transform:scale(.97)}100%{opacity:.4;transform:scale(1.04)}}
 .core-ring{transform-origin:0 0}
-.core-ring.r1{animation:coreSpin 18s linear infinite}
-.core-ring.r2{animation:coreSpinRev 30s linear infinite}
-.core-ring.r3{animation:coreSpin 11s linear infinite}
+.core-ring.r1{animation:coreSpin 16s linear infinite}
+.core-ring.r2{animation:coreSpinRev 26s linear infinite}
 @keyframes coreSpin{to{transform:rotate(360deg)}}
 @keyframes coreSpinRev{to{transform:rotate(-360deg)}}
-.core-star{transform-origin:0 0;animation:corePulse 3.2s ease-in-out infinite alternate;filter:drop-shadow(0 0 6px var(--ember-glow))}
-@keyframes corePulse{0%{transform:scale(1)}100%{transform:scale(1.055)}}
+/* respiro di opacità del wireframe: il glow è il layer di stroke largo nel markup */
+.core-holo-star{animation:coreHoloPulse 4.5s ease-in-out infinite alternate}
+@keyframes coreHoloPulse{0%{opacity:.82}100%{opacity:1}}
 /* hover (dal contenitore cliccabile): anelli veloci, glow intenso */
 .ov-core:hover .core-ring.r1,.core-fab:hover .core-ring.r1{animation-duration:6s}
-.ov-core:hover .core-ring.r2,.core-fab:hover .core-ring.r2{animation-duration:10s}
-.ov-core:hover .core-ring.r3,.core-fab:hover .core-ring.r3{animation-duration:4s}
-.ov-core:hover .core-glow,.core-fab:hover .core-glow{opacity:.8;animation:none;transform:scale(1.08)}
-@media (prefers-reduced-motion:reduce){.core-glow,.core-ring,.core-star{animation:none!important}.core-glow{opacity:.35}}
+.ov-core:hover .core-ring.r2,.core-fab:hover .core-ring.r2{animation-duration:9s}
+.ov-core:hover .core-glow,.core-fab:hover .core-glow{opacity:.6;animation:none;transform:scale(1.06)}
+@media (prefers-reduced-motion:reduce){.core-glow,.core-ring,.core-holo-star{animation:none!important}.core-glow{opacity:.25}}
 .core-gl-host{position:relative;display:block}
 /* vignetta difensiva larga: l'orbita esterna (~85% del semilato) deve
    restare leggibile, sfuma solo l'estremo bordo del canvas */
@@ -527,7 +523,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .ov-core-cap{font-family:var(--font-b);font-weight:500;font-size:9px;letter-spacing:.04em;color:var(--dim);transition:color var(--dur)}
 .ov-core:hover .ov-core-cap{color:var(--ember)}
 .ov-core:focus-visible{outline:2px solid var(--ember);outline-offset:4px;border-radius:12px}
-@media (max-width:768px){.ov-core{margin:0 auto 30px}.ov-core .core-wrap,.ov-core svg{width:150px;height:150px}}
+@media (max-width:768px){.ov-core{margin:0 auto 30px}.ov-core .core-wrap,.ov-core svg{width:104px;height:104px}}
 /* FAB mini (tutte le pagine tranne Overview) */
 .core-fab{position:fixed;right:18px;bottom:18px;z-index:var(--z-bottomnav);width:54px;height:54px;display:flex;align-items:center;justify-content:center;background:rgba(15,15,19,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line2);border-radius:50%;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.5);transition:border-color var(--dur)}
 .core-fab:hover{border-color:var(--ember)}
