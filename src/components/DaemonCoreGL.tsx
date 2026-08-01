@@ -23,28 +23,31 @@ import { useInView } from '../lib/useInView'
  *  canvas ma solo nel cerchio della sfera, così la stella si legge "dentro
  *  la teca" mentre lo sciame di particelle orbita fuori, libero.
  *
- *  WebGL: il contorno vettoriale vero del logo (wireframe fine, rotazione
- *  lenta in shader) + uno SCIAME di ~260 particelle su orbite 3D pseudo-
- *  casuali attorno alla sfera, con depth cue (davanti più luminose).
- *  Prospettiva: il tilt 3D segue il puntatore (CSS var --tiltX/--tiltY sul
- *  guscio, perspective sul bottone) — premium, sobrio, reversibile.
+ *  WebGL: il contorno vettoriale vero del logo, FERMO (niente rotazione),
+ *  reso in due passaggi (aura + linea) per un neon liscio senza grana; uno
+ *  SCIAME di particelle morbide a deriva casuale attorno alla sfera, con
+ *  depth cue (davanti più luminose). Prospettiva: tilt 3D dal puntatore
+ *  (CSS var --tiltX/--tiltY); click = giro 360° orizzontale (classe
+ *  orb-spin) mentre si apre il menu.
  *
  *  Colori risolti a runtime dalle CSS var del tema (--ember; hot: amber in
  *  dark, navy in light). Il chiamante gestisce i fallback SVG. */
 
 // ── taratura ─────────────────────────────────────────────────────────────
-const CONTOUR_COUNT = 1100
-const CONTOUR_SIZE = 0.58
-const CONTOUR_SIZE_JITTER = 0.2
-const CONTOUR_JITTER = 0.007
-const CONTOUR_Z = 0.07
-const CONTOUR_SCALE = 0.68 // la stella sta DENTRO la sfera (72% del canvas)
+// stella "UHD": contorno densissimo reso in DUE passaggi (aura morbida sotto,
+// linea semi-morbida sopra) — un neon liscio, niente grana né bordi duri
+const CONTOUR_COUNT = 2600
+const CONTOUR_SIZE = 0.5
+const CONTOUR_SIZE_JITTER = 0.14
+const CONTOUR_JITTER = 0.005
+const CONTOUR_Z = 0.05
+const CONTOUR_SCALE = 0.72 // la sfera ora è quasi a filo canvas: la stella può crescere
 
-const SWARM_COUNT = 260
-const SWARM_SIZE = 0.85
-const SWARM_SIZE_JITTER = 0.5
-const SWARM_R_MIN = 1.22 // appena fuori dal vetro
-const SWARM_R_SPREAD = 0.5
+const SWARM_COUNT = 220
+const SWARM_SIZE = 1.35
+const SWARM_SIZE_JITTER = 0.9
+const SWARM_R_MIN = 1.28 // appena fuori dal vetro
+const SWARM_R_SPREAD = 0.45
 
 // campo puntatore (solo sciame: il vetro "protegge" la stella)
 const POINTER_RADIUS = 0.55
@@ -60,31 +63,28 @@ const CONTOUR_VERT = /* glsl */ `
   uniform float uTime;
   uniform float uExcite;
   uniform float uBreathe;
-  uniform float uSpin;
   uniform float uDpr;
   uniform float uScale;
   varying float vGlow;
   void main() {
     float t = uTime;
     vec3 p = position;
-    float ca = cos(uSpin);
-    float sa = sin(uSpin);
-    p.xy = mat2(ca, -sa, sa, ca) * p.xy;
-    // tremolio olografico minimo: dentro la teca l'aria è ferma
-    float amp = 0.004 + aSeed * 0.007 + uExcite * 0.012;
+    // niente rotazione: la stella sta ferma nella teca, vive di micro-tremolio
+    float amp = 0.003 + aSeed * 0.006 + uExcite * 0.01;
     p.x += sin(t * (1.1 + aSeed * 1.8) + aSeed * 6.283) * amp;
     p.y += cos(t * (0.9 + aSeed * 1.5) + aSeed * 12.56) * amp;
     p *= uBreathe;
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
-    float shimmer = 0.9 + 0.1 * sin(t * (2.0 + aSeed * 3.0) + aSeed * 23.0);
+    float shimmer = 0.92 + 0.08 * sin(t * (2.0 + aSeed * 3.0) + aSeed * 23.0);
     gl_PointSize = aSize * shimmer * (1.0 + uExcite * 0.25) * (uScale / -mv.z) * uDpr;
-    vGlow = 0.55 + 0.45 * sin(t * (1.6 + aSeed * 2.8) + aSeed * 40.0);
+    vGlow = 0.72 + 0.28 * sin(t * (1.6 + aSeed * 2.8) + aSeed * 40.0);
     vGlow *= 1.0 + uExcite * 0.35;
   }
 `
 
-// sciame: orbite 3D pseudo-casuali dal seed, depth cue, campo puntatore
+// sciame: deriva CASUALE (somma di seni, lava-lamp) attorno alla sfera,
+// depth cue, campo puntatore — niente orbite regolari
 const SWARM_VERT = /* glsl */ `
   attribute float aSeed;
   attribute float aSize;
@@ -97,17 +97,16 @@ const SWARM_VERT = /* glsl */ `
   varying float vGlow;
   void main() {
     float t = uTime;
-    float r = ${SWARM_R_MIN} + fract(aSeed * 7.31) * ${SWARM_R_SPREAD};
-    float incl = (fract(aSeed * 13.7) - 0.5) * 2.6;
-    float dir = fract(aSeed * 2.1) > 0.5 ? 1.0 : -1.0;
-    float speed = (0.1 + fract(aSeed * 3.3) * 0.22) * dir;
-    float ang = aSeed * 6.28318 + t * speed * (1.0 + uExcite * 0.9);
-    vec3 p = vec3(cos(ang) * r, sin(ang) * r * 0.92, 0.0);
-    // inclina l'orbita fuori dal piano: nuvola 3D, non anello
-    float ci = cos(incl);
-    float si = sin(incl);
-    p = vec3(p.x, p.y * ci - p.z * si, p.y * si + p.z * ci);
-    p.z += sin(t * 0.5 + aSeed * 9.0) * 0.07;
+    // punto casa su un guscio sferico attorno al vetro
+    float r0 = ${SWARM_R_MIN} + fract(aSeed * 7.31) * ${SWARM_R_SPREAD};
+    float th = fract(aSeed * 3.97) * 6.28318;
+    float ph = (fract(aSeed * 9.13) - 0.5) * 2.4;
+    vec3 p = vec3(cos(th) * cos(ph), sin(ph) * 0.9, sin(th) * cos(ph)) * r0;
+    // deriva lenta e irregolare attorno alla casa
+    float t1 = t * (0.16 + fract(aSeed * 5.5) * 0.22) * (1.0 + uExcite * 0.6);
+    p.x += sin(t1 + aSeed * 40.0) * 0.16 + sin(t1 * 0.53 + aSeed * 11.0) * 0.09;
+    p.y += cos(t1 * 0.81 + aSeed * 23.0) * 0.14 + sin(t1 * 0.37 + aSeed * 7.0) * 0.08;
+    p.z += sin(t1 * 0.62 + aSeed * 17.0) * 0.2;
 
     // campo puntatore locale: lo sciame reagisce vicino al cursore
     vec2 d = p.xy - uPointer;
@@ -226,7 +225,7 @@ function seedAttributes(geo: BufferGeometry, n: number, baseSize: number, jitter
 }
 
 export default function DaemonCoreGL({
-  size = 128,
+  size = 176,
   theme = 'dark',
   onFallback,
 }: {
@@ -275,7 +274,6 @@ export default function DaemonCoreGL({
         uTime: { value: 0 },
         uExcite: { value: 0 },
         uBreathe: { value: 1 },
-        uSpin: { value: 0 },
         uColor: { value: cssColor('--ember', theme === 'light' ? '#3159A8' : '#E2382A') },
         uColorHot: {
           value: theme === 'light' ? cssColor('--ember-dim', '#17275C') : cssColor('--amber', '#E0A03C'),
@@ -287,14 +285,26 @@ export default function DaemonCoreGL({
       }
       const boost = theme === 'light' ? 0.15 : 0
 
-      // stella dentro la teca
+      // stella dentro la teca — DUE passaggi sulle stesse posizioni:
+      // 1) aura larga e morbidissima sotto, 2) linea semi-morbida sopra.
+      // Il risultato è un neon continuo e liscio, senza grana né bordi.
+      const starPos = contourPositions(CONTOUR_COUNT, CONTOUR_SCALE)
+      const auraGeo = new BufferGeometry()
+      auraGeo.setAttribute('position', new BufferAttribute(starPos, 3))
+      seedAttributes(auraGeo, CONTOUR_COUNT, CONTOUR_SIZE * 2.6, CONTOUR_SIZE_JITTER)
+      scene.add(
+        new Points(
+          auraGeo,
+          makeMaterial(CONTOUR_VERT, { ...shared, uAlpha: { value: 0.16 + boost * 0.5 }, uSoft: { value: 1 } }, blend),
+        ),
+      )
       const starGeo = new BufferGeometry()
-      starGeo.setAttribute('position', new BufferAttribute(contourPositions(CONTOUR_COUNT, CONTOUR_SCALE), 3))
+      starGeo.setAttribute('position', new BufferAttribute(starPos, 3))
       seedAttributes(starGeo, CONTOUR_COUNT, CONTOUR_SIZE, CONTOUR_SIZE_JITTER)
       scene.add(
         new Points(
           starGeo,
-          makeMaterial(CONTOUR_VERT, { ...shared, uAlpha: { value: 0.78 + boost }, uSoft: { value: 0 } }, blend),
+          makeMaterial(CONTOUR_VERT, { ...shared, uAlpha: { value: 0.92 + boost }, uSoft: { value: 0.45 } }, blend),
         ),
       )
 
@@ -304,7 +314,7 @@ export default function DaemonCoreGL({
       seedAttributes(swarmGeo, SWARM_COUNT, SWARM_SIZE, SWARM_SIZE_JITTER)
       const swarm = new Points(
         swarmGeo,
-        makeMaterial(SWARM_VERT, { ...shared, uAlpha: { value: 0.55 + boost }, uSoft: { value: 1 } }, blend),
+        makeMaterial(SWARM_VERT, { ...shared, uAlpha: { value: 0.7 + boost }, uSoft: { value: 1 } }, blend),
       )
       swarm.frustumCulled = false
       scene.add(swarm)
@@ -336,32 +346,37 @@ export default function DaemonCoreGL({
         orb.style.setProperty('--tiltX', `${(-ny * TILT_MAX_DEG).toFixed(2)}deg`)
         orb.style.setProperty('--tiltY', `${(nx * TILT_MAX_DEG).toFixed(2)}deg`)
       }
+      // click: la bolla fa un giro completo orizzontale (rotateY 360 via CSS)
+      // mentre il menu si apre — la classe si toglie da sola a fine giro
+      const onClick = () => {
+        orb.classList.remove('orb-spin')
+        void orb.offsetWidth // riavvia l'animazione anche su click ravvicinati
+        orb.classList.add('orb-spin')
+      }
+      const onSpinEnd = () => orb.classList.remove('orb-spin')
+      orb.addEventListener('animationend', onSpinEnd)
       const hoverEl = host.closest('.ov-core') ?? host
       hoverEl.addEventListener('pointerenter', onEnter)
       hoverEl.addEventListener('pointerleave', onLeave)
       hoverEl.addEventListener('pointermove', onPointerMove as EventListener)
+      hoverEl.addEventListener('click', onClick)
       cleanupFns.push(() => {
         hoverEl.removeEventListener('pointerenter', onEnter)
         hoverEl.removeEventListener('pointerleave', onLeave)
         hoverEl.removeEventListener('pointermove', onPointerMove as EventListener)
+        hoverEl.removeEventListener('click', onClick)
+        orb.removeEventListener('animationend', onSpinEnd)
       })
 
       const clock = new Clock()
-      let prevT = 0
-      let spin = 0
       const tick = () => {
         raf = requestAnimationFrame(tick)
         if (!inViewRef.current || document.hidden) return
         const t = clock.getElapsedTime()
-        const dt = Math.min(0.1, t - prevT)
-        prevT = t
         shared.uTime.value = t
         shared.uExcite.value += (exciteTarget - (shared.uExcite.value as number)) * 0.14
         shared.uPointerStrength.value += (pointerTarget - (shared.uPointerStrength.value as number)) * 0.18
-        const ex = shared.uExcite.value as number
         shared.uBreathe.value = 1 + Math.sin((t * Math.PI * 2) / 7) * 0.018
-        spin += dt * (0.05 + ex * 0.15)
-        shared.uSpin.value = spin
         renderer!.render(scene!, camera)
       }
       tick()

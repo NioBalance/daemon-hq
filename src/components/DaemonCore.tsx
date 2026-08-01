@@ -5,7 +5,7 @@ import { DAEMON_LOGO_PATH } from './daemonLogoGeometry'
  *  contorno vero del logo in wireframe dentro e due punti orbitanti attorno
  *  come particelle leggere. Solo CSS keyframes; con prefers-reduced-motion
  *  resta una bolla statica. */
-export default function DaemonCore({ size = 128 }: { size?: number }) {
+export default function DaemonCore({ size = 176 }: { size?: number }) {
   const small = size < 60
   const wire = small ? 2.6 : 1.1
   const glow = small ? 6 : 3.4

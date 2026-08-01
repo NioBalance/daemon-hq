@@ -51,10 +51,10 @@ function SmartCore() {
   const [glFailed, setGlFailed] = useState(false)
   const [glOk] = useState(webglAvailable)
   const onFallback = useCallback(() => setGlFailed(true), [])
-  if (!glOk || reduce || glFailed) return <DaemonCore size={128} />
+  if (!glOk || reduce || glFailed) return <DaemonCore size={176} />
   return (
-    <Suspense fallback={<DaemonCore size={128} />}>
-      <DaemonCoreGL size={128} theme={theme} onFallback={onFallback} />
+    <Suspense fallback={<DaemonCore size={176} />}>
+      <DaemonCoreGL size={176} theme={theme} onFallback={onFallback} />
     </Suspense>
   )
 }
