@@ -16,51 +16,44 @@ import {
 import { DAEMON_LOGO_POINTS } from './daemonLogoGeometry'
 import { useInView } from '../lib/useInView'
 
-/** Core DÆMON — "ologramma Jarvis" (three.js, chunk lazy solo per l'Overview).
+/** Core DÆMON — "bolla" bottone 3D in teca di vetro.
  *
- *  Il logo è un WIREFRAME di particelle: il contorno vettoriale vero della
- *  stella a 8 punte (daemonLogoGeometry, niente PNG a runtime) ricampionato
- *  per lunghezza d'arco — densità uniforme lungo il perimetro, jitter minimo,
- *  brillanza variabile per particella. Attorno, 2 orbite ellittiche inclinate
- *  di particelle morbide con flusso di energia. Il contorno ruota lento (in
- *  shader, così il campo puntatore resta in coordinate mondo).
+ *  La sfera di vetro è CSS (gradienti radiali per gloss e tinta, rim light,
+ *  ombre interne, riflesso speculare, ombra ellittica a terra): sta SOPRA il
+ *  canvas ma solo nel cerchio della sfera, così la stella si legge "dentro
+ *  la teca" mentre lo sciame di particelle orbita fuori, libero.
  *
- *  Interazione: campo puntatore LOCALE (swirl+luce solo vicino al cursore),
- *  impulso radiale periodico, hover = ignizione sobria.
+ *  WebGL: il contorno vettoriale vero del logo (wireframe fine, rotazione
+ *  lenta in shader) + uno SCIAME di ~260 particelle su orbite 3D pseudo-
+ *  casuali attorno alla sfera, con depth cue (davanti più luminose).
+ *  Prospettiva: il tilt 3D segue il puntatore (CSS var --tiltX/--tiltY sul
+ *  guscio, perspective sul bottone) — premium, sobrio, reversibile.
  *
- *  Colori: risolti a runtime dalle CSS var del tema (--ember / --amber,
- *  gradiente incandescenza §2.4) — rende su void scuro e parchment chiaro.
- *  Il chiamante gestisce i fallback SVG; qui solo l'errore di init. */
+ *  Colori risolti a runtime dalle CSS var del tema (--ember; hot: amber in
+ *  dark, navy in light). Il chiamante gestisce i fallback SVG. */
 
 // ── taratura ─────────────────────────────────────────────────────────────
-// "outlined": tratto sottile — punti piccoli, jitter quasi zero, alpha contenuta
-const CONTOUR_COUNT = 1300
-const CONTOUR_SIZE = 0.6
-const CONTOUR_SIZE_JITTER = 0.22
-const CONTOUR_JITTER = 0.008
-const CONTOUR_Z = 0.08
+const CONTOUR_COUNT = 1100
+const CONTOUR_SIZE = 0.58
+const CONTOUR_SIZE_JITTER = 0.2
+const CONTOUR_JITTER = 0.007
+const CONTOUR_Z = 0.07
+const CONTOUR_SCALE = 0.68 // la stella sta DENTRO la sfera (72% del canvas)
 
-// NUBE ORBITALE: tante orbite sottili e tenui invece di 2 nastri spessi —
-// [semiasse x, semiasse y, tilt X, tilt Y, velocità (segno=verso), teste, count, size]
-const ORBITS: [number, number, number, number, number, number, number, number][] = [
-  [1.26, 1.1, 0.5, 0.08, 0.55, 1, 150, 1.05],
-  [1.34, 1.22, -0.35, 0.2, -0.42, 2, 140, 0.95],
-  [1.44, 1.18, 0.22, -0.4, 0.36, 1, 130, 1.0],
-  [1.5, 1.32, -0.5, 0.34, -0.3, 2, 130, 0.9],
-  [1.38, 1.05, 0.65, 0.5, 0.48, 1, 120, 0.95],
-  [1.56, 1.4, -0.15, -0.28, -0.24, 3, 120, 0.85],
-]
+const SWARM_COUNT = 260
+const SWARM_SIZE = 0.85
+const SWARM_SIZE_JITTER = 0.5
+const SWARM_R_MIN = 1.22 // appena fuori dal vetro
+const SWARM_R_SPREAD = 0.5
 
-// campo puntatore
-const POINTER_RADIUS = 0.5
-const POINTER_PUSH = 0.08
-const POINTER_SWIRL = 0.13
+// campo puntatore (solo sciame: il vetro "protegge" la stella)
+const POINTER_RADIUS = 0.55
+const POINTER_PUSH = 0.1
+const POINTER_SWIRL = 0.14
 
-// impulso radiale
-const PULSE_PERIOD_REST = 4.2
-const PULSE_PERIOD_HOVER = 2.4
+// tilt prospettico
+const TILT_MAX_DEG = 8
 
-// contorno: micro-tremolio olografico, rotazione lenta, campo puntatore, impulso
 const CONTOUR_VERT = /* glsl */ `
   attribute float aSeed;
   attribute float aSize;
@@ -70,84 +63,70 @@ const CONTOUR_VERT = /* glsl */ `
   uniform float uSpin;
   uniform float uDpr;
   uniform float uScale;
-  uniform vec2 uPointer;
-  uniform float uPointerStrength;
-  uniform float uPulse;
-  uniform float uPulseGain;
   varying float vGlow;
   void main() {
     float t = uTime;
     vec3 p = position;
-    // rotazione lenta del wireframe (in shader: il puntatore resta in mondo)
     float ca = cos(uSpin);
     float sa = sin(uSpin);
     p.xy = mat2(ca, -sa, sa, ca) * p.xy;
-    // tremolio olografico minimo: il contorno resta leggibile
-    float amp = 0.006 + aSeed * 0.01 + uExcite * 0.02;
-    p.x += sin(t * (1.2 + aSeed * 2.0) + aSeed * 6.283) * amp;
-    p.y += cos(t * (1.0 + aSeed * 1.7) + aSeed * 12.56) * amp;
+    // tremolio olografico minimo: dentro la teca l'aria è ferma
+    float amp = 0.004 + aSeed * 0.007 + uExcite * 0.012;
+    p.x += sin(t * (1.1 + aSeed * 1.8) + aSeed * 6.283) * amp;
+    p.y += cos(t * (0.9 + aSeed * 1.5) + aSeed * 12.56) * amp;
     p *= uBreathe;
-
-    // campo puntatore LOCALE: swirl + spinta con falloff morbido
-    vec2 d = p.xy - uPointer;
-    float dist = length(d);
-    float fall = smoothstep(${POINTER_RADIUS}, 0.0, dist) * uPointerStrength;
-    if (fall > 0.0) {
-      vec2 dir = dist > 0.0001 ? d / dist : vec2(1.0, 0.0);
-      vec2 tang = vec2(-dir.y, dir.x);
-      p.xy += dir * fall * ${POINTER_PUSH} + tang * fall * ${POINTER_SWIRL};
-    }
-
-    // fronte d'onda radiale
-    float rr = length(p.xy);
-    float wave = exp(-pow((rr - uPulse) * 9.0, 2.0)) * uPulseGain;
-
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
-    float shimmer = 0.9 + 0.1 * sin(t * (2.2 + aSeed * 3.5) + aSeed * 23.0);
-    float size = aSize * shimmer * (1.0 + uExcite * 0.25 + fall * 0.7 + wave * 0.5);
-    gl_PointSize = size * (uScale / -mv.z) * uDpr;
-    // brillanza variabile lungo il filo; puntatore e impulso spingono oltre 1
-    vGlow = 0.5 + 0.5 * sin(t * (1.8 + aSeed * 3.2) + aSeed * 40.0);
-    vGlow = min(1.6, vGlow + fall * 1.2 + wave * 1.0);
+    float shimmer = 0.9 + 0.1 * sin(t * (2.0 + aSeed * 3.0) + aSeed * 23.0);
+    gl_PointSize = aSize * shimmer * (1.0 + uExcite * 0.25) * (uScale / -mv.z) * uDpr;
+    vGlow = 0.55 + 0.45 * sin(t * (1.6 + aSeed * 2.8) + aSeed * 40.0);
+    vGlow *= 1.0 + uExcite * 0.35;
   }
 `
 
-// orbite: posizione parametrica sull'ellisse, luminosità dal flusso (testa+coda)
-const ORBIT_VERT = /* glsl */ `
+// sciame: orbite 3D pseudo-casuali dal seed, depth cue, campo puntatore
+const SWARM_VERT = /* glsl */ `
   attribute float aSeed;
   attribute float aSize;
   uniform float uTime;
   uniform float uExcite;
   uniform float uDpr;
   uniform float uScale;
-  uniform vec2 uRadii;
-  uniform float uSpeed;
-  uniform float uHeads;
-  uniform float uPulse;
-  uniform float uPulseGain;
+  uniform vec2 uPointer;
+  uniform float uPointerStrength;
   varying float vGlow;
   void main() {
     float t = uTime;
-    float ang = aSeed * 6.28318;
-    vec3 p = vec3(cos(ang) * uRadii.x, sin(ang) * uRadii.y, 0.0);
-    // grana: l'orbita non è un filo perfetto, e ondeggia anche da ferma
-    p.xy += vec2(sin(aSeed * 47.0), cos(aSeed * 31.0)) * 0.016;
-    p.z += sin(t * 0.6 + aSeed * 12.0) * 0.04;
+    float r = ${SWARM_R_MIN} + fract(aSeed * 7.31) * ${SWARM_R_SPREAD};
+    float incl = (fract(aSeed * 13.7) - 0.5) * 2.6;
+    float dir = fract(aSeed * 2.1) > 0.5 ? 1.0 : -1.0;
+    float speed = (0.1 + fract(aSeed * 3.3) * 0.22) * dir;
+    float ang = aSeed * 6.28318 + t * speed * (1.0 + uExcite * 0.9);
+    vec3 p = vec3(cos(ang) * r, sin(ang) * r * 0.92, 0.0);
+    // inclina l'orbita fuori dal piano: nuvola 3D, non anello
+    float ci = cos(incl);
+    float si = sin(incl);
+    p = vec3(p.x, p.y * ci - p.z * si, p.y * si + p.z * ci);
+    p.z += sin(t * 0.5 + aSeed * 9.0) * 0.07;
 
-    // flusso di energia: teste luminose che percorrono l'orbita, coda che sfuma
-    float head = fract(t * uSpeed * (0.07 + uExcite * 0.06));
-    float phase = (aSeed - head) * 6.28318 * uHeads;
-    float flow = pow(0.5 + 0.5 * cos(phase), 6.0);
-
-    float rr = length(p.xy);
-    float wave = exp(-pow((rr - uPulse) * 9.0, 2.0)) * uPulseGain * 0.6;
+    // campo puntatore locale: lo sciame reagisce vicino al cursore
+    vec2 d = p.xy - uPointer;
+    float dist = length(d);
+    float fall = smoothstep(${POINTER_RADIUS}, 0.0, dist) * uPointerStrength;
+    if (fall > 0.0) {
+      vec2 dirv = dist > 0.0001 ? d / dist : vec2(1.0, 0.0);
+      vec2 tang = vec2(-dirv.y, dirv.x);
+      p.xy += dirv * fall * ${POINTER_PUSH} + tang * fall * ${POINTER_SWIRL};
+    }
 
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
-    float size = aSize * (0.7 + flow * 0.9) * (1.0 + uExcite * 0.25);
-    gl_PointSize = size * (uScale / -mv.z) * uDpr;
-    vGlow = 0.14 + flow * 1.1 + wave;
+    // depth cue: davanti (z>0) più grandi e luminose, dietro velate
+    float front = smoothstep(-1.2, 1.2, p.z);
+    float tw = 0.5 + 0.5 * sin(t * (1.4 + aSeed * 3.0) + aSeed * 40.0);
+    gl_PointSize = aSize * (0.55 + front * 0.7) * (1.0 + uExcite * 0.3 + fall * 0.8) * (uScale / -mv.z) * uDpr;
+    vGlow = (0.18 + tw * 0.5) * (0.35 + front * 0.9);
+    vGlow = min(1.5, vGlow + fall * 1.1);
   }
 `
 
@@ -162,20 +141,17 @@ const FRAG = /* glsl */ `
     vec2 uv = gl_PointCoord - 0.5;
     float d = length(uv);
     if (d > 0.5) discard;
-    // uSoft 0 = nucleo duro (filo del wireframe); 1 = falloff gaussiano largo
-    float core = smoothstep(mix(0.3, 0.46, uSoft), mix(0.16, 0.04, uSoft), d);
-    float halo = smoothstep(0.5, 0.26, d) * mix(0.07, 0.2, uSoft);
-    // il caldo (amber, gradiente incandescenza) entra con hover/puntatore/impulso
-    float hot = clamp(uExcite * 0.35 + max(vGlow - 1.0, 0.0) * 0.7, 0.0, 1.0);
+    float core = smoothstep(mix(0.3, 0.46, uSoft), mix(0.16, 0.05, uSoft), d);
+    float halo = smoothstep(0.5, 0.26, d) * mix(0.07, 0.18, uSoft);
+    float hot = clamp(uExcite * 0.4 + max(vGlow - 1.0, 0.0) * 0.7, 0.0, 1.0);
     vec3 col = mix(uColor, uColorHot, hot);
-    float alpha = (core + halo) * clamp(vGlow, 0.0, 1.25) * uAlpha * (1.0 + uExcite * 0.3);
+    float alpha = (core + halo) * clamp(vGlow, 0.0, 1.2) * uAlpha;
     gl_FragColor = vec4(col * alpha, alpha);
   }
 `
 
-/** Ricampiona il contorno del logo per lunghezza d'arco: densità uniforme
- *  lungo il perimetro, indipendente da come sono distribuiti i 139 vertici. */
-function contourPositions(count: number): Float32Array {
+/** Ricampiona il contorno del logo per lunghezza d'arco (densità uniforme). */
+function contourPositions(count: number, scale: number): Float32Array {
   const pts = DAEMON_LOGO_POINTS
   const n = pts.length
   const segLen: number[] = []
@@ -187,7 +163,6 @@ function contourPositions(count: number): Float32Array {
     segLen.push(len)
     total += len
   }
-  const S = 1.05
   const out = new Float32Array(count * 3)
   let seg = 0
   let acc = 0
@@ -202,14 +177,14 @@ function contourPositions(count: number): Float32Array {
     const [x2, y2] = pts[(seg + 1) % n]
     const x = x1 + (x2 - x1) * frac
     const y = y1 + (y2 - y1) * frac
-    out[i * 3] = ((x - 50) / 50) * S + (Math.random() - 0.5) * CONTOUR_JITTER
-    out[i * 3 + 1] = (-(y - 50) / 50) * S + (Math.random() - 0.5) * CONTOUR_JITTER
+    out[i * 3] = ((x - 50) / 50) * scale + (Math.random() - 0.5) * CONTOUR_JITTER
+    out[i * 3 + 1] = (-(y - 50) / 50) * scale + (Math.random() - 0.5) * CONTOUR_JITTER
     out[i * 3 + 2] = (Math.random() - 0.5) * CONTOUR_Z
   }
   return out
 }
 
-/** Colore di una CSS var del tema, risolto dal browser (segue dark/parchment). */
+/** Colore di una CSS var del tema, risolto dal browser (segue dark/light). */
 function cssColor(varName: string, fallback: string): Color {
   try {
     const probe = document.createElement('span')
@@ -239,11 +214,11 @@ function makeMaterial(vert: string, uniforms: Uniforms, blend: BlendMode) {
   })
 }
 
-function seedAttributes(geo: BufferGeometry, n: number, baseSize: number, jitter: number, evenSeeds = false) {
+function seedAttributes(geo: BufferGeometry, n: number, baseSize: number, jitter: number) {
   const seeds = new Float32Array(n)
   const sizes = new Float32Array(n)
   for (let i = 0; i < n; i++) {
-    seeds[i] = evenSeeds ? i / n : Math.random()
+    seeds[i] = Math.random()
     sizes[i] = baseSize + Math.random() * jitter
   }
   geo.setAttribute('aSeed', new BufferAttribute(seeds, 1))
@@ -251,7 +226,7 @@ function seedAttributes(geo: BufferGeometry, n: number, baseSize: number, jitter
 }
 
 export default function DaemonCoreGL({
-  size = 140,
+  size = 128,
   theme = 'dark',
   onFallback,
 }: {
@@ -260,7 +235,7 @@ export default function DaemonCoreGL({
   onFallback: () => void
 }) {
   const hostRef = useRef<HTMLDivElement | null>(null)
-  const { ref: viewRef, inView } = useInView<HTMLDivElement>()
+  const { ref: viewRef, inView } = useInView<HTMLSpanElement>()
   const inViewRef = useRef(inView)
   useEffect(() => {
     inViewRef.current = inView
@@ -268,25 +243,24 @@ export default function DaemonCoreGL({
 
   useEffect(() => {
     const host = hostRef.current
-    if (!host) return
+    const orb = viewRef.current
+    if (!host || !orb) return
     let disposed = false
     let raf = 0
     let renderer: WebGLRenderer | null = null
     let scene: Scene | null = null
     const cleanupFns: (() => void)[] = []
 
-    // su parchment l'additive schiarisce e sparisce: blending normale
     const blend: BlendMode = theme === 'light' ? 'normal' : 'additive'
 
     try {
       renderer = new WebGLRenderer({
         alpha: true,
         antialias: false,
-        premultipliedAlpha: false, // altrimenti il canvas compone sulla pagina con un alone rettangolare
+        premultipliedAlpha: false,
         powerPreference: 'low-power',
       })
       renderer.setClearColor(0x000000, 0)
-      // supersampling: sempre ≥2x anche su schermi dpr 1 — niente scalini
       renderer.setPixelRatio(Math.min(2.5, Math.max(2, window.devicePixelRatio || 1)))
       renderer.setSize(size, size)
       renderer.domElement.style.display = 'block'
@@ -297,15 +271,11 @@ export default function DaemonCoreGL({
       const camera = new PerspectiveCamera(38, 1, 0.1, 10)
       camera.position.z = 5.2
 
-      // uniform condivise: gli oggetti {value} sono GLI STESSI in ogni
-      // material — un solo aggiornamento nel tick li muove tutti
       const shared = {
         uTime: { value: 0 },
         uExcite: { value: 0 },
         uBreathe: { value: 1 },
         uSpin: { value: 0 },
-        // dark: ignizione verso l'amber (incandescenza); light: verso il navy
-        // profondo — l'ocra su un sistema blu stonerebbe
         uColor: { value: cssColor('--ember', theme === 'light' ? '#3159A8' : '#E2382A') },
         uColorHot: {
           value: theme === 'light' ? cssColor('--ember-dim', '#17275C') : cssColor('--amber', '#E0A03C'),
@@ -314,50 +284,32 @@ export default function DaemonCoreGL({
         uScale: { value: size * 0.1 },
         uPointer: { value: new Vector2(99, 99) },
         uPointerStrength: { value: 0 },
-        uPulse: { value: 0 },
-        uPulseGain: { value: 0 },
       }
       const boost = theme === 'light' ? 0.15 : 0
 
-      // wireframe del logo: contorno vero, ricampionato per arco
+      // stella dentro la teca
       const starGeo = new BufferGeometry()
-      starGeo.setAttribute('position', new BufferAttribute(contourPositions(CONTOUR_COUNT), 3))
+      starGeo.setAttribute('position', new BufferAttribute(contourPositions(CONTOUR_COUNT, CONTOUR_SCALE), 3))
       seedAttributes(starGeo, CONTOUR_COUNT, CONTOUR_SIZE, CONTOUR_SIZE_JITTER)
       scene.add(
         new Points(
           starGeo,
-          makeMaterial(CONTOUR_VERT, { ...shared, uAlpha: { value: 0.72 + boost }, uSoft: { value: 0 } }, blend),
+          makeMaterial(CONTOUR_VERT, { ...shared, uAlpha: { value: 0.78 + boost }, uSoft: { value: 0 } }, blend),
         ),
       )
 
-      // nube orbitale: 6 orbite sottili inclinate, controrotanti, con flusso
-      for (const [rx, ry, tiltX, tiltY, speed, heads, count, psize] of ORBITS) {
-        const geo = new BufferGeometry()
-        geo.setAttribute('position', new BufferAttribute(new Float32Array(count * 3), 3))
-        seedAttributes(geo, count, psize, 0.35, true)
-        const pts = new Points(
-          geo,
-          makeMaterial(
-            ORBIT_VERT,
-            {
-              ...shared,
-              uAlpha: { value: 0.32 + boost },
-              uSoft: { value: 1 },
-              uRadii: { value: new Vector2(rx, ry) },
-              uSpeed: { value: speed },
-              uHeads: { value: heads },
-            },
-            blend,
-          ),
-        )
-        pts.rotation.x = tiltX
-        pts.rotation.y = tiltY
-        // posizioni calcolate nel vertex shader: bounding sphere non valida
-        pts.frustumCulled = false
-        scene.add(pts)
-      }
+      // sciame attorno alla sfera
+      const swarmGeo = new BufferGeometry()
+      swarmGeo.setAttribute('position', new BufferAttribute(new Float32Array(SWARM_COUNT * 3), 3))
+      seedAttributes(swarmGeo, SWARM_COUNT, SWARM_SIZE, SWARM_SIZE_JITTER)
+      const swarm = new Points(
+        swarmGeo,
+        makeMaterial(SWARM_VERT, { ...shared, uAlpha: { value: 0.55 + boost }, uSoft: { value: 1 } }, blend),
+      )
+      swarm.frustumCulled = false
+      scene.add(swarm)
 
-      // hover + campo puntatore (coordinate scena sul piano z=0)
+      // hover + puntatore: eccitazione, campo locale, tilt prospettico
       let exciteTarget = 0
       let pointerTarget = 0
       const vFov = (camera.fov * Math.PI) / 180
@@ -368,6 +320,8 @@ export default function DaemonCoreGL({
       const onLeave = () => {
         exciteTarget = 0
         pointerTarget = 0
+        orb.style.setProperty('--tiltX', '0deg')
+        orb.style.setProperty('--tiltY', '0deg')
       }
       const onPointerMove = (e: PointerEvent) => {
         const rect = renderer!.domElement.getBoundingClientRect()
@@ -378,6 +332,9 @@ export default function DaemonCoreGL({
         const halfW = halfH * camera.aspect
         ;(shared.uPointer.value as Vector2).set(nx * halfW, ny * halfH)
         pointerTarget = 1
+        // la teca si inclina verso il cursore: prospettiva vera, non decorazione
+        orb.style.setProperty('--tiltX', `${(-ny * TILT_MAX_DEG).toFixed(2)}deg`)
+        orb.style.setProperty('--tiltY', `${(nx * TILT_MAX_DEG).toFixed(2)}deg`)
       }
       const hoverEl = host.closest('.ov-core') ?? host
       hoverEl.addEventListener('pointerenter', onEnter)
@@ -402,18 +359,9 @@ export default function DaemonCoreGL({
         shared.uExcite.value += (exciteTarget - (shared.uExcite.value as number)) * 0.14
         shared.uPointerStrength.value += (pointerTarget - (shared.uPointerStrength.value as number)) * 0.18
         const ex = shared.uExcite.value as number
-        shared.uBreathe.value = 1 + Math.sin((t * Math.PI * 2) / 7) * 0.02
-        // rotazione lenta del wireframe, appena più corrente in hover
-        spin += dt * (0.06 + ex * 0.18)
+        shared.uBreathe.value = 1 + Math.sin((t * Math.PI * 2) / 7) * 0.018
+        spin += dt * (0.05 + ex * 0.15)
         shared.uSpin.value = spin
-        // impulso radiale: fronte 0→1.8, gain che sfuma mentre espande
-        const period = PULSE_PERIOD_REST + (PULSE_PERIOD_HOVER - PULSE_PERIOD_REST) * ex
-        const pt = (t % period) / period
-        shared.uPulse.value = pt * 1.8
-        shared.uPulseGain.value = (1 - pt) * (0.5 + ex * 0.4)
-        // ondeggio lento dell'intero sistema: profondità percepibile da fermi
-        scene!.rotation.z = Math.sin(t * 0.11) * 0.05
-        scene!.rotation.x = Math.sin(t * 0.08) * 0.04
         renderer!.render(scene!, camera)
       }
       tick()
@@ -438,12 +386,14 @@ export default function DaemonCoreGL({
         renderer.domElement.remove()
       }
     }
-  }, [size, theme, onFallback])
+  }, [size, theme, onFallback, viewRef])
 
   return (
-    <span className="core-wrap core-gl" style={{ width: size, height: size }} aria-hidden ref={viewRef}>
-      <span className="core-glow" />
+    <span className="core-wrap core-orb" style={{ width: size, height: size }} aria-hidden ref={viewRef}>
+      <span className="core-orb-shadow" />
       <span ref={hostRef} className="core-gl-host" />
+      <span className="core-orb-sphere" />
+      <span className="core-orb-spec" />
     </span>
   )
 }
