@@ -7,6 +7,8 @@ import { ErrorState } from '../components/QueryState'
 import { ProgressRing, Sparkline, MiniBars } from '../components/ChartBits'
 import KpiCard from '../components/ui-v2/KpiCard'
 import { useLinks, useCreateLink, useUpdateLink } from '../features/links/queries'
+import { uploadMediaFile, deleteMediaFile } from '../lib/upload'
+import { useSignedUrl } from '../lib/useSignedUrl'
 import { useDrops, useDropFasi, useUpdateFase } from '../features/drops/queries'
 import { useArticoli, useArticoloTasks, useToggleTask } from '../features/articoli/queries'
 import { useMemos, useCreateMemo } from '../features/memos/queries'
@@ -140,6 +142,56 @@ function ScaledFrame({ url, frameWidth, ratio, title }: { url: string; frameWidt
 
 const SHOP_LABEL_RE = /negozio|shop|store|sito/i
 
+/** Righe `links` che ospitano i path storage degli screenshot del negozio
+ *  (fallback quando il sito blocca l'iframe, es. password page). */
+const SHOP_SHOT_LABELS = { desktop: 'Negozio screenshot desktop', mobile: 'Negozio screenshot mobile' } as const
+type ShotKind = keyof typeof SHOP_SHOT_LABELS
+
+/** Bottoni "nascosti" della finestra negozio (visibili solo all'hover della
+ *  barra: chi guarda lo schermo non li vede): carica/sostituisci screenshot
+ *  e, se presente, rimuovi per tornare alla preview live. */
+function ShopShotBtn({ has, onFile, onClear }: { has: boolean; onFile: (f: File) => void; onClear: () => void }) {
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  return (
+    <span className="shop-shot-btns">
+      <button
+        type="button"
+        className="shop-shot-btn"
+        title={has ? 'Sostituisci lo screenshot' : 'Carica uno screenshot al posto della preview live'}
+        aria-label="Carica screenshot del negozio"
+        onClick={() => inputRef.current?.click()}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M4 8h3l2-2.5h6L17 8h3v11H4z" />
+          <circle cx="12" cy="13" r="3.2" />
+        </svg>
+      </button>
+      {has && (
+        <button
+          type="button"
+          className="shop-shot-btn"
+          title="Rimuovi lo screenshot (torna la preview live)"
+          aria-label="Rimuovi screenshot"
+          onClick={onClear}
+        >
+          ✕
+        </button>
+      )}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          const f = e.target.files?.[0]
+          e.target.value = ''
+          if (f) onFile(f)
+        }}
+      />
+    </span>
+  )
+}
+
 /** Sparkline di sfondo delle tile Insights: area + linea in currentColor,
  *  niente assi né dot — è atmosfera dietro il numero, non un grafico. */
 function TileSpark({ values }: { values: number[] }) {
@@ -221,10 +273,54 @@ export default function Overview() {
   // Preview negozio: stessa idea dell'embed Calendario — la config vive in una
   // riga `links` (match sulla label), salvata a runtime coi mutation hook.
   const shopLink =
-    (linksQ.data ?? []).find((l) => SHOP_LABEL_RE.test(l.label) && l.url) ??
-    (linksQ.data ?? []).find((l) => SHOP_LABEL_RE.test(l.label))
+    (linksQ.data ?? []).find(
+      (l) => SHOP_LABEL_RE.test(l.label) && !Object.values(SHOP_SHOT_LABELS).includes(l.label as never) && l.url,
+    ) ??
+    (linksQ.data ?? []).find(
+      (l) => SHOP_LABEL_RE.test(l.label) && !Object.values(SHOP_SHOT_LABELS).includes(l.label as never),
+    )
   const [shopUrlInput, setShopUrlInput] = useState('')
   const shopSaving = createLink.isPending || updateLink.isPending
+
+  // Screenshot del negozio: path storage in righe links dedicate; se presente
+  // vince sull'iframe (che con una password page mostra solo un errore).
+  const shotLinkOf = (kind: ShotKind) => (linksQ.data ?? []).find((l) => l.label === SHOP_SHOT_LABELS[kind])
+  const shotDesktopUrl = useSignedUrl(shotLinkOf('desktop')?.url)
+  const shotMobileUrl = useSignedUrl(shotLinkOf('mobile')?.url)
+
+  async function saveShopShot(kind: ShotKind, file: File) {
+    const { path, error } = await uploadMediaFile(file, 'shop')
+    if (!path) {
+      showToast('error', error ?? 'Upload non riuscito.')
+      return
+    }
+    const existing = shotLinkOf(kind)
+    try {
+      if (existing) {
+        const old = existing.url
+        await updateLink.mutateAsync({ id: existing.id, patch: { url: path } })
+        if (old && old !== path) void deleteMediaFile(old)
+      } else {
+        await createLink.mutateAsync({ label: SHOP_SHOT_LABELS[kind], url: path, ordine: 100 })
+      }
+      showToast('success', 'Screenshot del negozio caricato.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Salvataggio non riuscito.')
+    }
+  }
+
+  async function clearShopShot(kind: ShotKind) {
+    const existing = shotLinkOf(kind)
+    if (!existing?.url) return
+    try {
+      const old = existing.url
+      await updateLink.mutateAsync({ id: existing.id, patch: { url: null } })
+      void deleteMediaFile(old)
+      showToast('success', 'Screenshot rimosso — torna la preview live.')
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Operazione non riuscita.')
+    }
+  }
 
   async function saveShopUrl(e: FormEvent) {
     e.preventDefault()
@@ -691,11 +787,22 @@ export default function Overview() {
                   <i />
                 </span>
                 <span className="shop-url">{new URL(shopLink.url).host}</span>
+                <ShopShotBtn
+                  has={!!shotDesktopUrl}
+                  onFile={(f) => void saveShopShot('desktop', f)}
+                  onClear={() => void clearShopShot('desktop')}
+                />
                 <a className="tlink" href={shopLink.url} target="_blank" rel="noopener">
                   Apri ↗
                 </a>
               </div>
-              <ScaledFrame url={shopLink.url} frameWidth={1280} ratio={0.62} title="Negozio — desktop" />
+              {shotDesktopUrl ? (
+                <div className="shop-win-view">
+                  <img className="shop-shot-img" src={shotDesktopUrl} alt="Screenshot del negozio — desktop" />
+                </div>
+              ) : (
+                <ScaledFrame url={shopLink.url} frameWidth={1280} ratio={0.62} title="Negozio — desktop" />
+              )}
             </div>
             <div className="shop-win glass-surface shop-win-mobile">
               <div className="shop-win-bar">
@@ -705,8 +812,19 @@ export default function Overview() {
                   <i />
                 </span>
                 <span className="shop-url">mobile</span>
+                <ShopShotBtn
+                  has={!!shotMobileUrl}
+                  onFile={(f) => void saveShopShot('mobile', f)}
+                  onClear={() => void clearShopShot('mobile')}
+                />
               </div>
-              <ScaledFrame url={shopLink.url} frameWidth={390} ratio={1.9} title="Negozio — mobile" />
+              {shotMobileUrl ? (
+                <div className="shop-win-view">
+                  <img className="shop-shot-img" src={shotMobileUrl} alt="Screenshot del negozio — mobile" />
+                </div>
+              ) : (
+                <ScaledFrame url={shopLink.url} frameWidth={390} ratio={1.9} title="Negozio — mobile" />
+              )}
             </div>
           </div>
         ) : (

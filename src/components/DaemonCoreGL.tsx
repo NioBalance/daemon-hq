@@ -304,8 +304,12 @@ export default function DaemonCoreGL({
         uExcite: { value: 0 },
         uBreathe: { value: 1 },
         uSpin: { value: 0 },
-        uColor: { value: cssColor('--ember', '#E2382A') },
-        uColorHot: { value: cssColor('--amber', '#E0A03C') },
+        // dark: ignizione verso l'amber (incandescenza); light: verso il navy
+        // profondo — l'ocra su un sistema blu stonerebbe
+        uColor: { value: cssColor('--ember', theme === 'light' ? '#3159A8' : '#E2382A') },
+        uColorHot: {
+          value: theme === 'light' ? cssColor('--ember-dim', '#17275C') : cssColor('--amber', '#E0A03C'),
+        },
         uDpr: { value: renderer.getPixelRatio() },
         uScale: { value: size * 0.1 },
         uPointer: { value: new Vector2(99, 99) },
