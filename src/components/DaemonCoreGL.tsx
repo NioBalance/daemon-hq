@@ -42,7 +42,15 @@ const CONTOUR_SIZE_JITTER = 0.14
 const CONTOUR_JITTER = 0.005
 const CONTOUR_SHELLS = 5 // la stella è ESTRUSA: 5 gusci in z — ha spessore vero
 const CONTOUR_DEPTH = 0.26
-const CONTOUR_SCALE = 0.72
+// la sfera è quasi a filo canvas (raggio scena ~1.65): la stella la riempie
+const CONTOUR_SCALE = 1.08
+
+// anelli HUD dentro la teca: compaiono in hover, testa di luce che spazzola
+// [raggio, tilt X, verso sweep, count, size]
+const HUD_RINGS: [number, number, number, number, number][] = [
+  [1.28, 0.35, 1, 110, 0.55],
+  [1.48, -0.22, -1, 130, 0.45],
+]
 
 // sciame: TANTE particelle piccole, gaussiane pure (nessun contorno)
 const SWARM_COUNT = 520
@@ -80,6 +88,10 @@ const CONTOUR_VERT = /* glsl */ `
     float amp = 0.003 + aSeed * 0.006 + uExcite * 0.01;
     p.x += sin(t * (1.1 + aSeed * 1.8) + aSeed * 6.283) * amp;
     p.y += cos(t * (0.9 + aSeed * 1.5) + aSeed * 12.56) * amp;
+    // hover: l'estrusione si APRE in profondità e la stella cresce appena —
+    // un movimento solido, da motion graphic, non un effetto particellare
+    p.z *= 1.0 + uExcite * 0.9;
+    p.xy *= 1.0 + uExcite * 0.05;
     p *= uBreathe;
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
@@ -133,6 +145,33 @@ const SWARM_VERT = /* glsl */ `
     gl_PointSize = aSize * (0.55 + front * 0.7) * (1.0 + uExcite * 0.3 + fall * 0.8) * (uScale / -mv.z) * uDpr;
     vGlow = (0.18 + tw * 0.5) * (0.35 + front * 0.9);
     vGlow = min(1.5, vGlow + fall * 1.1);
+  }
+`
+
+// anelli HUD: cerchi nitidi dentro la teca, visibili in hover — una testa di
+// luce percorre l'anello con coda breve (sweep pulito, da interfaccia)
+const RING_VERT = /* glsl */ `
+  attribute float aSeed;
+  attribute float aSize;
+  uniform float uTime;
+  uniform float uExcite;
+  uniform float uDpr;
+  uniform float uScale;
+  uniform float uRadius;
+  uniform float uDir;
+  varying float vGlow;
+  void main() {
+    float t = uTime;
+    float ang = aSeed * 6.28318 + t * uDir * 0.06;
+    vec3 p = vec3(cos(ang) * uRadius, sin(ang) * uRadius * 0.985, 0.0);
+    float head = fract(t * uDir * 0.22);
+    float phase = (aSeed - head) * 6.28318;
+    float flow = pow(0.5 + 0.5 * cos(phase), 10.0);
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    gl_Position = projectionMatrix * mv;
+    gl_PointSize = aSize * (0.7 + flow * 1.1) * (uScale / -mv.z) * uDpr;
+    // quasi invisibili a riposo: il motion appare con l'hover
+    vGlow = (0.06 + uExcite) * (0.18 + flow * 1.3);
   }
 `
 
@@ -316,6 +355,31 @@ export default function DaemonCoreGL({
           makeMaterial(CONTOUR_VERT, { ...shared, uAlpha: { value: 0.92 + boost }, uSoft: { value: 0.45 } }, blend),
         ),
       )
+
+      // anelli HUD dentro la teca (hover): nitidi, controrotanti
+      for (const [radius, tiltX, dir, count, psize] of HUD_RINGS) {
+        const geo = new BufferGeometry()
+        geo.setAttribute('position', new BufferAttribute(new Float32Array(count * 3), 3))
+        const seeds = new Float32Array(count)
+        const sizes = new Float32Array(count)
+        for (let i = 0; i < count; i++) {
+          seeds[i] = i / count
+          sizes[i] = psize + Math.random() * 0.2
+        }
+        geo.setAttribute('aSeed', new BufferAttribute(seeds, 1))
+        geo.setAttribute('aSize', new BufferAttribute(sizes, 1))
+        const ring = new Points(
+          geo,
+          makeMaterial(
+            RING_VERT,
+            { ...shared, uAlpha: { value: 0.85 + boost }, uSoft: { value: 0.3 }, uRadius: { value: radius }, uDir: { value: dir } },
+            blend,
+          ),
+        )
+        ring.rotation.x = tiltX
+        ring.frustumCulled = false
+        scene.add(ring)
+      }
 
       // sciame attorno alla sfera
       const swarmGeo = new BufferGeometry()

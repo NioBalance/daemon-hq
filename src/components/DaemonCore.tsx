@@ -29,7 +29,7 @@ export default function DaemonCore({ size = 176 }: { size?: number }) {
           </g>
         </g>
         {/* wireframe del logo dentro la teca (72% del canvas → dentro la sfera) */}
-        <g className="core-holo-star" transform="scale(0.5) translate(-50 -50)">
+        <g className="core-holo-star" transform="scale(0.62) translate(-50 -50)">
           <path d={DAEMON_LOGO_PATH} fill="none" stroke="var(--ember)" strokeWidth={glow} opacity="0.16" strokeLinejoin="round" strokeLinecap="round" />
           <path d={DAEMON_LOGO_PATH} fill="none" stroke="var(--ember)" strokeWidth={wire} opacity="0.92" strokeLinejoin="round" strokeLinecap="round" />
         </g>
