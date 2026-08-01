@@ -40,22 +40,29 @@ const CONTOUR_COUNT = 2600
 const CONTOUR_SIZE = 0.5
 const CONTOUR_SIZE_JITTER = 0.14
 const CONTOUR_JITTER = 0.005
-const CONTOUR_Z = 0.05
-const CONTOUR_SCALE = 0.72 // la sfera ora è quasi a filo canvas: la stella può crescere
+const CONTOUR_SHELLS = 5 // la stella è ESTRUSA: 5 gusci in z — ha spessore vero
+const CONTOUR_DEPTH = 0.26
+const CONTOUR_SCALE = 0.72
 
-const SWARM_COUNT = 220
-const SWARM_SIZE = 1.35
-const SWARM_SIZE_JITTER = 0.9
-const SWARM_R_MIN = 1.28 // appena fuori dal vetro
-const SWARM_R_SPREAD = 0.45
+// sciame: TANTE particelle piccole, gaussiane pure (nessun contorno)
+const SWARM_COUNT = 520
+const SWARM_SIZE = 0.7
+const SWARM_SIZE_JITTER = 0.45
+const SWARM_R_MIN = 1.26
+const SWARM_R_SPREAD = 0.55
 
 // campo puntatore (solo sciame: il vetro "protegge" la stella)
 const POINTER_RADIUS = 0.55
 const POINTER_PUSH = 0.1
 const POINTER_SWIRL = 0.14
 
-// tilt prospettico
-const TILT_MAX_DEG = 8
+// prospettiva VERA: la scena 3D ruota verso il puntatore (parallasse reale,
+// davanti si muove più di dietro); il guscio CSS tiene solo un micro-tilt
+const SCENE_TILT_X = 0.24 // rad
+const SCENE_TILT_Y = 0.3
+const TILT_MAX_DEG = 4
+// click: giro 360° in GL, easeOutQuint — parte deciso, atterra morbido
+const SPIN_DURATION = 1.1
 
 const CONTOUR_VERT = /* glsl */ `
   attribute float aSeed;
@@ -178,7 +185,9 @@ function contourPositions(count: number, scale: number): Float32Array {
     const y = y1 + (y2 - y1) * frac
     out[i * 3] = ((x - 50) / 50) * scale + (Math.random() - 0.5) * CONTOUR_JITTER
     out[i * 3 + 1] = (-(y - 50) / 50) * scale + (Math.random() - 0.5) * CONTOUR_JITTER
-    out[i * 3 + 2] = (Math.random() - 0.5) * CONTOUR_Z
+    // estrusione: gusci discreti in z — inclinando la scena si VEDE lo spessore
+    const shell = i % CONTOUR_SHELLS
+    out[i * 3 + 2] = (shell / (CONTOUR_SHELLS - 1) - 0.5) * CONTOUR_DEPTH + (Math.random() - 0.5) * 0.02
   }
   return out
 }
@@ -319,9 +328,12 @@ export default function DaemonCoreGL({
       swarm.frustumCulled = false
       scene.add(swarm)
 
-      // hover + puntatore: eccitazione, campo locale, tilt prospettico
+      // hover + puntatore: eccitazione, campo locale, PROSPETTIVA IN SCENA
       let exciteTarget = 0
       let pointerTarget = 0
+      let rotTargetX = 0
+      let rotTargetY = 0
+      let spinStart = -1
       const vFov = (camera.fov * Math.PI) / 180
       const onEnter = () => {
         exciteTarget = 1
@@ -330,8 +342,12 @@ export default function DaemonCoreGL({
       const onLeave = () => {
         exciteTarget = 0
         pointerTarget = 0
+        rotTargetX = 0
+        rotTargetY = 0
         orb.style.setProperty('--tiltX', '0deg')
         orb.style.setProperty('--tiltY', '0deg')
+        orb.style.setProperty('--spX', '0px')
+        orb.style.setProperty('--spY', '0px')
       }
       const onPointerMove = (e: PointerEvent) => {
         const rect = renderer!.domElement.getBoundingClientRect()
@@ -342,19 +358,22 @@ export default function DaemonCoreGL({
         const halfW = halfH * camera.aspect
         ;(shared.uPointer.value as Vector2).set(nx * halfW, ny * halfH)
         pointerTarget = 1
-        // la teca si inclina verso il cursore: prospettiva vera, non decorazione
+        // la SCENA ruota verso il cursore: parallasse vera (la stella ha
+        // spessore, lo sciame profondità — davanti si muove più di dietro)
+        rotTargetY = nx * SCENE_TILT_Y
+        rotTargetX = -ny * SCENE_TILT_X
+        // il guscio tiene un micro-tilt da "placca" + il riflesso del vetro
+        // scivola in CONTRO-parallasse: è quello che vende la superficie curva
         orb.style.setProperty('--tiltX', `${(-ny * TILT_MAX_DEG).toFixed(2)}deg`)
         orb.style.setProperty('--tiltY', `${(nx * TILT_MAX_DEG).toFixed(2)}deg`)
+        orb.style.setProperty('--spX', `${(-nx * 9).toFixed(1)}px`)
+        orb.style.setProperty('--spY', `${(ny * 6).toFixed(1)}px`)
       }
-      // click: la bolla fa un giro completo orizzontale (rotateY 360 via CSS)
-      // mentre il menu si apre — la classe si toglie da sola a fine giro
+      // click: giro 360° calcolato IN SCENA (non un rotateY CSS del canvas
+      // piatto): la stella estrusa si vede di taglio a metà giro — 3D vero
       const onClick = () => {
-        orb.classList.remove('orb-spin')
-        void orb.offsetWidth // riavvia l'animazione anche su click ravvicinati
-        orb.classList.add('orb-spin')
+        spinStart = clock.getElapsedTime()
       }
-      const onSpinEnd = () => orb.classList.remove('orb-spin')
-      orb.addEventListener('animationend', onSpinEnd)
       const hoverEl = host.closest('.ov-core') ?? host
       hoverEl.addEventListener('pointerenter', onEnter)
       hoverEl.addEventListener('pointerleave', onLeave)
@@ -365,10 +384,11 @@ export default function DaemonCoreGL({
         hoverEl.removeEventListener('pointerleave', onLeave)
         hoverEl.removeEventListener('pointermove', onPointerMove as EventListener)
         hoverEl.removeEventListener('click', onClick)
-        orb.removeEventListener('animationend', onSpinEnd)
       })
 
       const clock = new Clock()
+      let rotX = 0
+      let rotY = 0
       const tick = () => {
         raf = requestAnimationFrame(tick)
         if (!inViewRef.current || document.hidden) return
@@ -377,6 +397,17 @@ export default function DaemonCoreGL({
         shared.uExcite.value += (exciteTarget - (shared.uExcite.value as number)) * 0.14
         shared.uPointerStrength.value += (pointerTarget - (shared.uPointerStrength.value as number)) * 0.18
         shared.uBreathe.value = 1 + Math.sin((t * Math.PI * 2) / 7) * 0.018
+        // prospettiva eased verso il puntatore + oscillazione minima a riposo
+        rotX += (rotTargetX - rotX) * 0.07
+        rotY += (rotTargetY - rotY) * 0.07
+        let spinAngle = 0
+        if (spinStart >= 0) {
+          const p = Math.min(1, (t - spinStart) / SPIN_DURATION)
+          spinAngle = (1 - Math.pow(1 - p, 5)) * Math.PI * 2 // easeOutQuint
+          if (p >= 1) spinStart = -1
+        }
+        scene!.rotation.x = rotX + Math.sin(t * 0.23) * 0.015
+        scene!.rotation.y = rotY + spinAngle + Math.sin(t * 0.17) * 0.02
         renderer!.render(scene!, camera)
       }
       tick()

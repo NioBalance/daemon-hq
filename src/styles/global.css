@@ -557,18 +557,17 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
 .core-orb{transform:perspective(760px) rotateX(var(--tiltX,0deg)) rotateY(var(--tiltY,0deg)) scale(var(--pop,1));transform-style:preserve-3d;transition:transform .45s var(--ease-out)}
 .ov-core:hover .core-orb,.core-fab:hover .core-orb{--pop:1.07}
 .ov-core:active .core-orb{--pop:1.02}
-/* click: giro completo orizzontale mentre si apre il menu */
-.core-orb.orb-spin{animation:orbSpin360 .8s cubic-bezier(.22,1,.36,1)}
-@keyframes orbSpin360{from{transform:perspective(760px) rotateY(0deg) scale(1.05)}to{transform:perspective(760px) rotateY(360deg) scale(1.05)}}
 /* ombra ellittica a terra: la bolla levita appena sopra la superficie */
 .core-orb-shadow{position:absolute;left:20%;right:20%;bottom:-2%;height:8%;border-radius:50%;background:radial-gradient(ellipse at 50% 50%,hsl(240 30% 3% / .5),transparent 70%);filter:blur(6px);opacity:.8;pointer-events:none;transition:opacity .45s var(--ease-out),transform .45s var(--ease-out)}
 .ov-core:hover .core-orb-shadow,.core-fab:hover .core-orb-shadow{opacity:1;transform:scaleX(1.1) translateY(2px)}
 /* la sfera di vetro — NESSUN bordo: il vetro è solo luce (gloss, tinta che
    sale, rim interno morbido). Quasi a filo del canvas (inset 7%). */
-.core-orb-sphere{position:absolute;inset:7%;border-radius:50%;pointer-events:none;
+.core-orb-sphere{position:absolute;inset:4%;border-radius:50%;pointer-events:none;
   background:
     radial-gradient(circle at 32% 24%,hsl(0 0% 100% / .13),transparent 46%),
+    radial-gradient(circle at 76% 88%,hsl(0 0% 100% / .06),transparent 32%),
     radial-gradient(circle at 68% 80%,hsl(var(--primary) / .16),transparent 60%),
+    radial-gradient(circle at 50% 50%,transparent 60%,hsl(0 0% 100% / .05) 74%,transparent 82%),
     radial-gradient(circle at 50% 45%,hsl(var(--surface-2) / .09),transparent 76%);
   box-shadow:
     inset 0 2px 10px hsl(0 0% 100% / .13),
@@ -581,8 +580,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offs
     inset 0 -24px 40px -18px hsl(var(--primary) / .48),
     0 28px 48px -18px hsl(240 30% 3% / .6),
     0 4px 12px hsl(240 30% 3% / .28)}
-/* riflesso speculare: la finestra di luce del vetro */
-.core-orb-spec{position:absolute;left:24%;top:13%;width:28%;height:16%;border-radius:50%;background:radial-gradient(ellipse,hsl(0 0% 100% / .45),transparent 70%);filter:blur(3px);transform:rotate(-18deg);opacity:.45;pointer-events:none}
+/* riflesso speculare: scivola in CONTRO-parallasse col puntatore (variabili
+   --spX/--spY dal componente GL) — è il segnale che la superficie è curva */
+.core-orb-spec{position:absolute;left:24%;top:11%;width:30%;height:17%;border-radius:50%;background:radial-gradient(ellipse,hsl(0 0% 100% / .45),transparent 70%);filter:blur(3px);transform:translate(var(--spX,0px),var(--spY,0px)) rotate(-18deg);opacity:.45;pointer-events:none;transition:transform .25s var(--ease-out)}
 [data-theme="light"] .core-orb-shadow{background:radial-gradient(ellipse at 50% 50%,rgba(28,26,22,.3),transparent 70%)}
 [data-theme="light"] .core-orb-sphere{box-shadow:
     inset 0 2px 10px hsl(0 0% 100% / .65),
