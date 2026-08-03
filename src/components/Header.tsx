@@ -6,6 +6,7 @@ import { ICONS } from './navIcons'
 import { BellIcon } from './WidgetsPanel'
 import { useUnseenActivity } from '../features/activity/queries'
 import { useTheme } from '../lib/useTheme'
+import { PwaInstallButton } from './ui-v2/PwaInstall'
 import starLogo from '../assets/star-logo.png'
 import starLogoLight from '../assets/daemon-star-blue.png'
 
@@ -90,6 +91,7 @@ export default function Header({
         <img src={theme === 'light' ? starLogoLight : starLogo} alt="" />
       </button>
       <div className={`tn-right${notice ? ' notice' : ''}`}>
+        <PwaInstallButton />
         <button
           className="hicon"
           title={theme === 'light' ? 'Passa al tema scuro' : 'Passa al tema chiaro'}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useAuth } from './useAuth'
+import { PwaInstallCard } from '../components/ui-v2/PwaInstall'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const COOLDOWN_S = 60
@@ -217,6 +218,7 @@ export default function Login() {
           </button>
         </form>
         {error && <p className="auth-msg err">{error}</p>}
+        <PwaInstallCard />
       </div>
     </div>
   )

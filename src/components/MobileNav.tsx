@@ -4,6 +4,7 @@ import { useNav } from '../lib/navigation'
 import { BellIcon } from './WidgetsPanel'
 import { useUnseenActivity } from '../features/activity/queries'
 import { ICONS } from './navIcons'
+import { PwaInstallSheetItem } from './ui-v2/PwaInstall'
 
 // Voci dirette della bottom-nav v4 (spec §2 mobile): le 4 più usate.
 const DIRECT_IDS = ['overview', 'oggi', 'dropx', 'media'] as const
@@ -101,6 +102,7 @@ export default function MobileNav({ activeTab }: { activeTab: TabKey }) {
                   {entry.label}
                 </button>
               ))}
+              <PwaInstallSheetItem />
             </div>
           </m.div>
         )}
