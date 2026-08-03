@@ -406,13 +406,8 @@ export default function DaemonCoreGL({
       const onLeave = () => {
         exciteTarget = 0
         pointerTarget = 0
-        rotTargetX = 0
-        rotTargetY = 0
-        orb.style.setProperty('--tiltX', '0deg')
-        orb.style.setProperty('--tiltY', '0deg')
-        orb.style.setProperty('--spX', '0px')
-        orb.style.setProperty('--spY', '0px')
       }
+      // sul bottone: solo il campo particellare locale (coordinate scena)
       const onPointerMove = (e: PointerEvent) => {
         const rect = renderer!.domElement.getBoundingClientRect()
         if (rect.width === 0 || rect.height === 0) return
@@ -422,17 +417,33 @@ export default function DaemonCoreGL({
         const halfW = halfH * camera.aspect
         ;(shared.uPointer.value as Vector2).set(nx * halfW, ny * halfH)
         pointerTarget = 1
-        // la SCENA ruota verso il cursore: parallasse vera (la stella ha
-        // spessore, lo sciame profondità — davanti si muove più di dietro)
-        rotTargetY = nx * SCENE_TILT_Y
-        rotTargetX = -ny * SCENE_TILT_X
-        // il guscio tiene un micro-tilt da "placca" + il riflesso del vetro
-        // scivola in CONTRO-parallasse: è quello che vende la superficie curva
-        orb.style.setProperty('--tiltX', `${(-ny * TILT_MAX_DEG).toFixed(2)}deg`)
-        orb.style.setProperty('--tiltY', `${(nx * TILT_MAX_DEG).toFixed(2)}deg`)
-        orb.style.setProperty('--spX', `${(-nx * 9).toFixed(1)}px`)
-        orb.style.setProperty('--spY', `${(ny * 6).toFixed(1)}px`)
       }
+      // mira a LUNGO raggio (finestra intera): la scena ruota verso il mouse
+      // e il guscio tiene micro-tilt + contro-parallasse del riflesso.
+      // Direzione = offset dal centro (satura a ~240px); intensità = falloff
+      // smoothstep che parte pieno vicino e si spegne a ~70% del lato maggiore
+      // della viewport — graduale, mai on/off. Il rientro morbido lo fanno
+      // l'easing della scena nel tick e la transizione CSS del guscio.
+      const applyAim = (dirX: number, dirY: number, fall: number) => {
+        rotTargetY = dirX * SCENE_TILT_Y * fall
+        rotTargetX = dirY * SCENE_TILT_X * fall
+        orb.style.setProperty('--tiltX', `${(dirY * TILT_MAX_DEG * fall).toFixed(2)}deg`)
+        orb.style.setProperty('--tiltY', `${(dirX * TILT_MAX_DEG * fall).toFixed(2)}deg`)
+        orb.style.setProperty('--spX', `${(-dirX * 9 * fall).toFixed(1)}px`)
+        orb.style.setProperty('--spY', `${(-dirY * 6 * fall).toFixed(1)}px`)
+      }
+      const onGlobalMove = (e: PointerEvent) => {
+        const rect = renderer!.domElement.getBoundingClientRect()
+        if (rect.width === 0 || rect.height === 0) return
+        const dx = e.clientX - (rect.left + rect.width / 2)
+        const dy = e.clientY - (rect.top + rect.height / 2)
+        const dist = Math.hypot(dx, dy)
+        const R = Math.max(window.innerWidth, window.innerHeight) * 0.7
+        const k = Math.min(1, Math.max(0, (dist - R * 0.18) / (R * 0.82)))
+        const fall = 1 - k * k * (3 - 2 * k)
+        applyAim(Math.max(-1, Math.min(1, dx / 240)), Math.max(-1, Math.min(1, dy / 240)), fall)
+      }
+      const onWindowOut = () => applyAim(0, 0, 0)
       // click: giro 360° calcolato IN SCENA (non un rotateY CSS del canvas
       // piatto): la stella estrusa si vede di taglio a metà giro — 3D vero
       const onClick = () => {
@@ -443,11 +454,15 @@ export default function DaemonCoreGL({
       hoverEl.addEventListener('pointerleave', onLeave)
       hoverEl.addEventListener('pointermove', onPointerMove as EventListener)
       hoverEl.addEventListener('click', onClick)
+      window.addEventListener('pointermove', onGlobalMove as EventListener, { passive: true })
+      document.documentElement.addEventListener('mouseleave', onWindowOut)
       cleanupFns.push(() => {
         hoverEl.removeEventListener('pointerenter', onEnter)
         hoverEl.removeEventListener('pointerleave', onLeave)
         hoverEl.removeEventListener('pointermove', onPointerMove as EventListener)
         hoverEl.removeEventListener('click', onClick)
+        window.removeEventListener('pointermove', onGlobalMove as EventListener)
+        document.documentElement.removeEventListener('mouseleave', onWindowOut)
       })
 
       const clock = new Clock()
